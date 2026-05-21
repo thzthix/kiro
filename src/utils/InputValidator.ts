@@ -66,9 +66,7 @@ function isInValidRange(value: number): boolean {
 /**
  * Creates a validation error result.
  */
-function createErrorResult(
-  errorType: 'empty' | 'non-integer' | 'out-of-range'
-): ValidationResult {
+function createErrorResult(errorType: ValidationErrorType): ValidationResult {
   return {
     valid: false,
     errorType,
