@@ -7,8 +7,13 @@ describe('InputValidator - Property-Based Tests', () => {
       fc.assert(
         fc.property(
           fc.oneof(
-            fc.string().filter((s) => !/^\d+$/.test(s) && s !== ''),
-            fc.double().map((n) => n.toString()),
+            // Filter out valid integers and empty/whitespace strings
+            fc.string().filter((s) => {
+              const trimmed = s.trim();
+              return trimmed !== '' && !/^-?\d+$/.test(trimmed);
+            }),
+            // Generate doubles that don't look like integers when stringified
+            fc.double().filter((n) => !Number.isInteger(n)).map((n) => n.toString()),
             fc.constantFrom('12.5', '3.14', 'abc', '12a', 'a12', '1 2')
           ),
           (input) => {
