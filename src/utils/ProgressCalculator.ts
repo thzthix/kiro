@@ -1,5 +1,9 @@
 import { PathCoordinates, Point } from '../types';
 
+// Time formatting constants
+const SECONDS_PER_MINUTE = 60;
+const TIME_COMPONENT_PADDING = 2;
+
 /**
  * Calculate progress percentage from elapsed and total duration.
  * Formula: (elapsed / total) × 100, clamped to [0, 100]
@@ -17,7 +21,7 @@ export function calculateProgress(
   }
 
   const rawProgress = (elapsed / totalDuration) * 100;
-  return Math.min(100, Math.max(0, rawProgress));
+  return clamp(rawProgress, 0, 100);
 }
 
 /**
@@ -28,13 +32,10 @@ export function calculateProgress(
  * @returns Formatted time string in MM:SS format
  */
 export function formatTime(seconds: number): string {
-  const minutes = Math.floor(seconds / 60);
-  const remainingSeconds = seconds % 60;
+  const minutes = Math.floor(seconds / SECONDS_PER_MINUTE);
+  const remainingSeconds = seconds % SECONDS_PER_MINUTE;
 
-  const paddedMinutes = minutes.toString().padStart(2, '0');
-  const paddedSeconds = remainingSeconds.toString().padStart(2, '0');
-
-  return `${paddedMinutes}:${paddedSeconds}`;
+  return `${padZero(minutes)}:${padZero(remainingSeconds)}`;
 }
 
 /**
@@ -49,10 +50,36 @@ export function calculatePosition(
   pathCoordinates: PathCoordinates
 ): Point {
   const t = progress / 100; // Normalize to [0, 1]
-
   const { start, end, controlPoints } = pathCoordinates;
 
-  // Cubic Bezier curve: B(t) = (1-t)³P₀ + 3(1-t)²tP₁ + 3(1-t)t²P₂ + t³P₃
+  return cubicBezier(t, start, controlPoints[0], controlPoints[1], end);
+}
+
+/**
+ * Clamp a value between min and max.
+ */
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, value));
+}
+
+/**
+ * Pad a number with leading zeros to specified length.
+ */
+function padZero(value: number): string {
+  return value.toString().padStart(TIME_COMPONENT_PADDING, '0');
+}
+
+/**
+ * Calculate point on cubic Bezier curve.
+ * Formula: B(t) = (1-t)³P₀ + 3(1-t)²tP₁ + 3(1-t)t²P₂ + t³P₃
+ */
+function cubicBezier(
+  t: number,
+  p0: Point,
+  p1: Point,
+  p2: Point,
+  p3: Point
+): Point {
   const oneMinusT = 1 - t;
   const oneMinusTSquared = oneMinusT * oneMinusT;
   const oneMinusTCubed = oneMinusTSquared * oneMinusT;
@@ -60,16 +87,16 @@ export function calculatePosition(
   const tCubed = tSquared * t;
 
   const x =
-    oneMinusTCubed * start.x +
-    3 * oneMinusTSquared * t * controlPoints[0].x +
-    3 * oneMinusT * tSquared * controlPoints[1].x +
-    tCubed * end.x;
+    oneMinusTCubed * p0.x +
+    3 * oneMinusTSquared * t * p1.x +
+    3 * oneMinusT * tSquared * p2.x +
+    tCubed * p3.x;
 
   const y =
-    oneMinusTCubed * start.y +
-    3 * oneMinusTSquared * t * controlPoints[0].y +
-    3 * oneMinusT * tSquared * controlPoints[1].y +
-    tCubed * end.y;
+    oneMinusTCubed * p0.y +
+    3 * oneMinusTSquared * t * p1.y +
+    3 * oneMinusT * tSquared * p2.y +
+    tCubed * p3.y;
 
   return { x, y };
 }
