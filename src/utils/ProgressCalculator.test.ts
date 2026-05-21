@@ -13,8 +13,8 @@ describe('ProgressCalculator - Property-Based Tests', () => {
         fc.property(fc.integer({ min: 0, max: 10800 }), (seconds) => {
           const result = formatTime(seconds);
 
-          // Check format: MM:SS
-          expect(result).toMatch(/^\d{2}:\d{2}$/);
+          // Check format: MM:SS (at least 2 digits for minutes)
+          expect(result).toMatch(/^\d{2,}:\d{2}$/);
 
           // Extract minutes and seconds
           const [mins, secs] = result.split(':').map(Number);
