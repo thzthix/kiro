@@ -12,6 +12,29 @@ inclusion: auto
 - **Refactoring**: `refactor/{component-name}` (예: `refactor/state-manager`)
 - **Chores**: `chore/{task-description}` (예: `chore/setup-testing`)
 
+### Branch Strategy (기능 단위 분리)
+
+**✅ 권장 패턴: 하나의 브랜치 = 하나의 기능/모듈**
+- PR 크기를 작게 유지 (리뷰 용이)
+- 문제 발생 시 롤백 쉬움
+- 브랜치 이름과 PR 내용 일치
+
+**좋은 예시:**
+```
+feat/add-timer-service          (TimerService 모듈만)
+feat/add-state-management       (Context + Reducer만)
+feat/add-timer-hook             (useTimer hook만)
+feat/add-study-session-hook     (useStudySession hook만)
+feat/add-time-input-popup       (TimeInputPopup 컴포넌트만)
+```
+
+**❌ 피해야 할 패턴:**
+```
+feat/add-validator              (실제로는 3개 모듈 포함 - 너무 큼)
+feat/business-logic             (범위가 불명확)
+feat/implement-everything       (너무 광범위)
+```
+
 ### Commit Messages (한글 사용)
 **모든 커밋 메시지는 한글로 작성합니다.**
 
