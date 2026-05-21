@@ -11,7 +11,7 @@
  */
 
 import React from 'react';
-import { View, Text, StyleSheet, ViewStyle } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 
 interface ProgressBarProps {
   progress: number; // 0-100

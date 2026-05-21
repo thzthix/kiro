@@ -239,13 +239,10 @@ describe('ProgressBar Component - Unit Tests (RED)', () => {
       );
 
       const turtleSlider = getByTestId('progress-bar-turtle-slider');
+      const left = getStyleProp(turtleSlider.props.style, 'left');
       
       // Check for 0% left position
-      expect(turtleSlider.props.style).toMatchObject(
-        expect.objectContaining({
-          left: '0%',
-        })
-      );
+      expect(left).toBe('0%');
     });
 
     it('should position turtle at 25% when progress is 25', () => {
@@ -254,13 +251,10 @@ describe('ProgressBar Component - Unit Tests (RED)', () => {
       );
 
       const turtleSlider = getByTestId('progress-bar-turtle-slider');
+      const left = getStyleProp(turtleSlider.props.style, 'left');
       
       // Check for 25% left position
-      expect(turtleSlider.props.style).toMatchObject(
-        expect.objectContaining({
-          left: '25%',
-        })
-      );
+      expect(left).toBe('25%');
     });
 
     it('should position turtle at 50% when progress is 50', () => {
@@ -269,13 +263,10 @@ describe('ProgressBar Component - Unit Tests (RED)', () => {
       );
 
       const turtleSlider = getByTestId('progress-bar-turtle-slider');
+      const left = getStyleProp(turtleSlider.props.style, 'left');
       
       // Check for 50% left position
-      expect(turtleSlider.props.style).toMatchObject(
-        expect.objectContaining({
-          left: '50%',
-        })
-      );
+      expect(left).toBe('50%');
     });
 
     it('should position turtle at 75% when progress is 75', () => {
@@ -284,13 +275,10 @@ describe('ProgressBar Component - Unit Tests (RED)', () => {
       );
 
       const turtleSlider = getByTestId('progress-bar-turtle-slider');
+      const left = getStyleProp(turtleSlider.props.style, 'left');
       
       // Check for 75% left position
-      expect(turtleSlider.props.style).toMatchObject(
-        expect.objectContaining({
-          left: '75%',
-        })
-      );
+      expect(left).toBe('75%');
     });
 
     it('should position turtle at 100% when progress is 100', () => {
@@ -299,13 +287,10 @@ describe('ProgressBar Component - Unit Tests (RED)', () => {
       );
 
       const turtleSlider = getByTestId('progress-bar-turtle-slider');
+      const left = getStyleProp(turtleSlider.props.style, 'left');
       
       // Check for 100% left position
-      expect(turtleSlider.props.style).toMatchObject(
-        expect.objectContaining({
-          left: '100%',
-        })
-      );
+      expect(left).toBe('100%');
     });
 
     it('should position turtle with absolute positioning', () => {
@@ -314,13 +299,10 @@ describe('ProgressBar Component - Unit Tests (RED)', () => {
       );
 
       const turtleSlider = getByTestId('progress-bar-turtle-slider');
+      const position = getStyleProp(turtleSlider.props.style, 'position');
       
       // Check for absolute positioning
-      expect(turtleSlider.props.style).toMatchObject(
-        expect.objectContaining({
-          position: 'absolute',
-        })
-      );
+      expect(position).toBe('absolute');
     });
 
     it('should handle decimal progress for turtle positioning', () => {
@@ -329,13 +311,10 @@ describe('ProgressBar Component - Unit Tests (RED)', () => {
       );
 
       const turtleSlider = getByTestId('progress-bar-turtle-slider');
+      const left = getStyleProp(turtleSlider.props.style, 'left');
       
       // Check for 66.67% left position
-      expect(turtleSlider.props.style).toMatchObject(
-        expect.objectContaining({
-          left: '66.67%',
-        })
-      );
+      expect(left).toBe('66.67%');
     });
   });
 
@@ -346,12 +325,12 @@ describe('ProgressBar Component - Unit Tests (RED)', () => {
       );
 
       const turtleSlider = getByTestId('progress-bar-turtle-slider');
-      const initialPosition = parseFloat(turtleSlider.props.style.left);
+      const initialPosition = parseFloat(getStyleProp(turtleSlider.props.style, 'left'));
 
       // Increase progress
       rerender(<ProgressBar progress={90} />);
 
-      const newPosition = parseFloat(getByTestId('progress-bar-turtle-slider').props.style.left);
+      const newPosition = parseFloat(getStyleProp(getByTestId('progress-bar-turtle-slider').props.style, 'left'));
       
       // New position should be greater (more to the right)
       expect(newPosition).toBeGreaterThan(initialPosition);
@@ -369,7 +348,7 @@ describe('ProgressBar Component - Unit Tests (RED)', () => {
         rerender(<ProgressBar progress={i} />);
         
         const turtleSlider = getByTestId('progress-bar-turtle-slider');
-        const currentPosition = parseFloat(turtleSlider.props.style.left);
+        const currentPosition = parseFloat(getStyleProp(turtleSlider.props.style, 'left'));
         
         // Each position should be greater than the previous
         expect(currentPosition).toBeGreaterThanOrEqual(previousPosition);
@@ -385,13 +364,13 @@ describe('ProgressBar Component - Unit Tests (RED)', () => {
       );
 
       let filledPortion = getByTestId('progress-bar-filled');
-      expect(filledPortion.props.style.width).toBe('25%');
+      expect(getStyleProp(filledPortion.props.style, 'width')).toBe('25%');
 
       // Update progress
       rerender(<ProgressBar progress={75} />);
 
       filledPortion = getByTestId('progress-bar-filled');
-      expect(filledPortion.props.style.width).toBe('75%');
+      expect(getStyleProp(filledPortion.props.style, 'width')).toBe('75%');
     });
 
     it('should update turtle position when progress prop changes', () => {
@@ -400,13 +379,13 @@ describe('ProgressBar Component - Unit Tests (RED)', () => {
       );
 
       let turtleSlider = getByTestId('progress-bar-turtle-slider');
-      expect(turtleSlider.props.style.left).toBe('25%');
+      expect(getStyleProp(turtleSlider.props.style, 'left')).toBe('25%');
 
       // Update progress
       rerender(<ProgressBar progress={75} />);
 
       turtleSlider = getByTestId('progress-bar-turtle-slider');
-      expect(turtleSlider.props.style.left).toBe('75%');
+      expect(getStyleProp(turtleSlider.props.style, 'left')).toBe('75%');
     });
   });
 
@@ -419,8 +398,8 @@ describe('ProgressBar Component - Unit Tests (RED)', () => {
       const filledPortion = getByTestId('progress-bar-filled');
       const turtleSlider = getByTestId('progress-bar-turtle-slider');
       
-      expect(filledPortion.props.style.width).toBe('0%');
-      expect(turtleSlider.props.style.left).toBe('0%');
+      expect(getStyleProp(filledPortion.props.style, 'width')).toBe('0%');
+      expect(getStyleProp(turtleSlider.props.style, 'left')).toBe('0%');
     });
 
     it('should clamp progress above 100 to 100%', () => {
@@ -431,8 +410,8 @@ describe('ProgressBar Component - Unit Tests (RED)', () => {
       const filledPortion = getByTestId('progress-bar-filled');
       const turtleSlider = getByTestId('progress-bar-turtle-slider');
       
-      expect(filledPortion.props.style.width).toBe('100%');
-      expect(turtleSlider.props.style.left).toBe('100%');
+      expect(getStyleProp(filledPortion.props.style, 'width')).toBe('100%');
+      expect(getStyleProp(turtleSlider.props.style, 'left')).toBe('100%');
     });
 
     it('should handle NaN progress gracefully', () => {
@@ -444,8 +423,8 @@ describe('ProgressBar Component - Unit Tests (RED)', () => {
       const turtleSlider = getByTestId('progress-bar-turtle-slider');
       
       // Should default to 0%
-      expect(filledPortion.props.style.width).toBe('0%');
-      expect(turtleSlider.props.style.left).toBe('0%');
+      expect(getStyleProp(filledPortion.props.style, 'width')).toBe('0%');
+      expect(getStyleProp(turtleSlider.props.style, 'left')).toBe('0%');
     });
 
     it('should handle undefined progress gracefully', () => {
@@ -457,8 +436,8 @@ describe('ProgressBar Component - Unit Tests (RED)', () => {
       const turtleSlider = getByTestId('progress-bar-turtle-slider');
       
       // Should default to 0%
-      expect(filledPortion.props.style.width).toBe('0%');
-      expect(turtleSlider.props.style.left).toBe('0%');
+      expect(getStyleProp(filledPortion.props.style, 'width')).toBe('0%');
+      expect(getStyleProp(turtleSlider.props.style, 'left')).toBe('0%');
     });
 
     it('should handle very small decimal progress values', () => {
@@ -469,8 +448,8 @@ describe('ProgressBar Component - Unit Tests (RED)', () => {
       const filledPortion = getByTestId('progress-bar-filled');
       const turtleSlider = getByTestId('progress-bar-turtle-slider');
       
-      expect(filledPortion.props.style.width).toBe('0.01%');
-      expect(turtleSlider.props.style.left).toBe('0.01%');
+      expect(getStyleProp(filledPortion.props.style, 'width')).toBe('0.01%');
+      expect(getStyleProp(turtleSlider.props.style, 'left')).toBe('0.01%');
     });
 
     it('should handle very large decimal progress values', () => {
@@ -481,8 +460,8 @@ describe('ProgressBar Component - Unit Tests (RED)', () => {
       const filledPortion = getByTestId('progress-bar-filled');
       const turtleSlider = getByTestId('progress-bar-turtle-slider');
       
-      expect(filledPortion.props.style.width).toBe('99.99%');
-      expect(turtleSlider.props.style.left).toBe('99.99%');
+      expect(getStyleProp(filledPortion.props.style, 'width')).toBe('99.99%');
+      expect(getStyleProp(turtleSlider.props.style, 'left')).toBe('99.99%');
     });
   });
 
@@ -504,14 +483,12 @@ describe('ProgressBar Component - Unit Tests (RED)', () => {
       );
 
       const turtleSlider = getByTestId('progress-bar-turtle-slider');
+      const width = getStyleProp(turtleSlider.props.style, 'width');
+      const height = getStyleProp(turtleSlider.props.style, 'height');
       
       // Check for width and height
-      expect(turtleSlider.props.style).toMatchObject(
-        expect.objectContaining({
-          width: expect.any(Number),
-          height: expect.any(Number),
-        })
-      );
+      expect(width).toEqual(expect.any(Number));
+      expect(height).toEqual(expect.any(Number));
     });
   });
 
