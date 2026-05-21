@@ -4,6 +4,10 @@
  * **Validates: Requirements 2.2, 2.3, 2.4, 2.5, 2.6, 2.7**
  */
 
+// Timer constants
+const TICK_INTERVAL_MS = 1000; // 1 second
+const MS_PER_SECOND = 1000;
+
 export interface TimerHandle {
   id: string;
   intervalId: NodeJS.Timeout;
@@ -25,7 +29,8 @@ export class TimerService {
   private timers: Map<string, TimerState> = new Map();
 
   /**
-   * Start a new countdown timer
+   * Start a new countdown timer.
+   * 
    * @param duration - Duration in seconds
    * @param onTick - Callback triggered every second with remaining time
    * @param onComplete - Callback triggered when timer reaches 0
@@ -37,22 +42,13 @@ export class TimerService {
     onComplete: () => void
   ): TimerHandle {
     const id = this.generateId();
-    const startTimestamp = Date.now();
-
-    const intervalId = setInterval(() => {
-      this.tick(id);
-    }, 1000);
-
-    const state: TimerState = {
+    const intervalId = this.createInterval(id);
+    const state = this.createTimerState(
       intervalId,
-      startTimestamp,
-      pausedTimestamp: null,
-      totalDuration: duration,
-      remainingAtPause: null,
+      duration,
       onTick,
-      onComplete,
-      isCompleted: false,
-    };
+      onComplete
+    );
 
     this.timers.set(id, state);
 
@@ -64,64 +60,50 @@ export class TimerService {
   }
 
   /**
-   * Pause a running timer
+   * Pause a running timer.
+   * 
    * @param handle - Timer handle returned from start()
    */
   pause(handle: TimerHandle): void {
     const state = this.timers.get(handle.id);
     if (!state || !state.intervalId) return;
 
-    // Clear the interval
-    clearInterval(state.intervalId);
-    state.intervalId = null;
-
-    // Store the remaining time at pause
-    state.pausedTimestamp = Date.now();
-    state.remainingAtPause = this.calculateRemainingTime(state);
+    this.clearInterval(state);
+    this.saveRemainingTime(state);
   }
 
   /**
-   * Resume a paused timer
+   * Resume a paused timer.
+   * 
    * @param handle - Timer handle returned from start()
    */
   resume(handle: TimerHandle): void {
     const state = this.timers.get(handle.id);
     if (!state || state.intervalId || state.remainingAtPause === null) return;
 
-    // Reset start timestamp to continue from remaining time
-    state.startTimestamp = Date.now();
-    state.totalDuration = state.remainingAtPause;
-    state.pausedTimestamp = null;
-    state.remainingAtPause = null;
-
-    // Restart the interval
-    const intervalId = setInterval(() => {
-      this.tick(handle.id);
-    }, 1000);
-
-    state.intervalId = intervalId;
+    this.resetTimerFromPause(state);
+    state.intervalId = this.createInterval(handle.id);
   }
 
   /**
-   * Stop a timer and clear all resources
+   * Stop a timer and clear all resources.
+   * 
    * @param handle - Timer handle returned from start()
    */
   stop(handle: TimerHandle): void {
     const state = this.timers.get(handle.id);
     if (!state) return;
 
-    // Clear the interval if running
     if (state.intervalId) {
-      clearInterval(state.intervalId);
-      state.intervalId = null;
+      this.clearInterval(state);
     }
 
-    // Remove from timers map
     this.timers.delete(handle.id);
   }
 
   /**
-   * Get remaining time for a timer
+   * Get remaining time for a timer.
+   * 
    * @param handle - Timer handle returned from start()
    * @returns Remaining time in seconds
    */
@@ -129,17 +111,13 @@ export class TimerService {
     const state = this.timers.get(handle.id);
     if (!state) return 0;
 
-    // If paused, return the stored remaining time
-    if (state.pausedTimestamp !== null && state.remainingAtPause !== null) {
-      return state.remainingAtPause;
-    }
-
-    // Calculate remaining time from current timestamp
-    return this.calculateRemainingTime(state);
+    return this.isPaused(state)
+      ? state.remainingAtPause!
+      : this.calculateRemainingTime(state);
   }
 
   /**
-   * Internal tick handler called every second
+   * Internal tick handler called every second.
    */
   private tick(id: string): void {
     const state = this.timers.get(id);
@@ -147,39 +125,109 @@ export class TimerService {
 
     const remaining = this.calculateRemainingTime(state);
 
-    // Check if timer has completed
-    if (remaining <= 0) {
-      state.isCompleted = true;
-      
-      // Clear interval
-      if (state.intervalId) {
-        clearInterval(state.intervalId);
-        state.intervalId = null;
-      }
-
-      // Call onComplete callback
-      state.onComplete();
+    if (this.isCompleted(remaining)) {
+      this.handleCompletion(state);
       return;
     }
 
-    // Call onTick callback with remaining time
     state.onTick(remaining);
   }
 
   /**
-   * Calculate remaining time based on elapsed time since start
+   * Create a new interval for a timer.
+   */
+  private createInterval(id: string): NodeJS.Timeout {
+    return setInterval(() => {
+      this.tick(id);
+    }, TICK_INTERVAL_MS);
+  }
+
+  /**
+   * Create initial timer state.
+   */
+  private createTimerState(
+    intervalId: NodeJS.Timeout,
+    duration: number,
+    onTick: (remaining: number) => void,
+    onComplete: () => void
+  ): TimerState {
+    return {
+      intervalId,
+      startTimestamp: Date.now(),
+      pausedTimestamp: null,
+      totalDuration: duration,
+      remainingAtPause: null,
+      onTick,
+      onComplete,
+      isCompleted: false,
+    };
+  }
+
+  /**
+   * Clear interval and set to null.
+   */
+  private clearInterval(state: TimerState): void {
+    if (state.intervalId) {
+      clearInterval(state.intervalId);
+      state.intervalId = null;
+    }
+  }
+
+  /**
+   * Save remaining time when pausing.
+   */
+  private saveRemainingTime(state: TimerState): void {
+    state.pausedTimestamp = Date.now();
+    state.remainingAtPause = this.calculateRemainingTime(state);
+  }
+
+  /**
+   * Reset timer state to resume from paused time.
+   */
+  private resetTimerFromPause(state: TimerState): void {
+    state.startTimestamp = Date.now();
+    state.totalDuration = state.remainingAtPause!;
+    state.pausedTimestamp = null;
+    state.remainingAtPause = null;
+  }
+
+  /**
+   * Check if timer is paused.
+   */
+  private isPaused(state: TimerState): boolean {
+    return state.pausedTimestamp !== null && state.remainingAtPause !== null;
+  }
+
+  /**
+   * Check if timer has completed.
+   */
+  private isCompleted(remaining: number): boolean {
+    return remaining <= 0;
+  }
+
+  /**
+   * Handle timer completion.
+   */
+  private handleCompletion(state: TimerState): void {
+    state.isCompleted = true;
+    this.clearInterval(state);
+    state.onComplete();
+  }
+
+  /**
+   * Calculate remaining time based on elapsed time since start.
    */
   private calculateRemainingTime(state: TimerState): number {
     const now = Date.now();
-    const elapsed = Math.floor((now - state.startTimestamp) / 1000);
+    const elapsed = Math.floor((now - state.startTimestamp) / MS_PER_SECOND);
     const remaining = state.totalDuration - elapsed;
     return Math.max(0, remaining);
   }
 
   /**
-   * Generate a unique ID for a timer
+   * Generate a unique ID for a timer.
    */
   private generateId(): string {
-    return `timer-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    return `timer-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
   }
 }
