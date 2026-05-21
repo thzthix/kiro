@@ -34,36 +34,54 @@ export function getNextState(
 ): StateTransitionResult {
   switch (trigger) {
     case 'provide-item':
-      // Transition to eating state when item is provided
-      return {
-        nextState: 'eating',
-        eatingStateEndTime: currentTime + EATING_DURATION_MS,
-      };
+      return transitionToEating(currentTime);
 
     case 'pause':
-      // Transition to sleeping and preserve current state
-      return {
-        nextState: 'sleeping',
-        previousStateBeforePause: currentState,
-      };
+      return transitionToSleeping(currentState);
 
     case 'resume':
-      // Restore previous state when resuming
-      return {
-        nextState: previousStateBeforePause || 'walking',
-      };
+      return transitionFromSleeping(previousStateBeforePause);
 
     case 'tick':
       // No automatic transitions on tick (handled by shouldTransition functions)
-      return {
-        nextState: currentState,
-      };
+      return { nextState: currentState };
 
     default:
-      return {
-        nextState: currentState,
-      };
+      return { nextState: currentState };
   }
+}
+
+/**
+ * Transition to eating state when item is provided.
+ */
+function transitionToEating(currentTime: number): StateTransitionResult {
+  return {
+    nextState: 'eating',
+    eatingStateEndTime: currentTime + EATING_DURATION_MS,
+  };
+}
+
+/**
+ * Transition to sleeping state and preserve current state.
+ */
+function transitionToSleeping(
+  currentState: TurtleState
+): StateTransitionResult {
+  return {
+    nextState: 'sleeping',
+    previousStateBeforePause: currentState,
+  };
+}
+
+/**
+ * Restore previous state when resuming from sleeping.
+ */
+function transitionFromSleeping(
+  previousStateBeforePause?: TurtleState
+): StateTransitionResult {
+  return {
+    nextState: previousStateBeforePause || 'walking',
+  };
 }
 
 /**
