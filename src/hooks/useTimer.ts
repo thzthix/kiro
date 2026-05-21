@@ -1,6 +1,20 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { TimerService, TimerHandle } from '../utils/TimerService';
 
+// ============================================================================
+// Constants
+// ============================================================================
+
+/**
+ * Default initial state for remaining time.
+ * This ensures the timer displays the full duration before starting.
+ */
+const INITIAL_REMAINING_TIME_OFFSET = 0;
+
+// ============================================================================
+// Type Definitions
+// ============================================================================
+
 /**
  * Return type for the useTimer hook.
  *
@@ -18,6 +32,43 @@ export interface UseTimerReturn {
   /** Stop the timer and clean up resources */
   stop: () => void;
 }
+
+// ============================================================================
+// Helper Functions
+// ============================================================================
+
+/**
+ * Checks if a timer handle is currently active.
+ *
+ * A timer handle is considered active if it exists (not null).
+ * This helper improves code readability by making the intent explicit.
+ *
+ * @param handle - Timer handle to check
+ * @returns True if the handle exists and is active
+ * @internal
+ */
+function isTimerActive(handle: TimerHandle | null): handle is TimerHandle {
+  return handle !== null;
+}
+
+/**
+ * Calculates the initial remaining time for a timer.
+ *
+ * This helper ensures consistent initialization of the remaining time state.
+ * Currently returns the total duration with no offset, but provides a
+ * centralized place to adjust initialization logic if needed.
+ *
+ * @param totalDuration - Total duration in seconds
+ * @returns Initial remaining time in seconds
+ * @internal
+ */
+function calculateInitialRemainingTime(totalDuration: number): number {
+  return totalDuration + INITIAL_REMAINING_TIME_OFFSET;
+}
+
+// ============================================================================
+// Main Hook
+// ============================================================================
 
 /**
  * Custom hook for managing countdown timers with pause/resume functionality.
@@ -66,30 +117,40 @@ export function useTimer(
   onTick: (remaining: number) => void,
   onComplete: () => void
 ): UseTimerReturn {
+  // ============================================================================
+  // State & Refs
+  // ============================================================================
+
   // State: current remaining time displayed to user
-  const [remainingTime, setRemainingTime] = useState<number>(totalDuration);
+  const [remainingTime, setRemainingTime] = useState<number>(
+    calculateInitialRemainingTime(totalDuration)
+  );
 
   // Refs: persist across renders without causing re-renders
   const timerServiceRef = useRef<TimerService>(new TimerService());
   const timerHandleRef = useRef<TimerHandle | null>(null);
 
+  // ============================================================================
+  // Internal Helpers
+  // ============================================================================
+
   /**
-   * Internal helper: Stop the current timer if one exists.
+   * Stops the current timer if one exists.
    *
    * This function safely stops any running timer and cleans up the handle reference.
-   * It's safe to call even when no timer is running.
+   * Safe to call even when no timer is running (no-op in that case).
    *
    * @internal
    */
   const stopCurrentTimer = useCallback((): void => {
-    if (timerHandleRef.current) {
+    if (isTimerActive(timerHandleRef.current)) {
       timerServiceRef.current.stop(timerHandleRef.current);
       timerHandleRef.current = null;
     }
   }, []);
 
   /**
-   * Internal handler: Process timer tick events.
+   * Processes timer tick events.
    *
    * Updates both the internal state and notifies the user's callback.
    * Memoized to prevent unnecessary re-renders.
@@ -106,7 +167,7 @@ export function useTimer(
   );
 
   /**
-   * Internal handler: Process timer completion events.
+   * Processes timer completion events.
    *
    * Sets remaining time to 0 and notifies the user's callback.
    * Memoized to prevent unnecessary re-renders.
@@ -119,6 +180,27 @@ export function useTimer(
   }, [onComplete]);
 
   /**
+   * Updates the remaining time state from the timer service.
+   *
+   * This helper centralizes the logic for syncing the displayed time
+   * with the actual timer state, used during pause operations.
+   *
+   * @internal
+   */
+  const syncRemainingTime = useCallback((): void => {
+    if (isTimerActive(timerHandleRef.current)) {
+      const remaining = timerServiceRef.current.getRemainingTime(
+        timerHandleRef.current
+      );
+      setRemainingTime(remaining);
+    }
+  }, []);
+
+  // ============================================================================
+  // Effects
+  // ============================================================================
+
+  /**
    * Cleanup effect: Stop timer on unmount.
    *
    * This prevents memory leaks by ensuring the timer is stopped
@@ -128,8 +210,12 @@ export function useTimer(
     return stopCurrentTimer;
   }, [stopCurrentTimer]);
 
+  // ============================================================================
+  // Public API
+  // ============================================================================
+
   /**
-   * Start or restart the timer from the beginning.
+   * Starts or restarts the timer from the beginning.
    *
    * If a timer is already running, it will be stopped and a new timer
    * will start from the full duration. This ensures consistent behavior
@@ -145,35 +231,32 @@ export function useTimer(
   }, [totalDuration, handleTick, handleComplete, stopCurrentTimer]);
 
   /**
-   * Pause the timer and preserve the current remaining time.
+   * Pauses the timer and preserves the current remaining time.
    *
    * The timer can be resumed later from the same point using `resume()`.
    * Safe to call even when no timer is running (no-op in that case).
    */
   const pause = useCallback((): void => {
-    if (timerHandleRef.current) {
+    if (isTimerActive(timerHandleRef.current)) {
       timerServiceRef.current.pause(timerHandleRef.current);
-      const remaining = timerServiceRef.current.getRemainingTime(
-        timerHandleRef.current
-      );
-      setRemainingTime(remaining);
+      syncRemainingTime();
     }
-  }, []);
+  }, [syncRemainingTime]);
 
   /**
-   * Resume the timer from where it was paused.
+   * Resumes the timer from where it was paused.
    *
    * Continues counting down from the remaining time when `pause()` was called.
    * Safe to call even when timer is not paused (no-op in that case).
    */
   const resume = useCallback((): void => {
-    if (timerHandleRef.current) {
+    if (isTimerActive(timerHandleRef.current)) {
       timerServiceRef.current.resume(timerHandleRef.current);
     }
   }, []);
 
   /**
-   * Stop the timer completely and clean up resources.
+   * Stops the timer completely and cleans up resources.
    *
    * After calling this, the timer must be restarted with `start()` to run again.
    * Safe to call even when no timer is running (no-op in that case).
