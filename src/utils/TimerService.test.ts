@@ -2,6 +2,15 @@ import * as fc from 'fast-check';
 import { TimerService } from './TimerService';
 
 describe('TimerService - Property-Based Tests', () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+  });
+
+  afterEach(() => {
+    jest.clearAllTimers();
+    jest.useRealTimers();
+  });
+
   describe('Property 5: Pause-Resume Time Preservation', () => {
     it('should preserve remaining time when pausing and immediately resuming', () => {
       fc.assert(
