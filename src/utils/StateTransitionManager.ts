@@ -1,5 +1,9 @@
 import { TurtleState, CareItem } from '../types';
 
+// State duration constants (in milliseconds)
+const EATING_DURATION_MS = 1000; // 1 second
+const HAPPY_DURATION_MS = 3000; // 3 seconds
+
 export interface StateTransitionResult {
   nextState: TurtleState;
   eatingStateEndTime?: number;
@@ -12,7 +16,14 @@ export interface StateTransitionResult {
 export type TransitionTrigger = 'provide-item' | 'pause' | 'resume' | 'tick';
 
 /**
- * Get next turtle state based on current state and trigger
+ * Get next turtle state based on current state and trigger.
+ * 
+ * @param currentState - Current turtle state
+ * @param trigger - Event that triggers the transition
+ * @param currentTime - Current timestamp in milliseconds
+ * @param item - Care item provided (for 'provide-item' trigger)
+ * @param previousStateBeforePause - State before pause (for 'resume' trigger)
+ * @returns State transition result with next state and timing information
  */
 export function getNextState(
   currentState: TurtleState,
@@ -21,51 +32,99 @@ export function getNextState(
   item?: CareItem,
   previousStateBeforePause?: TurtleState
 ): StateTransitionResult {
-  // Implementation will be added in Task 2.8 (GREEN phase)
-  throw new Error('Not implemented yet');
+  switch (trigger) {
+    case 'provide-item':
+      // Transition to eating state when item is provided
+      return {
+        nextState: 'eating',
+        eatingStateEndTime: currentTime + EATING_DURATION_MS,
+      };
+
+    case 'pause':
+      // Transition to sleeping and preserve current state
+      return {
+        nextState: 'sleeping',
+        previousStateBeforePause: currentState,
+      };
+
+    case 'resume':
+      // Restore previous state when resuming
+      return {
+        nextState: previousStateBeforePause || 'walking',
+      };
+
+    case 'tick':
+      // No automatic transitions on tick (handled by shouldTransition functions)
+      return {
+        nextState: currentState,
+      };
+
+    default:
+      return {
+        nextState: currentState,
+      };
+  }
 }
 
 /**
- * Check if 1 second has elapsed since eating state started
+ * Check if 1 second has elapsed since eating state started.
+ * 
+ * @param eatingStartTime - Timestamp when eating state started (ms)
+ * @param currentTime - Current timestamp (ms)
+ * @returns True if eating duration has elapsed
  */
 export function shouldTransitionFromEating(
   eatingStartTime: number,
   currentTime: number
 ): boolean {
-  // Implementation will be added in Task 2.8 (GREEN phase)
-  throw new Error('Not implemented yet');
+  return currentTime - eatingStartTime >= EATING_DURATION_MS;
 }
 
 /**
- * Check if 3 seconds have elapsed since happy state started
+ * Check if 3 seconds have elapsed since happy state started.
+ * 
+ * @param happyStartTime - Timestamp when happy state started (ms)
+ * @param currentTime - Current timestamp (ms)
+ * @returns True if happy duration has elapsed
  */
 export function shouldTransitionFromHappy(
   happyStartTime: number,
   currentTime: number
 ): boolean {
-  // Implementation will be added in Task 2.8 (GREEN phase)
-  throw new Error('Not implemented yet');
+  return currentTime - happyStartTime >= HAPPY_DURATION_MS;
 }
 
 /**
- * Check if timer completed during eating/happy states
+ * Check if timer completed during eating/happy states.
+ * When timer reaches 0 during these states, turtle should immediately transition to arrived.
+ * 
+ * @param currentState - Current turtle state
+ * @param remainingTime - Remaining session time in seconds
+ * @returns True if should immediately transition to arrived
  */
 export function shouldImmediatelyTransitionToArrived(
   currentState: TurtleState,
   remainingTime: number
 ): boolean {
-  // Implementation will be added in Task 2.8 (GREEN phase)
-  throw new Error('Not implemented yet');
+  return (
+    (currentState === 'eating' || currentState === 'happy') &&
+    remainingTime === 0
+  );
 }
 
 /**
- * Calculate remaining duration for eating/happy states when paused
+ * Calculate remaining duration for eating/happy states when paused.
+ * 
+ * @param state - Current state ('eating' or 'happy')
+ * @param stateEndTime - Timestamp when state should end (ms)
+ * @param currentTime - Current timestamp (ms)
+ * @returns Remaining duration in milliseconds
  */
 export function calculateRemainingStateDuration(
   state: TurtleState,
   stateEndTime: number,
   currentTime: number
 ): number {
-  // Implementation will be added in Task 2.8 (GREEN phase)
-  throw new Error('Not implemented yet');
+  const remaining = stateEndTime - currentTime;
+  return Math.max(0, remaining);
 }
