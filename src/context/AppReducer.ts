@@ -204,11 +204,18 @@ const handlePause = (
       ? calculateRemainingDuration(happyStateEndTime, currentTime)
       : null;
 
+  // Only store walking, eating, or happy states for restoration
+  // sleeping and arrived states should not be paused
+  const stateToRestore: 'walking' | 'eating' | 'happy' | null =
+    turtleState === 'walking' || turtleState === 'eating' || turtleState === 'happy'
+      ? turtleState
+      : null;
+
   return {
     ...session,
     status: 'paused',
     turtleState: 'sleeping',
-    previousStateBeforePause: turtleState,
+    previousStateBeforePause: stateToRestore,
     remainingEatingDuration: remainingEating,
     remainingHappyDuration: remainingHappy,
   };

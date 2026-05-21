@@ -7,6 +7,9 @@ module.exports = {
   transform: {
     '^.+\\.(js|jsx|ts|tsx)$': 'babel-jest',
   },
+  transformIgnorePatterns: [
+    'node_modules/(?!(react-native|@react-native|@testing-library)/)',
+  ],
   moduleNameMapper: {
     '\\.(jpg|jpeg|png|gif|svg)$': '<rootDir>/__mocks__/fileMock.js',
   },
@@ -25,4 +28,5 @@ module.exports = {
     },
   },
   testEnvironment: 'node',
+  setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
 };

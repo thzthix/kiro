@@ -7,12 +7,8 @@
  */
 
 import fc from 'fast-check';
-import { SessionState, AppState } from '../types';
-
-// Placeholder reducer - will be implemented in GREEN phase
-const appReducer = (state: AppState, action: any): AppState => {
-  throw new Error('Not implemented yet - RED phase');
-};
+import { AppState } from '../types';
+import { appReducer } from './AppReducer';
 
 describe('AppReducer Property-Based Tests', () => {
   describe('Property 1: Valid Duration Initializes Session', () => {
@@ -96,14 +92,17 @@ describe('AppReducer Property-Based Tests', () => {
             // Resume the session
             const resumedState = appReducer(pausedState, { type: 'RESUME_SESSION' });
 
+            // Verify remainingTime is preserved exactly
+            expect(resumedState.session?.remainingTime).toBe(remainingTime);
+
             // Calculate progress from remainingTime
             const initialProgress = progressPercent;
             const resumedProgress = Math.round(
               ((totalDuration - (resumedState.session?.remainingTime || 0)) / totalDuration) * 100
             );
 
-            // Verify progress is preserved (within rounding tolerance)
-            expect(Math.abs(resumedProgress - initialProgress)).toBeLessThanOrEqual(1);
+            // Verify progress is preserved (within rounding tolerance of 2 due to Math.floor/Math.round)
+            expect(Math.abs(resumedProgress - initialProgress)).toBeLessThanOrEqual(2);
           }
         ),
         { numRuns: 100 }

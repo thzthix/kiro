@@ -6,12 +6,8 @@
  * for the state reducer managing the application state.
  */
 
-import { AppState, SessionState } from '../types';
-
-// Placeholder reducer - will be implemented in GREEN phase
-const appReducer = (state: AppState, action: any): AppState => {
-  throw new Error('Not implemented yet - RED phase');
-};
+import { AppState } from '../types';
+import { appReducer, AppAction } from './AppReducer';
 
 describe('AppReducer Unit Tests', () => {
   describe('START_SESSION action', () => {
@@ -22,7 +18,7 @@ describe('AppReducer Unit Tests', () => {
         error: null,
       };
 
-      const action = {
+      const action: AppAction = {
         type: 'START_SESSION',
         payload: { duration: 30 }, // 30 minutes
       };
@@ -46,7 +42,7 @@ describe('AppReducer Unit Tests', () => {
         error: null,
       };
 
-      const action = {
+      const action: AppAction = {
         type: 'START_SESSION',
         payload: { duration: 10 },
       };
@@ -81,7 +77,7 @@ describe('AppReducer Unit Tests', () => {
         error: null,
       };
 
-      const action = { type: 'PAUSE_SESSION' };
+      const action: AppAction = { type: 'PAUSE_SESSION' };
 
       const newState = appReducer(initialState, action);
 
@@ -113,7 +109,7 @@ describe('AppReducer Unit Tests', () => {
         error: null,
       };
 
-      const action = { type: 'PAUSE_SESSION', payload: { currentTime: now } };
+      const action: AppAction = { type: 'PAUSE_SESSION', payload: { currentTime: now } };
 
       const newState = appReducer(initialState, action);
 
@@ -146,7 +142,7 @@ describe('AppReducer Unit Tests', () => {
         error: null,
       };
 
-      const action = { type: 'PAUSE_SESSION', payload: { currentTime: now } };
+      const action: AppAction = { type: 'PAUSE_SESSION', payload: { currentTime: now } };
 
       const newState = appReducer(initialState, action);
 
@@ -178,7 +174,7 @@ describe('AppReducer Unit Tests', () => {
         error: null,
       };
 
-      const action = { type: 'RESUME_SESSION' };
+      const action: AppAction = { type: 'RESUME_SESSION' };
 
       const newState = appReducer(initialState, action);
 
@@ -207,7 +203,7 @@ describe('AppReducer Unit Tests', () => {
         error: null,
       };
 
-      const action = { type: 'RESUME_SESSION', payload: { currentTime: Date.now() } };
+      const action: AppAction = { type: 'RESUME_SESSION', payload: { currentTime: Date.now() } };
 
       const newState = appReducer(initialState, action);
 
@@ -236,7 +232,7 @@ describe('AppReducer Unit Tests', () => {
         error: null,
       };
 
-      const action = { type: 'RESUME_SESSION', payload: { currentTime: Date.now() } };
+      const action: AppAction = { type: 'RESUME_SESSION', payload: { currentTime: Date.now() } };
 
       const newState = appReducer(initialState, action);
 
@@ -267,7 +263,7 @@ describe('AppReducer Unit Tests', () => {
         error: null,
       };
 
-      const action = { type: 'STOP_SESSION' };
+      const action: AppAction = { type: 'STOP_SESSION' };
 
       const newState = appReducer(initialState, action);
 
@@ -296,7 +292,7 @@ describe('AppReducer Unit Tests', () => {
         error: null,
       };
 
-      const action = { type: 'TICK' };
+      const action: AppAction = { type: 'TICK' };
 
       const newState = appReducer(initialState, action);
 
@@ -322,7 +318,7 @@ describe('AppReducer Unit Tests', () => {
         error: null,
       };
 
-      const action = { type: 'TICK' };
+      const action: AppAction = { type: 'TICK' };
 
       const newState = appReducer(initialState, action);
 
@@ -351,7 +347,7 @@ describe('AppReducer Unit Tests', () => {
       };
 
       const now = Date.now();
-      const action = {
+      const action: AppAction = {
         type: 'UPDATE_TURTLE_STATE',
         payload: { turtleState: 'eating', timestamp: now },
       };
@@ -382,7 +378,7 @@ describe('AppReducer Unit Tests', () => {
       };
 
       const now = Date.now();
-      const action = {
+      const action: AppAction = {
         type: 'UPDATE_TURTLE_STATE',
         payload: { turtleState: 'happy', timestamp: now },
       };
@@ -413,7 +409,7 @@ describe('AppReducer Unit Tests', () => {
         error: null,
       };
 
-      const action = {
+      const action: AppAction = {
         type: 'UPDATE_TURTLE_STATE',
         payload: { turtleState: 'arrived' },
       };
@@ -445,7 +441,7 @@ describe('AppReducer Unit Tests', () => {
       };
 
       const now = Date.now();
-      const action = {
+      const action: AppAction = {
         type: 'PROVIDE_ITEM',
         payload: { itemType: 'carrot', timestamp: now },
       };
@@ -477,7 +473,7 @@ describe('AppReducer Unit Tests', () => {
       };
 
       const now = Date.now();
-      const action = {
+      const action: AppAction = {
         type: 'PROVIDE_ITEM',
         payload: { itemType: 'water', timestamp: now },
       };
@@ -509,7 +505,7 @@ describe('AppReducer Unit Tests', () => {
       };
 
       const now = Date.now();
-      const action = {
+      const action: AppAction = {
         type: 'PROVIDE_ITEM',
         payload: { itemType: 'carrot', timestamp: now },
       };
@@ -542,7 +538,7 @@ describe('AppReducer Unit Tests', () => {
         error: null,
       };
 
-      const action = { type: 'COMPLETE_SESSION' };
+      const action: AppAction = { type: 'COMPLETE_SESSION' };
 
       const newState = appReducer(initialState, action);
 
