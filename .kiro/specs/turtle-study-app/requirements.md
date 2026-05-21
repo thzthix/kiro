@@ -32,20 +32,28 @@
 4. THE Progress_Bar SHALL display progress from 0% to 100% with a slider head
 5. THE Progress_Bar slider head SHALL display a mini turtle icon that moves rightward as progress increases
 
-### Requirement 2: 공부 시간 설정
+### Requirement 2: 홈 화면 및 공부 시간 설정
 
-**User Story:** As a User, I want to set my study time through a popup, so that the turtle can walk for the duration I plan to study.
+**User Story:** As a User, I want to see a welcoming home screen and easily set my study time, so that I can quickly start my study session.
 
 #### Acceptance Criteria
 
-1. WHEN the User opens the Study_App, THE Study_App SHALL display the Time_Input_Popup
-2. THE Time_Input_Popup SHALL allow the User to input or select a study duration as an integer between 1 minute and 180 minutes
-3. THE Time_Input_Popup SHALL provide a submit button for the User to confirm the time input
-4. WHEN the User taps the submit button with a valid integer duration between 1 and 180 minutes, THE Study_App SHALL start the Study_Session with the specified duration
-5. WHEN the User provides a non-integer value in the time input, THE Study_App SHALL display an error message and keep the Time_Input_Popup open
-6. WHEN the User provides an integer value less than 1 or greater than 180 minutes, THE Study_App SHALL display an error message and keep the Time_Input_Popup open
-7. WHEN the User provides an empty time input and taps the submit button, THE Study_App SHALL display an error message and keep the Time_Input_Popup open
-8. THE Time_Input_Popup SHALL provide a cancel button that closes the popup without starting a Study_Session
+1. WHEN the User opens the Study_App for the first time or returns to the home screen, THE Study_App SHALL display a home screen with the following elements:
+   - App title "🐢 Turtle Study" at the top center
+   - Subtitle "Focus together, one step at a time." below the title
+   - A smiling turtle illustration in the center
+   - Watercolor background matching the app's visual theme
+2. WHEN the home screen loads, THE Study_App SHALL automatically display the Time_Input_Popup overlaying the home screen
+3. THE Time_Input_Popup SHALL display the title "얼마나 집중하시겠어요?" (How long would you like to focus?)
+4. THE Time_Input_Popup SHALL provide an input field for duration with "분" (minutes) label
+5. THE Time_Input_Popup SHALL allow the User to input or select a study duration as an integer between 1 minute and 180 minutes
+6. THE Time_Input_Popup SHALL provide a "시작하기" (Start) button for the User to confirm the time input
+7. WHEN the User taps the "시작하기" button with a valid integer duration between 1 and 180 minutes, THE Study_App SHALL start the Study_Session with the specified duration
+8. WHEN the User provides a non-integer value in the time input, THE Study_App SHALL display an error message and keep the Time_Input_Popup open
+9. WHEN the User provides an integer value less than 1 or greater than 180 minutes, THE Study_App SHALL display an error message and keep the Time_Input_Popup open
+10. WHEN the User provides an empty time input and taps the "시작하기" button, THE Study_App SHALL display an error message and keep the Time_Input_Popup open
+11. THE Time_Input_Popup SHALL provide a cancel or close button that dismisses the popup and returns to the home screen without starting a Study_Session
+12. WHEN the User taps the cancel button, THE Study_App SHALL dismiss the Time_Input_Popup and show the home screen with the turtle illustration and app title
 
 ### Requirement 3: 타이머 표시 및 진행
 

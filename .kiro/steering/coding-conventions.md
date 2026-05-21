@@ -12,16 +12,33 @@ inclusion: auto
 - **Refactoring**: `refactor/{component-name}` (예: `refactor/state-manager`)
 - **Chores**: `chore/{task-description}` (예: `chore/setup-testing`)
 
-### Commit Messages
-Use conventional commit format:
-- `feat:` - 새로운 기능 추가 (예: `feat: 스키마 추가`, `feat: 파일 업로드 기능 추가`)
-- `fix:` - 버그 수정 (예: `fix: 타이머 드리프트 문제 해결`)
-- `refactor:` - 코드 리팩토링 (예: `refactor: StateTransitionManager 로직 개선`)
-- `chore:` - 빌드, 설정 등 (예: `chore: Jest 설정 추가`)
-- `test:` - 테스트 추가/수정 (예: `test: InputValidator 프로퍼티 테스트 추가`)
-- `docs:` - 문서 수정 (예: `docs: README 업데이트`)
+### Commit Messages (한글 사용)
+**모든 커밋 메시지는 한글로 작성합니다.**
 
-## Pull Request Template
+Conventional commit format 사용:
+- `feat:` - 새로운 기능 추가 (예: `feat: 타이머 서비스 구현`, `feat: 거북이 캐릭터 컴포넌트 추가`)
+- `fix:` - 버그 수정 (예: `fix: 타이머 드리프트 문제 해결`, `fix: 일시정지 시 상태 복원 오류 수정`)
+- `refactor:` - 코드 리팩토링 (예: `refactor: StateTransitionManager 로직 개선`)
+- `chore:` - 빌드, 설정 등 (예: `chore: Jest 설정 추가`, `chore: ESLint 규칙 업데이트`)
+- `test:` - 테스트 추가/수정 (예: `test: InputValidator 프로퍼티 테스트 추가`)
+- `docs:` - 문서 수정 (예: `docs: README 업데이트`, `docs: 구현 일지 작성`)
+
+**커밋 메시지 작성 규칙:**
+- 제목은 50자 이내로 간결하게
+- 본문이 필요한 경우 제목과 본문 사이 빈 줄 추가
+- 본문에는 "무엇을", "왜" 변경했는지 설명
+- 이슈 번호가 있다면 본문 마지막에 추가 (예: `Closes #123`)
+
+## Pull Request Template (한글 사용)
+
+**모든 PR 제목과 본문은 한글로 작성합니다.**
+
+### PR 제목 형식
+- `[feat] 타이머 서비스 구현`
+- `[fix] 일시정지 시 상태 복원 오류 수정`
+- `[refactor] StateTransitionManager 로직 개선`
+
+### PR 본문 구조
 
 모든 PR은 다음 구조를 따릅니다:
 
