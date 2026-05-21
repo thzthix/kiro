@@ -3,10 +3,12 @@ const MIN_DURATION_MINUTES = 1;
 const MAX_DURATION_MINUTES = 180;
 const INTEGER_PATTERN = /^-?\d+$/;
 
+export type ValidationErrorType = 'empty' | 'non-integer' | 'out-of-range';
+
 export interface ValidationResult {
   valid: boolean;
   value?: number;
-  errorType?: 'empty' | 'non-integer' | 'out-of-range';
+  errorType?: ValidationErrorType;
 }
 
 /**

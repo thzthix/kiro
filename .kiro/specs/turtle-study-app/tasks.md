@@ -210,7 +210,7 @@ The implementation follows a bottom-up approach: core business logic first, then
     - Run tests - they should FAIL (no implementation yet)
     - _Requirements: 2.2, 2.3, 2.4, 2.5, 9.2, 9.5_
   
-  - [-] 6.5 Create useStudySession hook (GREEN)
+  - [ ] 6.5 Create useStudySession hook (GREEN)
     - Use AppContext to access session state and dispatch
     - Return session state, startSession, pauseSession, resumeSession, stopSession, provideItem functions
     - Integrate useTimer hook for timer management
@@ -222,7 +222,7 @@ The implementation follows a bottom-up approach: core business logic first, then
     - Run tests - they should PASS
     - _Requirements: 1.4, 2.6, 2.7, 4.4, 4.5, 4.8, 4.10, 5.2, 5.7, 5.8, 5.10, 9.2, 9.5_
   
-  - [-] 6.6 Refactor useStudySession hook (REFACTOR)
+  - [ ] 6.6 Refactor useStudySession hook (REFACTOR)
     - Clean up code while keeping tests green
     - Ensure no duplication, clear naming
     - Simplify state transition logic if possible
@@ -230,7 +230,7 @@ The implementation follows a bottom-up approach: core business logic first, then
 
 - [ ] 7. Implement UI components - Input and validation (TDD: Red-Green-Refactor)
   
-  - [-] 7.1 Write unit tests for TimeInputPopup (RED)
+  - [ ] 7.1 Write unit tests for TimeInputPopup (RED)
     - Write failing test for popup displays when visible is true
     - Write failing test for error message for empty input
     - Write failing test for error message for non-integer input
@@ -260,7 +260,7 @@ The implementation follows a bottom-up approach: core business logic first, then
 
 - [ ] 8. Implement UI components - Timer and display (TDD: Red-Green-Refactor)
   
-  - [-] 8.1 Write unit tests for SessionHeader and display components (RED)
+  - [ ] 8.1 Write unit tests for SessionHeader and display components (RED)
     - Write failing test for SessionHeader renders beige round panel container
     - Write failing test for SessionHeader displays centered timer in MM:SS format
     - Write failing test for SessionHeader displays progress bar below timer

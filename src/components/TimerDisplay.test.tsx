@@ -168,17 +168,30 @@ describe('TimerDisplay Component - Unit Tests (RED)', () => {
       expect(timer.props.children).toMatch(/^0\d:0\d$/);
     });
 
-    it('should always display exactly 5 characters (MM:SS)', () => {
-      const testCases = [0, 1, 59, 60, 65, 600, 900, 1800, 3599, 3600, 10800];
+    it('should always display MM:SS format with proper padding', () => {
+      const testCases = [
+        { seconds: 0, expected: '00:00', length: 5 },
+        { seconds: 1, expected: '00:01', length: 5 },
+        { seconds: 59, expected: '00:59', length: 5 },
+        { seconds: 60, expected: '01:00', length: 5 },
+        { seconds: 65, expected: '01:05', length: 5 },
+        { seconds: 600, expected: '10:00', length: 5 },
+        { seconds: 900, expected: '15:00', length: 5 },
+        { seconds: 1800, expected: '30:00', length: 5 },
+        { seconds: 3599, expected: '59:59', length: 5 },
+        { seconds: 3600, expected: '60:00', length: 5 },
+        { seconds: 10800, expected: '180:00', length: 6 }, // 180 minutes = 6 chars
+      ];
       
-      testCases.forEach((seconds) => {
+      testCases.forEach(({ seconds, expected, length }) => {
         const { getByTestId } = render(
           <TimerDisplay remainingSeconds={seconds} />
         );
 
         const timer = getByTestId('timer-display');
-        expect(timer.props.children).toHaveLength(5);
-        expect(timer.props.children).toMatch(/^\d{2}:\d{2}$/);
+        expect(timer.props.children).toBe(expected);
+        expect(timer.props.children).toHaveLength(length);
+        expect(timer.props.children).toMatch(/^\d+:\d{2}$/);
       });
     });
   });
