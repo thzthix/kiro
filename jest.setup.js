@@ -1,15 +1,21 @@
 // Jest setup file for React Native testing
-import '@testing-library/react-native/extend-expect';
 
-// Mock React Native modules
-jest.mock('react-native/Libraries/Animated/NativeAnimatedHelper');
-
-// Mock AsyncStorage if needed in future
-jest.mock('@react-native-async-storage/async-storage', () => ({
-  setItem: jest.fn(),
-  getItem: jest.fn(),
-  removeItem: jest.fn(),
-  clear: jest.fn(),
+// Mock React Native core
+jest.mock('react-native', () => ({
+  Platform: {
+    OS: 'ios',
+    select: jest.fn((obj) => obj.ios),
+  },
+  StyleSheet: {
+    create: jest.fn((styles) => styles),
+  },
+  Animated: {
+    Value: jest.fn(),
+    timing: jest.fn(),
+    spring: jest.fn(),
+    View: 'Animated.View',
+    Text: 'Animated.Text',
+  },
 }));
 
 // Global test timeout
