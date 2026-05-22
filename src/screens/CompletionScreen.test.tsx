@@ -154,9 +154,11 @@ describe('CompletionScreen', () => {
 
   describe('Visual Theme Consistency', () => {
     it('should use watercolor background matching app theme', () => {
-      const { getByTestId } = render(<CompletionScreen totalDuration={1800} />);
-      const background = getByTestId('completion-background');
-      expect(background).toBeTruthy();
+      const { UNSAFE_queryAllByType } = render(<CompletionScreen totalDuration={1800} />);
+      // BackgroundImage should be rendered via ScreenLayout
+      const BackgroundImage = require('../components/BackgroundImage').default;
+      const backgrounds = UNSAFE_queryAllByType(BackgroundImage);
+      expect(backgrounds.length).toBeGreaterThan(0);
     });
 
     it('should use colors from defined palette (beige, light yellow, mint, olive green)', () => {
@@ -171,9 +173,11 @@ describe('CompletionScreen', () => {
     });
 
     it('should display background with landscape elements (hills, lakes, trees, flowers)', () => {
-      const { getByTestId } = render(<CompletionScreen totalDuration={1800} />);
-      const background = getByTestId('completion-background');
-      expect(background).toBeTruthy();
+      const { UNSAFE_queryAllByType } = render(<CompletionScreen totalDuration={1800} />);
+      // BackgroundImage should be rendered via ScreenLayout
+      const BackgroundImage = require('../components/BackgroundImage').default;
+      const backgrounds = UNSAFE_queryAllByType(BackgroundImage);
+      expect(backgrounds.length).toBeGreaterThan(0);
     });
   });
 
