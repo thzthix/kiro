@@ -2,17 +2,10 @@
  * App Root Component
  * Feature: turtle-study-app
  * Task: 17.2 Wire App root with navigation and context (GREEN)
+ * Refactored: Task 17.6 Refactor integration code (REFACTOR)
  * 
- * Root component that:
- * - Wraps application with AppProvider context
- * - Implements screen navigation logic (home → session → completion)
- * - Connects all screens with context
- * - Ensures integration tests pass
- * 
- * Navigation flow:
- * - home: HomeScreen with TimeInputPopup
- * - session: StudySessionScreen with timer and turtle
- * - complete: CompletionScreen with session summary
+ * Root component that wraps application with AppProvider context
+ * and implements screen navigation logic (home → session → completion).
  */
 
 import React, { useCallback } from 'react';
@@ -34,8 +27,6 @@ const AppContent: React.FC = () => {
 
   /**
    * Handle session start from HomeScreen
-   * Transitions to session screen and starts timer
-   * Note: startSession already dispatches START_SESSION which sets screen to 'session'
    */
   const handleStartSession = useCallback((durationMinutes: number) => {
     const durationSeconds = durationMinutes * 60;
@@ -43,38 +34,17 @@ const AppContent: React.FC = () => {
   }, [startSession]);
 
   /**
-   * Handle start new session from CompletionScreen
-   * Returns to home screen to show TimeInputPopup
+   * Handle navigation to home screen
    */
-  const handleStartNew = useCallback(() => {
+  const handleNavigateToHome = useCallback(() => {
     dispatch({ type: 'NAVIGATE_TO_HOME' });
   }, [dispatch]);
-
-  /**
-   * Handle close from CompletionScreen
-   * Returns to home screen
-   */
-  const handleClose = useCallback(() => {
-    dispatch({ type: 'NAVIGATE_TO_HOME' });
-  }, [dispatch]);
-
-  /**
-   * Handle stop session from StudySessionScreen
-   * Returns to home screen
-   * Note: stopSession already dispatches STOP_SESSION which sets screen to 'home'
-   */
-  const handleStopSession = useCallback(() => {
-    stopSession();
-  }, [stopSession]);
 
   /**
    * Render appropriate screen based on app state
    */
   const renderScreen = () => {
     switch (state.screen) {
-      case 'home':
-        return <HomeScreen onStartSession={handleStartSession} />;
-      
       case 'session':
         return <StudySessionScreen />;
       
@@ -82,11 +52,12 @@ const AppContent: React.FC = () => {
         return (
           <CompletionScreen
             totalDuration={state.session?.totalDuration || 0}
-            onStartNew={handleStartNew}
-            onClose={handleClose}
+            onStartNew={handleNavigateToHome}
+            onClose={handleNavigateToHome}
           />
         );
       
+      case 'home':
       default:
         return <HomeScreen onStartSession={handleStartSession} />;
     }
@@ -101,7 +72,6 @@ const AppContent: React.FC = () => {
 
 /**
  * App - Root component with provider
- * Wraps AppContent with AppProvider for context access
  */
 const App: React.FC = () => {
   return (

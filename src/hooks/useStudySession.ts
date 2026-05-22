@@ -4,6 +4,12 @@ import { CareItemType } from '../types';
 import { TimerService, TimerHandle } from '../utils/TimerService';
 
 /**
+ * Duration constants for turtle state transitions
+ */
+const EATING_DURATION_MS = 1000;
+const HAPPY_DURATION_MS = 3000;
+
+/**
  * Custom hook for managing study session state and timer integration
  * 
  * This hook integrates the timer logic with the app state management,
@@ -24,42 +30,79 @@ export function useStudySession() {
   const timerHandleRef = useRef<TimerHandle | null>(null);
 
   /**
+   * Clear a specific timeout ref
+   */
+  const clearTimeoutRef = useCallback((timeoutRef: React.MutableRefObject<NodeJS.Timeout | null>) => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+  }, []);
+
+  /**
    * Clear all pending state transition timeouts
    */
   const clearStateTimeouts = useCallback(() => {
-    if (eatingTimeoutRef.current) {
-      clearTimeout(eatingTimeoutRef.current);
-      eatingTimeoutRef.current = null;
-    }
-    if (happyTimeoutRef.current) {
-      clearTimeout(happyTimeoutRef.current);
-      happyTimeoutRef.current = null;
-    }
-  }, []);
+    clearTimeoutRef(eatingTimeoutRef);
+    clearTimeoutRef(happyTimeoutRef);
+  }, [clearTimeoutRef]);
+
+  /**
+   * Schedule transition to happy state after eating completes
+   */
+  const scheduleHappyTransition = useCallback((timestamp: number) => {
+    happyTimeoutRef.current = setTimeout(() => {
+      dispatch({
+        type: 'UPDATE_TURTLE_STATE',
+        payload: { turtleState: 'walking' },
+      });
+    }, HAPPY_DURATION_MS);
+
+    dispatch({
+      type: 'UPDATE_TURTLE_STATE',
+      payload: {
+        turtleState: 'happy',
+        timestamp,
+      },
+    });
+  }, [dispatch]);
 
   /**
    * Schedule transition from eating to happy state
    */
   const scheduleEatingToHappyTransition = useCallback((eatingDuration: number) => {
     eatingTimeoutRef.current = setTimeout(() => {
-      const transitionTime = Date.now();
+      scheduleHappyTransition(Date.now());
+    }, eatingDuration);
+  }, [scheduleHappyTransition]);
+
+  /**
+   * Restore turtle state after resume based on previous state
+   */
+  const restoreTurtleStateAfterResume = useCallback((currentTime: number) => {
+    if (!session) return;
+
+    const { previousStateBeforePause, remainingEatingDuration, remainingHappyDuration } = session;
+
+    if (previousStateBeforePause === 'eating' && remainingEatingDuration) {
       dispatch({
         type: 'UPDATE_TURTLE_STATE',
-        payload: {
-          turtleState: 'happy',
-          timestamp: transitionTime,
-        },
+        payload: { turtleState: 'eating', timestamp: currentTime },
       });
-
-      // Schedule transition back to walking after happy duration
+      scheduleEatingToHappyTransition(remainingEatingDuration);
+    } else if (previousStateBeforePause === 'happy' && remainingHappyDuration) {
+      dispatch({
+        type: 'UPDATE_TURTLE_STATE',
+        payload: { turtleState: 'happy', timestamp: currentTime },
+      });
       happyTimeoutRef.current = setTimeout(() => {
         dispatch({
           type: 'UPDATE_TURTLE_STATE',
           payload: { turtleState: 'walking' },
         });
-      }, 3000);
-    }, eatingDuration);
-  }, [dispatch]);
+      }, remainingHappyDuration);
+    }
+  }, [session, dispatch, scheduleEatingToHappyTransition]);
 
   /**
    * Handle timer tick - update remaining time
@@ -139,32 +182,12 @@ export function useStudySession() {
     const currentTime = Date.now();
     dispatch({ type: 'RESUME_SESSION', payload: { currentTime } });
 
-    // Restore eating state with remaining duration if needed
-    const { previousStateBeforePause, remainingEatingDuration, remainingHappyDuration } = session;
-
-    if (previousStateBeforePause === 'eating' && remainingEatingDuration) {
-      dispatch({
-        type: 'UPDATE_TURTLE_STATE',
-        payload: { turtleState: 'eating', timestamp: currentTime },
-      });
-      scheduleEatingToHappyTransition(remainingEatingDuration);
-    } else if (previousStateBeforePause === 'happy' && remainingHappyDuration) {
-      dispatch({
-        type: 'UPDATE_TURTLE_STATE',
-        payload: { turtleState: 'happy', timestamp: currentTime },
-      });
-      happyTimeoutRef.current = setTimeout(() => {
-        dispatch({
-          type: 'UPDATE_TURTLE_STATE',
-          payload: { turtleState: 'walking' },
-        });
-      }, remainingHappyDuration);
-    }
+    restoreTurtleStateAfterResume(currentTime);
 
     if (timerHandleRef.current) {
       timerServiceRef.current.resume(timerHandleRef.current);
     }
-  }, [session, dispatch, scheduleEatingToHappyTransition]);
+  }, [session, dispatch, restoreTurtleStateAfterResume]);
 
   /**
    * Stop the current session
@@ -188,11 +211,7 @@ export function useStudySession() {
     }
 
     const currentCount = itemType === 'carrot' ? session.carrotCount : session.waterCount;
-    if (currentCount <= 0) {
-      return;
-    }
-
-    if (session.turtleState === 'eating' || session.turtleState === 'happy') {
+    if (currentCount <= 0 || session.turtleState === 'eating' || session.turtleState === 'happy') {
       return;
     }
 
@@ -204,7 +223,7 @@ export function useStudySession() {
       payload: { itemType, timestamp: currentTime },
     });
 
-    scheduleEatingToHappyTransition(1000);
+    scheduleEatingToHappyTransition(EATING_DURATION_MS);
   }, [session, dispatch, clearStateTimeouts, scheduleEatingToHappyTransition]);
 
   // Cleanup timeouts and timer on unmount

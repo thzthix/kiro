@@ -229,13 +229,11 @@ const CareItemButton: React.FC<CareItemButtonProps> = ({
           style={[styles.button, isDisabled && styles.buttonDisabled]}
           onPress={handlePress}
           onPressIn={handlePressIn}
-          disabled={false}
+          disabled={isDisabled}
           accessible={true}
           accessibilityLabel={`${itemType} button, ${count} remaining`}
           accessibilityState={{ disabled: isDisabled }}
-          // @ts-ignore - Adding disabled prop for testing
           testID={`${itemType}-button`}
-          {...{ disabled: isDisabled }}
         >
           <Text style={styles.buttonText}>
             {icon} ×{count}
