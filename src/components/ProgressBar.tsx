@@ -1,5 +1,5 @@
 /**
- * ProgressBar Component (GREEN Phase)
+ * ProgressBar Component (REFACTOR Phase)
  * Feature: turtle-study-app
  * 
  * Displays a horizontal progress bar with:
@@ -12,19 +12,15 @@
 
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { COLORS, LAYOUT, TYPOGRAPHY } from '../constants/theme';
+import { clampProgress } from '../utils/progressUtils';
 
 interface ProgressBarProps {
   progress: number; // 0-100
 }
 
 const ProgressBar: React.FC<ProgressBarProps> = ({ progress }) => {
-  // Clamp progress to 0-100 range and handle invalid values
-  const clampedProgress = (() => {
-    if (typeof progress !== 'number' || isNaN(progress)) {
-      return 0;
-    }
-    return Math.max(0, Math.min(100, progress));
-  })();
+  const clampedProgress = clampProgress(progress);
 
   return (
     <View
@@ -71,32 +67,32 @@ const ProgressBar: React.FC<ProgressBarProps> = ({ progress }) => {
 
 const styles = StyleSheet.create({
   container: {
-    height: 8,
-    backgroundColor: '#F5F1E8', // Light beige for unfilled portion
-    borderRadius: 4,
+    height: LAYOUT.progressBarHeight,
+    backgroundColor: COLORS.beige,
+    borderRadius: LAYOUT.borderRadiusSmall,
     position: 'relative',
-    overflow: 'visible', // Allow turtle icon to overflow
+    overflow: 'visible',
     width: '100%',
   },
   filledPortion: {
     height: '100%',
-    backgroundColor: '#A8D5BA', // Mint color for filled portion
-    borderRadius: 4,
+    backgroundColor: COLORS.mint,
+    borderRadius: LAYOUT.borderRadiusSmall,
     position: 'absolute',
     left: 0,
     top: 0,
   },
   turtleSlider: {
     position: 'absolute',
-    width: 24,
-    height: 24,
-    top: -8, // Center vertically on the bar
-    marginLeft: -12, // Center horizontally on the position
+    width: LAYOUT.turtleSliderSize,
+    height: LAYOUT.turtleSliderSize,
+    top: -LAYOUT.spacing.small,
+    marginLeft: -LAYOUT.turtleSliderSize / 2,
     justifyContent: 'center',
     alignItems: 'center',
   },
   turtleIcon: {
-    fontSize: 20,
+    fontSize: TYPOGRAPHY.turtleIconSize,
   },
 });
 

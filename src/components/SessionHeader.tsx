@@ -1,5 +1,5 @@
 /**
- * SessionHeader Component
+ * SessionHeader Component (REFACTOR Phase)
  * Feature: turtle-study-app
  * 
  * Displays timer and progress information in a beige round panel at the top.
@@ -14,6 +14,8 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { formatTime } from '../utils/ProgressCalculator';
+import { COLORS, LAYOUT, TYPOGRAPHY } from '../constants/theme';
+import { clampProgress } from '../utils/progressUtils';
 
 interface SessionHeaderProps {
   remainingSeconds: number;
@@ -24,13 +26,8 @@ const SessionHeader: React.FC<SessionHeaderProps> = ({
   remainingSeconds,
   progress,
 }) => {
-  // Clamp progress to [0, 100] range
-  const clampedProgress = Math.max(0, Math.min(100, progress));
-  
-  // Handle negative remainingSeconds gracefully
+  const clampedProgress = clampProgress(progress);
   const safeRemainingSeconds = Math.max(0, remainingSeconds);
-  
-  // Format time using ProgressCalculator utility
   const formattedTime = formatTime(safeRemainingSeconds);
 
   return (
@@ -84,10 +81,10 @@ const SessionHeader: React.FC<SessionHeaderProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#F5F1E8', // Beige color from design assets
-    borderRadius: 20,
-    marginHorizontal: 20,
-    marginTop: 20,
+    backgroundColor: COLORS.beige,
+    borderRadius: LAYOUT.borderRadiusLarge,
+    marginHorizontal: LAYOUT.spacing.large,
+    marginTop: LAYOUT.spacing.large,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -95,45 +92,45 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   innerContainer: {
-    padding: 20,
+    padding: LAYOUT.spacing.large,
     alignItems: 'center',
   },
   timer: {
-    fontSize: 48,
-    fontWeight: '700',
-    color: '#4A4A4A',
+    fontSize: TYPOGRAPHY.timerFontSize,
+    fontWeight: TYPOGRAPHY.timerFontWeight,
+    color: COLORS.darkGray,
     textAlign: 'center',
-    marginBottom: 16,
+    marginBottom: LAYOUT.spacing.medium,
   },
   progressBarContainer: {
     width: '100%',
-    height: 24,
+    height: LAYOUT.turtleSliderSize,
     position: 'relative',
     justifyContent: 'center',
   },
   progressBarBackground: {
     width: '100%',
-    height: 8,
-    backgroundColor: '#E5E5E5',
-    borderRadius: 4,
+    height: LAYOUT.progressBarHeight,
+    backgroundColor: COLORS.lightGray,
+    borderRadius: LAYOUT.borderRadiusSmall,
     overflow: 'hidden',
   },
   progressBarFill: {
     height: '100%',
-    backgroundColor: '#A8D5BA', // Mint color from design assets
-    borderRadius: 4,
+    backgroundColor: COLORS.mint,
+    borderRadius: LAYOUT.borderRadiusSmall,
   },
   turtleSlider: {
     position: 'absolute',
     top: 0,
-    marginLeft: -12, // Center the turtle icon on the progress position
-    width: 24,
-    height: 24,
+    marginLeft: -LAYOUT.turtleSliderSize / 2,
+    width: LAYOUT.turtleSliderSize,
+    height: LAYOUT.turtleSliderSize,
     justifyContent: 'center',
     alignItems: 'center',
   },
   turtleIcon: {
-    fontSize: 20,
+    fontSize: TYPOGRAPHY.turtleIconSize,
   },
 });
 
