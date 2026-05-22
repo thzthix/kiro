@@ -24,6 +24,7 @@ const SessionHeader: React.FC<SessionHeaderProps> = ({
 }) => {
   const safeRemainingSeconds = Math.max(0, remainingSeconds);
   const formattedTime = formatTime(safeRemainingSeconds);
+  const [minutes, seconds] = formattedTime.split(':');
 
   return (
     <View
@@ -42,7 +43,18 @@ const SessionHeader: React.FC<SessionHeaderProps> = ({
         />
 
         <View style={styles.textTimerWrap} pointerEvents="none">
-          <Text style={styles.timerText}>{formattedTime}</Text>
+          <Text
+            style={[styles.timerText, styles.minutesText]}
+            testID="timer-minutes"
+          >
+            {minutes}
+          </Text>
+          <Text
+            style={[styles.timerText, styles.secondsText]}
+            testID="timer-seconds"
+          >
+            {seconds}
+          </Text>
         </View>
 
         <Text
@@ -66,11 +78,11 @@ const styles = StyleSheet.create({
   },
   innerContainer: {
     width: '100%',
-    maxWidth: 320,
+    maxWidth: 372,
     aspectRatio: 1756 / 895,
     justifyContent: 'center',
     alignItems: 'center',
-    minWidth: 280,
+    minWidth: 320,
   },
   panelBase: {
     width: '100%',
@@ -79,21 +91,30 @@ const styles = StyleSheet.create({
   },
   textTimerWrap: {
     position: 'absolute',
-    top: '33.5%',
-    width: '100%',
+    top: '36.2%',
+    width: '56%',
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
   },
   timerText: {
-    fontSize: 76,
-    fontWeight: '700',
-    letterSpacing: 1,
-    lineHeight: 84,
+    fontFamily:
+      'Avenir Next Rounded, Avenir Next, Nunito, Arial Rounded MT Bold, Trebuchet MS, sans-serif',
+    fontSize: 82,
+    fontWeight: '600',
+    letterSpacing: 0.2,
+    lineHeight: 90,
     color: '#7B6344',
     textAlign: 'center',
     textShadowColor: 'rgba(255, 255, 255, 0.7)',
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 2,
+  },
+  minutesText: {
+    marginRight: '15.5%',
+  },
+  secondsText: {
+    marginLeft: '15.5%',
   },
   hiddenTimer: {
     position: 'absolute',
