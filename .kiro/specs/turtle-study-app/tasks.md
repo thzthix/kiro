@@ -611,7 +611,7 @@ The implementation follows a bottom-up approach: core business logic first, then
     - Extract error handling utilities if needed
     - Run tests - they should still PASS
 
-- [ ] 16. Checkpoint - Ensure all tests pass
+- [x] 16. Checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 17. Integration and wiring (TDD: Red-Green-Refactor)
@@ -669,13 +669,13 @@ The implementation follows a bottom-up approach: core business logic first, then
     - Run tests - they should PASS
     - _Requirements: 4.8, 4.9, 4.10, 5.10, 9.2, 9.3, 9.5, 9.10_
   
-  - [ ] 17.6 Refactor integration code (REFACTOR)
+  - [x] 17.6 Refactor integration code (REFACTOR)
     - Clean up code while keeping tests green
     - Ensure no duplication, clear naming
     - Extract integration utilities if needed
     - Run tests - they should still PASS
 
-- [ ] 18. Final checkpoint - Ensure all tests pass
+- [-] 18. Final checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
 ## Notes
