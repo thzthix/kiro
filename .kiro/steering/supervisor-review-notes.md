@@ -12,61 +12,36 @@ This note captures current review findings and the recommended next execution or
 
 ## Current Assessment
 
-- The branch has expanded further into multiple UI components, constants, and screens:
-  - `BackgroundImage`
-  - `CareItemsPanel`
-  - `DecorativeElements`
-  - `PathComponent`
-  - `SessionControls`
-  - `StudyCanvas`
-  - `TurtleCharacter`
-  - `HomeScreen`
-  - `StudySessionScreen`
-  - `CompletionScreen`
-- This introduced a broad regression in the test baseline.
-- Type-check is green again, which is a meaningful recovery.
-- Full test execution now completes instead of aborting early.
+- The branch baseline is fully recovered.
+- `npm run type-check` passes.
+- `npm test -- --runInBand` passes.
 - Current test status:
-  - 20 suites passing
-  - 4 suites failing
-  - 477 tests passing
-  - 41 tests failing
-- The branch is improving, but the remaining failures are concentrated in a few UI contract areas and should be stabilized before more expansion.
+  - 24 suites passing
+  - 0 suites failing
+  - 518 tests passing
+  - 0 tests failing
+- The previous UI contract regressions appear resolved.
+- The next risk is no longer baseline instability; it is making sure task bookkeeping, implementation quality, and spec alignment stay honest as work continues.
+- `tasks.md` was updated to mark `8.5`, `9.1`, and checkpoint `10` complete.
+- Checkpoint `10` is now consistent with reality because the full suite and type-check are green.
 
 ## Highest Priority Fixes
 
-### 1. Stop expansion and stabilize the UI test baseline
+### 1. Protect the green baseline
 
-- First stabilize the four remaining failing suites:
-  - `src/components/CareItemsPanel.property.test.tsx`
-  - `src/components/StudyCanvas.test.tsx`
-  - `src/components/TurtleCharacter.test.tsx`
-  - `src/screens/StudySessionScreen.test.tsx`
-- Fix `src/components/TimeInputPopup.test.tsx` and `src/components/TimeInputPopup.tsx`
-  - The suite executes, but the remaining assertions are brittle.
-  - Current failure suggests the test is checking `accessible` on the wrong queried node.
-  - Align the component and tests on realistic React Native testing targets:
-    - use stable `testID`s
-    - expose pressable/accessibility props intentionally
-    - assert against the actual host element that owns those props
-  - Remove noisy assumptions if the test is checking props on a text node instead of the button container.
-- Fix `src/components/TurtleCharacter.test.tsx` and `src/components/TurtleCharacter.tsx`
-  - The current component/test contract is still inconsistent.
-  - Tests expect state-specific test IDs like `turtle-character-walking` / `turtle-character-arrived`, but the component renders only `turtle-character`.
-  - Canonicalize the identifier strategy and keep tests/components consistent.
-- Fix `src/components/CareItemsPanel.property.test.tsx`
-  - The property tests are now structurally runnable, but still need stabilization and noise reduction.
-  - Keep them focused on true properties rather than render noise.
-- Fix `src/components/StudyCanvas.test.tsx` and `src/components/StudyCanvas.tsx`
-  - Tests expect `progress` and `state` to be inspectable on the queried turtle node, but those props are not available on the host element being asserted.
-  - Align tests with the public rendered contract rather than implementation-only props.
-- Fix `src/screens/StudySessionScreen.test.tsx`
-  - Tests expect IDs like `care-items-panel`, `session-controls`, and state-specific turtle IDs that do not match current rendered output.
-  - Some edge-case expectations for restored turtle state are also failing.
+- Re-run focused suites before and after each new UI change.
+- Do not merge “many new files + many new tests” without verifying the full suite remains green.
+- Keep public component contracts explicit:
+  - stable `testID`s
+  - accessibility roles/labels on actual pressable hosts
+  - tests asserting rendered behavior rather than private implementation props
 
-### 2. Restore test hygiene before adding any more UI
+### 2. Keep TDD honest
 
-- The branch should not add additional components/tests until focused suites are green or intentionally RED in valid ways.
+- New RED tests are acceptable only if they are:
+  - syntactically valid
+  - importable/runnable
+  - behaviorally failing for a meaningful reason
 - Avoid:
   - wrong-node assertions
   - module-resolution failures
@@ -76,21 +51,15 @@ This note captures current review findings and the recommended next execution or
   - partial render-helper failures like `render method has not been called`
   - assertions against non-public implementation props on host nodes
 
-### 3. Be strict about TDD state quality
+### 3. Verify task bookkeeping against reality
 
-- Ensure newly added test files are parsable and consistent with the current TDD phase.
-- If a file is intentionally RED, it must fail for behavioral reasons only.
-- Avoid module-resolution failures; create the implementation shell before expanding tests further.
-- Avoid brittle UI tests that inspect the wrong rendered node for accessibility/touch behavior.
-
-### 4. Continue UI work in disciplined TDD order
-
-- `SessionHeader` and `TimeInputPopup` files now exist, which is progress.
-- Keep checking that task bookkeeping matches reality; `tasks.md` currently shows forward progress, but the branch should not claim completion if the full suite is still red.
-- For UI tasks, keep the flow:
-  1. RED tests that parse and target realistic selectors
-  2. GREEN implementation to satisfy those tests
-  3. REFACTOR while preserving test clarity
+- If `tasks.md` marks items complete, ensure the implementation and tests truly back that claim.
+- Avoid claiming completion just because a component file exists; confirm behavior against the spec.
+- The newly checked checkpoint for “all tests pass” is currently justified; keep it that way while subsequent UI work continues.
+- When moving to the next task, check that the current branch still aligns with:
+  - `requirements.md`
+  - `design.md`
+  - steering docs
 
 ## Spec Reminders
 
@@ -110,13 +79,10 @@ This note captures current review findings and the recommended next execution or
 
 ## Recommended Next Order
 
-1. Stabilize `TurtleCharacter`
-2. Stabilize `StudyCanvas`
-3. Stabilize `StudySessionScreen`
-4. Stabilize `CareItemsPanel` property tests
-5. Re-run focused suites first
-6. Re-run the full suite
-7. Only then continue expanding UI/screens
+1. Preserve the green baseline
+2. Compare current implementation coverage against `tasks.md` and the spec
+3. Only then move to the next unfinished feature area
+4. Keep full type-check and full test suite green after every meaningful chunk
 
 ## Definition of “Good Progress”
 

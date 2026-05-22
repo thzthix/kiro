@@ -19,6 +19,17 @@ export const COLORS = {
   darkGray: '#4A4A4A',
   lightGray: '#E5E5E5',
   textPrimary: '#2C3E50',
+  white: '#FFFFFF',
+  black: '#000000',
+  error: '#FF6B6B',
+  overlay: 'rgba(0, 0, 0, 0.5)',
+  text: {
+    primary: '#333333',
+    secondary: '#666666',
+  },
+  button: {
+    cancel: '#E8E8E8',
+  },
 } as const;
 
 /**
@@ -42,6 +53,25 @@ export const LAYOUT = {
     small: 8,
     medium: 16,
     large: 20,
+    extraLarge: 40,
+  },
+  button: {
+    borderRadius: 12,
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    minHeight: 44,
+    minWidth: 44,
+  },
+  dialog: {
+    borderRadius: 16,
+    padding: 24,
+    maxWidth: 320,
+  },
+  image: {
+    turtleIllustration: 200,
+    turtleArrived: 120,
+    goalFlag: 60,
+    goalFlagHeight: 80,
   },
 } as const;
 
