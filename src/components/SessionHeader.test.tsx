@@ -22,7 +22,7 @@ describe('SessionHeader Component - Unit Tests (RED)', () => {
         <SessionHeader remainingSeconds={1800} progress={0} />
       );
 
-      const container = getByTestId('session-header-container');
+      const container = getByTestId('session-header');
       expect(container).toBeTruthy();
       
       // Check for beige background styling
@@ -37,7 +37,7 @@ describe('SessionHeader Component - Unit Tests (RED)', () => {
         <SessionHeader remainingSeconds={1800} progress={0} />
       );
 
-      const container = getByTestId('session-header-container');
+      const container = getByTestId('session-header');
       
       // Check for rounded corners
       expect(container.props.style).toMatchObject(
@@ -52,7 +52,7 @@ describe('SessionHeader Component - Unit Tests (RED)', () => {
         <SessionHeader remainingSeconds={1800} progress={0} />
       );
 
-      const container = getByTestId('session-header-container');
+      const container = getByTestId('session-header');
       
       // Check for top positioning
       expect(container.props.style).toBeDefined();
@@ -152,7 +152,7 @@ describe('SessionHeader Component - Unit Tests (RED)', () => {
         <SessionHeader remainingSeconds={1800} progress={50} />
       );
 
-      const turtleSlider = getByTestId('progress-bar-turtle-slider');
+      const turtleSlider = getByTestId('progress-bar-mini-turtle');
       expect(turtleSlider).toBeTruthy();
     });
 

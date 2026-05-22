@@ -9,12 +9,26 @@ jest.mock('react-native', () => {
     },
     StyleSheet: {
       create: jest.fn((styles) => styles),
-      flatten: jest.fn((styles) => styles),
+      flatten: jest.fn((styles) => {
+        if (Array.isArray(styles)) {
+          return Object.assign({}, ...styles.filter(Boolean));
+        }
+        return styles;
+      }),
     },
-    View: 'View',
+    Dimensions: {
+      get: jest.fn(() => ({ width: 375, height: 667 })),
+    },
+    View: jest.fn((props) => {
+      const React = require('react');
+      const { children, ...restProps } = props || {};
+      return React.createElement('View', restProps, children);
+    }),
     Text: 'Text',
     Image: 'Image',
+    ImageBackground: 'ImageBackground',
     TouchableOpacity: 'TouchableOpacity',
+    Pressable: 'Pressable',
     TextInput: 'TextInput',
     Modal: 'Modal',
     Animated: {
@@ -28,7 +42,14 @@ jest.mock('react-native', () => {
       spring: jest.fn(() => ({
         start: jest.fn(),
       })),
-      View: 'Animated.View',
+      parallel: jest.fn((animations) => ({
+        start: jest.fn(),
+      })),
+      View: jest.fn((props) => {
+        const React = require('react');
+        const { children, ...restProps } = props || {};
+        return React.createElement('Animated.View', restProps, children);
+      }),
       Text: 'Animated.Text',
     },
   };

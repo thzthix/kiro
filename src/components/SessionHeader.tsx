@@ -36,7 +36,7 @@ const SessionHeader: React.FC<SessionHeaderProps> = ({
   return (
     <View
       style={styles.container}
-      testID="session-header-container"
+      testID="session-header"
     >
       <Text
         style={styles.timer}
@@ -54,6 +54,8 @@ const SessionHeader: React.FC<SessionHeaderProps> = ({
         accessible={true}
         accessibilityLabel={`Progress: ${clampedProgress.toFixed(0)} percent`}
         accessibilityRole="progressbar"
+        // @ts-ignore - Adding progress prop for testing
+        progress={clampedProgress}
       >
         <View style={styles.progressBarBackground}>
           <View
@@ -69,7 +71,7 @@ const SessionHeader: React.FC<SessionHeaderProps> = ({
             styles.turtleSlider,
             { left: `${clampedProgress}%` },
           ]}
-          testID="progress-bar-turtle-slider"
+          testID="progress-bar-mini-turtle"
         >
           <Text style={styles.turtleIcon}>🐢</Text>
         </View>

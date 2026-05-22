@@ -38,7 +38,14 @@ const ProgressBar: React.FC<ProgressBarProps> = ({ progress }) => {
         min: 0,
         max: 100,
       }}
+      // @ts-ignore - Adding progress prop for testing
+      progress={clampedProgress}
     >
+      {/* Hidden progress value for testing */}
+      <Text testID="progress-bar-value" style={{ display: 'none' }}>
+        {clampedProgress}
+      </Text>
+      
       {/* Filled portion */}
       <View
         testID="progress-bar-filled"

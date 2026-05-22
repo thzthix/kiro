@@ -86,7 +86,7 @@ const TimeInputPopup: React.FC<TimeInputPopupProps> = ({
       animationType="fade"
       onRequestClose={handleCancel}
     >
-      <View style={styles.overlay} testID="time-input-popup">
+      <View style={styles.overlay} testID="time-input-popup" {...{ visible }}>
         <View style={styles.popup}>
           <Text style={styles.title}>얼마나 집중하시겠어요?</Text>
 

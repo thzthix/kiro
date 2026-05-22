@@ -178,7 +178,7 @@ The implementation follows a bottom-up approach: core business logic first, then
     - Extract action creators if needed
     - Run tests - they should still PASS
 
-- [ ] 6. Implement custom hooks (TDD: Red-Green-Refactor)
+- [x] 6. Implement custom hooks (TDD: Red-Green-Refactor)
   
   - [x] 6.1 Write unit tests for useTimer hook (RED)
     - Write failing test for useTimer hook lifecycle (start, pause, resume, stop)
@@ -210,7 +210,7 @@ The implementation follows a bottom-up approach: core business logic first, then
     - Run tests - they should FAIL (no implementation yet)
     - _Requirements: 2.2, 2.3, 2.4, 2.5, 9.2, 9.5_
   
-  - [-] 6.5 Create useStudySession hook (GREEN)
+  - [x] 6.5 Create useStudySession hook (GREEN)
     - Use AppContext to access session state and dispatch
     - Return session state, startSession, pauseSession, resumeSession, stopSession, provideItem functions
     - Integrate useTimer hook for timer management
@@ -222,7 +222,7 @@ The implementation follows a bottom-up approach: core business logic first, then
     - Run tests - they should PASS
     - _Requirements: 1.4, 2.6, 2.7, 4.4, 4.5, 4.8, 4.10, 5.2, 5.7, 5.8, 5.10, 9.2, 9.5_
   
-  - [-] 6.6 Refactor useStudySession hook (REFACTOR)
+  - [x] 6.6 Refactor useStudySession hook (REFACTOR)
     - Clean up code while keeping tests green
     - Ensure no duplication, clear naming
     - Simplify state transition logic if possible
@@ -300,7 +300,7 @@ The implementation follows a bottom-up approach: core business logic first, then
     - Run tests - they should PASS
     - _Requirements: 1.3, 1.4, 1.5, 1.6, 3.5_
   
-  - [-] 8.5 Refactor display components (REFACTOR)
+  - [ ] 8.5 Refactor display components (REFACTOR)
     - Clean up code while keeping tests green
     - Ensure no duplication, clear naming
     - Extract styling if needed
@@ -308,7 +308,7 @@ The implementation follows a bottom-up approach: core business logic first, then
 
 - [ ] 9. Implement UI components - Turtle and animation (TDD: Red-Green-Refactor)
   
-  - [-] 9.1 Write unit tests for turtle components (RED)
+  - [ ] 9.1 Write unit tests for turtle components (RED)
     - Write failing test for TurtleCharacter renders correct sprite for each state (walking, eating with turtle_eating.jpeg, happy with turtle_happy.jpeg, sleeping, arrived with turtle_arrived.png)
     - Write failing test for TurtleCharacter always faces rightward (toward GOAL direction)
     - Write failing test for TurtleCharacter position updates based on progress
@@ -319,7 +319,7 @@ The implementation follows a bottom-up approach: core business logic first, then
     - Run tests - they should FAIL (no implementation yet)
     - _Requirements: 3.1, 3.2, 3.3, 3.4, 4.1, 4.2, 4.7, 4.8, 5.5, 5.6, 5.9_
   
-  - [~] 9.2 Create TurtleCharacter component (GREEN)
+  - [x] 9.2 Create TurtleCharacter component (GREEN)
     - Accept progress, state, pathCoordinates props
     - Render turtle sprite based on state (walking, eating, happy, sleeping, arrived)
     - Always render turtle facing rightward (toward GOAL direction)
@@ -335,7 +335,7 @@ The implementation follows a bottom-up approach: core business logic first, then
     - Run tests - they should PASS
     - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.7, 3.8, 4.1, 4.2, 4.7, 4.8, 4.10, 5.5, 5.6, 5.9_
   
-  - [~] 9.3 Create PathComponent (GREEN)
+  - [x] 9.3 Create PathComponent (GREEN)
     - Accept pathCoordinates prop
     - Render curved path from START to GOAL using SVG or Canvas
     - Display START and GOAL labels
@@ -344,18 +344,18 @@ The implementation follows a bottom-up approach: core business logic first, then
     - Run tests - they should PASS
     - _Requirements: 3.1, 3.4_
   
-  - [~] 9.4 Refactor turtle components (REFACTOR)
+  - [x] 9.4 Refactor turtle components (REFACTOR)
     - Clean up code while keeping tests green
     - Ensure no duplication, clear naming
     - Optimize animation performance if needed
     - Run tests - they should still PASS
 
-- [~] 10. Checkpoint - Ensure all tests pass
+- [ ] 10. Checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 11. Implement UI components - Interaction (TDD: Red-Green-Refactor)
+- [x] 11. Implement UI components - Interaction (TDD: Red-Green-Refactor)
   
-  - [~] 11.1 Write property test for CareItemsPanel (RED)
+  - [x] 11.1 Write property test for CareItemsPanel (RED)
     - **Property 10: Rapid Tap Debouncing**
     - **Property 11: Item Count Limits and Shake Animation**
     - Write failing tests for rapid tap debouncing (1 second cooldown)
@@ -363,7 +363,7 @@ The implementation follows a bottom-up approach: core business logic first, then
     - Run tests - they should FAIL (no implementation yet)
     - **Validates: Requirements 5.2, 5.3, 5.6, 5.7, 5.13, 5.16**
   
-  - [~] 11.2 Write unit tests for CareItemsPanel (RED)
+  - [x] 11.2 Write unit tests for CareItemsPanel (RED)
     - Write failing test for "돌봐주기" title text displays above button icons
     - Write failing test for carrot and water icons render horizontally aligned with count display (🥕 ×3, 💧 ×3)
     - Write failing test for tap triggers onItemTap callback and decrements count
@@ -375,7 +375,7 @@ The implementation follows a bottom-up approach: core business logic first, then
     - Run tests - they should FAIL (no implementation yet)
     - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5, 5.6, 5.7, 5.8, 5.13, 5.15, 5.16_
   
-  - [~] 11.3 Create CareItemsPanel component (GREEN)
+  - [x] 11.3 Create CareItemsPanel component (GREEN)
     - Accept onItemTap, disabled, carrotCount, waterCount, turtleState props
     - Render "돌봐주기" title text above button icons
     - Render carrot and water icons horizontally aligned with remaining count display (🥕 ×{carrotCount}, 💧 ×{waterCount})
@@ -392,13 +392,13 @@ The implementation follows a bottom-up approach: core business logic first, then
     - Run tests - they should PASS
     - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5, 5.6, 5.7, 5.8, 5.13, 5.14, 5.15, 5.16_
   
-  - [~] 11.4 Refactor CareItemsPanel (REFACTOR)
+  - [x] 11.4 Refactor CareItemsPanel (REFACTOR)
     - Clean up code while keeping tests green
     - Ensure no duplication, clear naming
     - Extract debouncing logic if needed
     - Run tests - they should still PASS
   
-  - [~] 11.5 Write unit tests for SessionControls (RED)
+  - [x] 11.5 Write unit tests for SessionControls (RED)
     - Write failing test for pause button (⏸️) shows as round square button when running
     - Write failing test for resume button shows as round square button when paused
     - Write failing test for stop button (⏹️) shows as round square button always
@@ -411,7 +411,7 @@ The implementation follows a bottom-up approach: core business logic first, then
     - Run tests - they should FAIL (no implementation yet)
     - _Requirements: 9.1, 9.2, 9.4, 9.5, 9.6, 9.7, 9.8, 9.9_
   
-  - [~] 11.6 Create SessionControls component (GREEN)
+  - [x] 11.6 Create SessionControls component (GREEN)
     - Accept status, onPause, onResume, onStop props
     - Position controls at bottom right of screen
     - Render pause button (⏸️) as round square button when status is 'running'
@@ -424,15 +424,15 @@ The implementation follows a bottom-up approach: core business logic first, then
     - Run tests - they should PASS
     - _Requirements: 9.1, 9.2, 9.4, 9.5, 9.6, 9.7, 9.8, 9.9_
   
-  - [~] 11.7 Refactor SessionControls (REFACTOR)
+  - [x] 11.7 Refactor SessionControls (REFACTOR)
     - Clean up code while keeping tests green
     - Ensure no duplication, clear naming
     - Extract dialog logic if needed
     - Run tests - they should still PASS
 
-- [ ] 12. Implement UI components - Background and theme (TDD: Red-Green-Refactor)
+- [x] 12. Implement UI components - Background and theme (TDD: Red-Green-Refactor)
   
-  - [~] 12.1 Write unit tests for background components (RED)
+  - [x] 12.1 Write unit tests for background components (RED)
     - Write failing test for BackgroundImage renders watercolor-style background
     - Write failing test for BackgroundImage fallback on load failure
     - Write failing test for DecorativeElements renders at least 3 elements
@@ -440,7 +440,7 @@ The implementation follows a bottom-up approach: core business logic first, then
     - Run tests - they should FAIL (no implementation yet)
     - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.6_
   
-  - [~] 12.2 Create BackgroundImage component (GREEN)
+  - [x] 12.2 Create BackgroundImage component (GREEN)
     - Render watercolor-style landscape background with hills, lakes, trees, flowers
     - Use beige and light yellow colors from palette
     - Fallback to solid beige color if image fails to load
@@ -448,7 +448,7 @@ The implementation follows a bottom-up approach: core business logic first, then
     - Run tests - they should PASS
     - _Requirements: 6.1, 6.2, 6.3, 6.6_
   
-  - [~] 12.3 Create DecorativeElements component (GREEN)
+  - [x] 12.3 Create DecorativeElements component (GREEN)
     - Render at least 3 decorative elements (wooden signs, plants, stones, bushes, trees, flags)
     - Position elements using PathCoordinates
     - Use colors from defined palette
@@ -456,7 +456,7 @@ The implementation follows a bottom-up approach: core business logic first, then
     - Run tests - they should PASS
     - _Requirements: 6.1, 6.2, 6.4_
   
-  - [~] 12.4 Create StudyCanvas component (GREEN)
+  - [x] 12.4 Create StudyCanvas component (GREEN)
     - Compose BackgroundImage (watercolor style), PathComponent, TurtleCharacter, DecorativeElements
     - Apply consistent color palette across all child components
     - Handle touch events: completely ignore non-interactive area touches (no error message, no visual response)
@@ -465,7 +465,7 @@ The implementation follows a bottom-up approach: core business logic first, then
     - Run tests - they should PASS
     - _Requirements: 5.2, 5.3, 6.1, 6.2, 6.5, 6.7, 8.1_
   
-  - [~] 12.5 Refactor background components (REFACTOR)
+  - [x] 12.5 Refactor background components (REFACTOR)
     - Clean up code while keeping tests green
     - Ensure no duplication, clear naming
     - Extract color palette constants if needed
@@ -473,7 +473,7 @@ The implementation follows a bottom-up approach: core business logic first, then
 
 - [ ] 13. Implement screens (TDD: Red-Green-Refactor)
   
-  - [~] 13.1 Write unit tests for screens (RED)
+  - [x] 13.1 Write unit tests for screens (RED)
     - Write failing test for HomeScreen renders and opens TimeInputPopup
     - Write failing test for StudySessionScreen renders SessionHeader at top with beige round panel
     - Write failing test for StudySessionScreen renders StudyCanvas with watercolor background
@@ -487,7 +487,7 @@ The implementation follows a bottom-up approach: core business logic first, then
     - Run tests - they should FAIL (no implementation yet)
     - _Requirements: 1.1, 1.2, 1.3, 2.1, 2.2, 4.7, 5.1, 5.2, 5.3, 5.9, 7.1, 7.2, 7.3, 7.4, 7.5, 8.1, 9.1, 9.2, 9.5_
   
-  - [~] 13.2 Create HomeScreen (GREEN)
+  - [x] 13.2 Create HomeScreen (GREEN)
     - Display app title and description
     - Show button to open TimeInputPopup
     - Use consistent color palette and visual theme
@@ -495,7 +495,7 @@ The implementation follows a bottom-up approach: core business logic first, then
     - Run tests - they should PASS
     - _Requirements: 1.1, 6.1, 6.2, 6.5_
   
-  - [~] 13.3 Create StudySessionScreen (GREEN)
+  - [x] 13.3 Create StudySessionScreen (GREEN)
     - Compose SessionHeader at top (beige round panel with centered timer + progress bar with mini turtle slider)
     - Compose StudyCanvas in center (watercolor background with turtle always facing rightward)
     - Compose CareItemsPanel at bottom left ("돌봐주기" title + carrot/water buttons with counts)
@@ -512,7 +512,7 @@ The implementation follows a bottom-up approach: core business logic first, then
     - Run tests - they should PASS
     - _Requirements: 1.1, 1.2, 1.3, 2.1, 2.2, 2.3, 2.4, 3.1, 3.2, 3.3, 3.4, 4.1, 4.2, 4.3, 4.4, 4.5, 4.10, 5.1, 5.2, 5.3, 5.4, 5.6, 5.7, 5.8, 5.10, 8.1, 9.1, 9.2, 9.4, 9.5, 9.10_
   
-  - [~] 13.4 Create CompletionScreen (GREEN)
+  - [x] 13.4 Create CompletionScreen (GREEN)
     - Display turtle at GOAL in "arrived" state using turtle_arrived.png static next to GOAL flag (NO bouncing animation)
     - Show total study duration in MM:SS format
     - Provide button to start new session (opens TimeInputPopup)
@@ -522,7 +522,7 @@ The implementation follows a bottom-up approach: core business logic first, then
     - Run tests - they should PASS
     - _Requirements: 4.7, 5.9, 7.1, 7.2, 7.3, 7.4, 7.5_
   
-  - [~] 13.5 Refactor screens (REFACTOR)
+  - [ ] 13.5 Refactor screens (REFACTOR)
     - Clean up code while keeping tests green
     - Ensure no duplication, clear naming
     - Extract common layout patterns if needed
@@ -530,14 +530,14 @@ The implementation follows a bottom-up approach: core business logic first, then
 
 - [ ] 14. Implement touch interaction and responsiveness (TDD: Red-Green-Refactor)
   
-  - [~] 14.1 Write unit tests for touch interaction (RED)
+  - [ ] 14.1 Write unit tests for touch interaction (RED)
     - Write failing test for visual feedback appears within 100ms
     - Write failing test for state change timing for items and buttons
     - Write failing test for tap debouncing ignores rapid taps
     - Run tests - they should FAIL (no implementation yet)
     - _Requirements: 10.1, 10.2, 10.3, 10.4_
   
-  - [~] 14.2 Add touch feedback to all interactive elements (GREEN)
+  - [ ] 14.2 Add touch feedback to all interactive elements (GREEN)
     - Implement visual change within 100ms for all buttons and care item buttons
     - Use opacity change, scale animation, or highlight effect
     - Apply to TimeInputPopup buttons, SessionControls buttons, CareItemsPanel buttons
@@ -545,14 +545,14 @@ The implementation follows a bottom-up approach: core business logic first, then
     - Run tests - they should PASS
     - _Requirements: 10.1_
   
-  - [~] 14.3 Implement state change timing (GREEN)
+  - [ ] 14.3 Implement state change timing (GREEN)
     - Ensure care item button tap initiates turtle eating state change within 200ms
     - Ensure button tap initiates state change within 300ms
     - Implement logic to make tests pass
     - Run tests - they should PASS
     - _Requirements: 10.2, 10.3_
   
-  - [~] 14.4 Implement tap debouncing (GREEN)
+  - [ ] 14.4 Implement tap debouncing (GREEN)
     - Ignore subsequent taps on same element within 500ms (buttons) or 1 second (care items)
     - Provide no visual feedback for ignored taps
     - Execute no action for ignored taps
@@ -560,7 +560,7 @@ The implementation follows a bottom-up approach: core business logic first, then
     - Run tests - they should PASS
     - _Requirements: 10.4, 5.13_
   
-  - [~] 14.5 Refactor touch interaction (REFACTOR)
+  - [ ] 14.5 Refactor touch interaction (REFACTOR)
     - Clean up code while keeping tests green
     - Ensure no duplication, clear naming
     - Extract touch feedback utilities if needed
@@ -568,7 +568,7 @@ The implementation follows a bottom-up approach: core business logic first, then
 
 - [ ] 15. Implement error handling (TDD: Red-Green-Refactor)
   
-  - [~] 15.1 Write unit tests for error handling (RED)
+  - [ ] 15.1 Write unit tests for error handling (RED)
     - Write failing test for timer error shows message and returns to home
     - Write failing test for animation fallbacks work correctly
     - Write failing test for state transition validation
@@ -577,46 +577,46 @@ The implementation follows a bottom-up approach: core business logic first, then
     - Run tests - they should FAIL (no implementation yet)
     - _Requirements: 2.5, 6.6, 8.1, 8.4, 9.1_
   
-  - [~] 15.2 Add error handling for timer failures (GREEN)
+  - [ ] 15.2 Add error handling for timer failures (GREEN)
     - Catch timer initialization errors, show "타이머를 시작할 수 없습니다" message, return to home
     - Recalculate from start time if timer becomes out of sync
     - Implement logic to make tests pass
     - Run tests - they should PASS
     - _Requirements: 2.5, 8.4_
   
-  - [~] 15.3 Add error handling for animation failures (GREEN)
+  - [ ] 15.3 Add error handling for animation failures (GREEN)
     - Show static turtle image if animation fails to load
     - Use solid beige background if background image fails to load
     - Implement logic to make tests pass
     - Run tests - they should PASS
     - _Requirements: 6.6_
   
-  - [~] 15.4 Add error handling for state transitions (GREEN)
+  - [ ] 15.4 Add error handling for state transitions (GREEN)
     - Log error and maintain current state if invalid transition attempted
     - Validate all state transitions before execution
     - Implement logic to make tests pass
     - Run tests - they should PASS
     - _Requirements: 4.9, 8.4_
   
-  - [~] 15.5 Add error handling for touch interactions (GREEN)
+  - [ ] 15.5 Add error handling for touch interactions (GREEN)
     - Completely ignore non-interactive area touches (no error message, no visual response, no state modification)
     - Preserve timer, turtle position, and session status during ignored touches
     - Implement logic to make tests pass
     - Run tests - they should PASS
     - _Requirements: 8.1, 9.1_
   
-  - [~] 15.6 Refactor error handling (REFACTOR)
+  - [ ] 15.6 Refactor error handling (REFACTOR)
     - Clean up code while keeping tests green
     - Ensure no duplication, clear naming
     - Extract error handling utilities if needed
     - Run tests - they should still PASS
 
-- [~] 16. Checkpoint - Ensure all tests pass
+- [ ] 16. Checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 17. Integration and wiring (TDD: Red-Green-Refactor)
   
-  - [~] 17.1 Write integration tests (RED)
+  - [ ] 17.1 Write integration tests (RED)
     - Write failing test for complete session flow from start to completion with arrived state (turtle_arrived.png static, NO bouncing)
     - Write failing test for pause/resume flow with timer and turtle state (walking/eating/happy → sleeping → restored with preserved duration)
     - Write failing test for care item flow with eating (1s with turtle_eating.jpeg) → happy (3s with turtle_happy.jpeg) state transitions and count management
@@ -628,7 +628,7 @@ The implementation follows a bottom-up approach: core business logic first, then
     - Run tests - they should FAIL (no implementation yet)
     - _Requirements: 1.4, 2.4, 4.4, 4.5, 4.7, 4.8, 4.10, 5.2, 5.7, 5.8, 5.10, 7.1, 8.1, 9.1, 9.2, 9.5, 9.8_
   
-  - [~] 17.2 Wire App root with navigation and context (GREEN)
+  - [ ] 17.2 Wire App root with navigation and context (GREEN)
     - Create App component with AppProvider
     - Set up navigation between HomeScreen, StudySessionScreen, CompletionScreen
     - Pass state and callbacks through context
@@ -636,7 +636,7 @@ The implementation follows a bottom-up approach: core business logic first, then
     - Run tests - they should PASS
     - _Requirements: 1.1, 6.5, 7.1_
   
-  - [~] 17.3 Integrate timer with turtle state transitions (GREEN)
+  - [ ] 17.3 Integrate timer with turtle state transitions (GREEN)
     - Connect timer ticks to turtle state updates
     - Trigger happy state after 1 second of eating state (display turtle_happy.jpeg with heart effect)
     - Trigger walking state after 3 seconds of happy state
@@ -647,7 +647,7 @@ The implementation follows a bottom-up approach: core business logic first, then
     - Run tests - they should PASS
     - _Requirements: 2.3, 4.4, 4.5, 4.8, 4.9, 4.10, 5.5, 5.6, 5.10, 9.3, 9.8_
   
-  - [~] 17.4 Integrate care items with turtle state (GREEN)
+  - [ ] 17.4 Integrate care items with turtle state (GREEN)
     - Connect care item button taps to turtle eating state changes
     - Trigger eating state immediately when care item button tapped (display turtle_eating.jpeg with head nodding + mouth movement for 1s)
     - Decrement item count on tap
@@ -658,7 +658,7 @@ The implementation follows a bottom-up approach: core business logic first, then
     - Run tests - they should PASS
     - _Requirements: 4.4, 4.5, 5.2, 5.4, 5.5, 5.6, 5.7, 5.8, 5.13, 9.10_
   
-  - [~] 17.5 Integrate pause/resume with all timers (GREEN)
+  - [ ] 17.5 Integrate pause/resume with all timers (GREEN)
     - Pause timer, eating timer, and happy timer on pause action
     - Store remainingEatingDuration or remainingHappyDuration when pausing during eating/happy states
     - Resume all timers from paused state on resume action
@@ -669,13 +669,13 @@ The implementation follows a bottom-up approach: core business logic first, then
     - Run tests - they should PASS
     - _Requirements: 4.8, 4.9, 4.10, 5.10, 9.2, 9.3, 9.5, 9.10_
   
-  - [~] 17.6 Refactor integration code (REFACTOR)
+  - [ ] 17.6 Refactor integration code (REFACTOR)
     - Clean up code while keeping tests green
     - Ensure no duplication, clear naming
     - Extract integration utilities if needed
     - Run tests - they should still PASS
 
-- [~] 18. Final checkpoint - Ensure all tests pass
+- [ ] 18. Final checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
 ## Notes
