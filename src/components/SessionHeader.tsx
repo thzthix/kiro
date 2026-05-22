@@ -9,10 +9,9 @@
  */
 
 import React from 'react';
-import { View, Text, StyleSheet, Image, Platform } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { formatTime } from '../utils/ProgressCalculator';
 import { COLORS } from '../constants/theme';
-import timerPanelBase from '../../assets/images/timer_pannel_base.jpeg';
 
 interface SessionHeaderProps {
   remainingSeconds: number;
@@ -24,7 +23,6 @@ const SessionHeader: React.FC<SessionHeaderProps> = ({
 }) => {
   const safeRemainingSeconds = Math.max(0, remainingSeconds);
   const formattedTime = formatTime(safeRemainingSeconds);
-  const [minutes, seconds] = formattedTime.split(':');
 
   return (
     <View
@@ -32,29 +30,19 @@ const SessionHeader: React.FC<SessionHeaderProps> = ({
       testID="session-header"
     >
       <View style={styles.innerContainer} testID="session-header-container">
-        <Image
-          source={
-            Platform.OS === 'web'
-              ? timerPanelBase
-              : require('../../assets/images/timer_pannel_base.jpeg')
-          }
-          style={styles.panelBase}
-          resizeMode="contain"
-        />
-
-        <View style={styles.textTimerWrap} pointerEvents="none">
-          <Text
-            style={[styles.timerText, styles.minutesText]}
-            testID="timer-minutes"
-          >
-            {minutes}
-          </Text>
-          <Text
-            style={[styles.timerText, styles.secondsText]}
-            testID="timer-seconds"
-          >
-            {seconds}
-          </Text>
+        <View style={styles.panelBase} testID="timer-panel-base">
+          <View style={styles.panelInnerBorder} />
+          <View style={styles.labelWrap}>
+            <Text style={styles.labelText}>남은 시간</Text>
+          </View>
+          <View style={styles.textTimerWrap} pointerEvents="none">
+            <Text
+              style={styles.timerText}
+              testID="timer-display-visible"
+            >
+              {formattedTime}
+            </Text>
+          </View>
         </View>
 
         <Text
@@ -78,43 +66,71 @@ const styles = StyleSheet.create({
   },
   innerContainer: {
     width: '100%',
-    maxWidth: 372,
+    maxWidth: 412,
     aspectRatio: 1756 / 895,
     justifyContent: 'center',
     alignItems: 'center',
-    minWidth: 320,
+    minWidth: 356,
   },
   panelBase: {
+    position: 'absolute',
     width: '100%',
     height: '100%',
+    borderRadius: 36,
+    backgroundColor: '#FFF7E2',
+    borderWidth: 1,
+    borderColor: 'rgba(228, 206, 150, 0.8)',
+    shadowColor: '#C3AA74',
+    shadowOffset: { width: 0, height: 9 },
+    shadowOpacity: 0.22,
+    shadowRadius: 16,
+    elevation: 6,
+    overflow: 'hidden',
+  },
+  panelInnerBorder: {
     position: 'absolute',
+    top: 10,
+    right: 10,
+    bottom: 10,
+    left: 10,
+    borderRadius: 29,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 250, 236, 0.75)',
+  },
+  labelWrap: {
+    position: 'absolute',
+    top: '15.6%',
+    width: '100%',
+    alignItems: 'center',
   },
   textTimerWrap: {
     position: 'absolute',
-    top: '36.2%',
-    width: '56%',
-    flexDirection: 'row',
+    top: '35.1%',
+    width: '100%',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  timerText: {
-    fontFamily:
-      'Avenir Next Rounded, Avenir Next, Nunito, Arial Rounded MT Bold, Trebuchet MS, sans-serif',
-    fontSize: 82,
-    fontWeight: '600',
+  labelText: {
+    fontSize: 25,
+    fontWeight: '700',
+    color: '#7B6344',
     letterSpacing: 0.2,
-    lineHeight: 90,
+    textAlign: 'center',
+    textShadowColor: 'rgba(255, 255, 255, 0.38)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 1,
+  },
+  timerText: {
+    fontFamily: 'Nanum Gothic, Arial, sans-serif',
+    fontSize: 84,
+    fontWeight: '700',
+    letterSpacing: -0.3,
+    lineHeight: 94,
     color: '#7B6344',
     textAlign: 'center',
-    textShadowColor: 'rgba(255, 255, 255, 0.7)',
+    textShadowColor: 'rgba(255, 255, 255, 0.42)',
     textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 2,
-  },
-  minutesText: {
-    marginRight: '15.5%',
-  },
-  secondsText: {
-    marginLeft: '15.5%',
+    textShadowRadius: 1,
   },
   hiddenTimer: {
     position: 'absolute',
