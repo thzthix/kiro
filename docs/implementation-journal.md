@@ -932,3 +932,264 @@ Task 13.5 완료 후 다음 작업:
 - ✅ 재사용성 향상
 
 ---
+
+## 2025-01-XX Task 13.5: 화면 컴포넌트 리팩토링 (REFACTOR)
+
+### 📋 Task 개요
+- **Task ID**: 13.5
+- **목표**: HomeScreen, StudySessionScreen, CompletionScreen 코드 정리, 중복 제거, 명확한 네이밍, 공통 레이아웃 패턴 추출
+- **관련 Requirements**: 1.1, 6.1, 6.2, 6.5, 7.1-7.5, 전체 화면 요구사항
+- **소요 시간**: 약 45분
+
+### 🎯 설계 결정 (Design Decisions)
+
+#### 고려한 대안들
+
+1. **스타일 상수 관리**
+   - **각 화면에 하드코딩**:
+     - 장점: 컴포넌트 독립성 유지
+     - 단점: 중복 코드, 일관성 유지 어려움, 변경 시 여러 파일 수정
+   - **theme.ts에 중앙 집중화 (선택)**:
+     - 장점: 일관성 보장, 변경 시 한 곳만 수정, 디자인 시스템 구축
+     - 단점: 컴포넌트 간 의존성 증가 (무시할 수 있는 수준)
+
+2. **이벤트 핸들러 최적화**
+   - **일반 함수로 정의**:
+     - 장점: 코드 단순, 작성 빠름
+     - 단점: 매 렌더링마다 새 함수 생성, 자식 컴포넌트 불필요한 리렌더링
+   - **useCallback으로 메모이제이션 (선택)**:
+     - 장점: 함수 참조 안정성, 자식 컴포넌트 최적화
+     - 단점: 코드 약간 복잡, 의존성 배열 관리 필요
+
+3. **계산 로직 최적화**
+   - **useMemo로 메모이제이션**:
+     - 장점: 불필요한 재계산 방지
+     - 단점: 메모리 오버헤드, 단순 계산에는 과도
+   - **일반 계산 + 헬퍼 함수 추출 (선택)**:
+     - 장점: 코드 명확성, 테스트 용이성, 오버헤드 없음
+     - 단점: 매 렌더링마다 재계산 (하지만 단순 계산이라 무시 가능)
+
+#### 선택한 방법
+
+- **선택**: theme.ts 확장 + useCallback 최적화 + 헬퍼 함수 추출
+- **이유**:
+  1. **일관성**: 모든 화면이 동일한 테마 상수 사용
+  2. **성능**: useCallback으로 자식 컴포넌트 최적화
+  3. **가독성**: 헬퍼 함수로 로직 명확화
+  4. **유지보수성**: 변경 시 영향 범위 최소화
+
+#### 코드 예시
+
+**theme.ts 확장**:
+```typescript
+export const LAYOUT = {
+  // 기존 레이아웃
+  borderRadiusSmall: 4,
+  borderRadiusLarge: 20,
+  // 새로 추가된 이미지 크기
+  spacing: {
+    small: 8,
+    medium: 16,
+    large: 20,
+    extraLarge: 40, // 새로 추가
+  },
+  image: {
+    turtleIllustration: 200,
+    turtleArrived: 120,
+    goalFlag: 60,
+    goalFlagHeight: 80,
+  },
+} as const;
+```
+
+**StudySessionScreen.tsx 헬퍼 함수 추출**:
+```typescript
+/**
+ * Helper function to determine if care items panel should be disabled
+ * Disabled when session is paused or turtle is eating/happy
+ */
+const shouldDisableCareItems = (
+  status: SessionStatus,
+  turtleState: TurtleState
+): boolean => {
+  return (
+    status === 'paused' ||
+    turtleState === 'eating' ||
+    turtleState === 'happy'
+  );
+};
+```
+
+**useCallback 최적화**:
+```typescript
+// 리팩토링 전
+const handlePause = () => {
+  pauseSession();
+};
+
+// 리팩토링 후
+const handlePause = useCallback(() => {
+  pauseSession();
+}, [pauseSession]);
+```
+
+### 🔧 트러블슈팅 (Troubleshooting)
+
+#### 상황: React Hook 순서 위반 에러
+useMemo를 조건부 렌더링(early return) 이후에 사용하여 "React has detected a change in the order of Hooks" 에러 발생
+
+**시도한 방법들**:
+1. **시도 1**: useMemo를 early return 이전으로 이동
+   - 결과: 실패
+   - 이유: session이 null일 때 useMemo 내부에서 session 속성 접근 불가
+2. **시도 2**: useMemo 제거하고 일반 계산으로 변경
+   - 결과: 성공
+   - 이유: 단순 계산이라 메모이제이션 불필요, Hook 순서 문제 해결
+
+**최종 해결 방법**:
+- **방법**: useMemo 제거, 단순 계산으로 변경, useCallback만 유지
+- **선택 이유**: 
+  - calculateProgress와 shouldDisableCareItems는 단순 계산 (O(1))
+  - 메모이제이션 오버헤드가 계산 비용보다 클 수 있음
+  - Hook 순서 규칙 준수
+  - 코드 단순성 유지
+- **참고 자료**: React Hooks Rules, React 공식 문서
+
+### ✅ 검증 (Verification)
+
+- **테스트 실행**: ✅ 통과 (530/530)
+  - HomeScreen: 8/8 통과
+  - StudySessionScreen: 16/16 통과
+  - CompletionScreen: 8/8 통과
+  - 전체 테스트 스위트: 26 suites, 530 tests
+
+- **타입 체크**: ✅ 통과 (`npm run type-check`)
+  - 모든 타입 정의 에러 없음
+  - 확장된 theme 타입 정상 작동
+  - 헬퍼 함수 타입 안정성 확인
+
+- **코드 품질**:
+  - ✅ 하드코딩된 값 제거: 15개 → 0개
+  - ✅ 명확한 네이밍: shouldDisableCareItems 헬퍼 함수
+  - ✅ 이벤트 핸들러 최적화: useCallback 적용
+  - ✅ 테마 일관성: 모든 화면이 LAYOUT.spacing, LAYOUT.image 사용
+  - ✅ 중복 제거: 스타일 상수 중앙화
+
+- **리팩토링 전후 비교**:
+  ```
+  리팩토링 전:
+  - HomeScreen.tsx: 하드코딩된 값 5개 (20, 40, 200)
+  - StudySessionScreen.tsx: 인라인 조건문, 일반 함수
+  - CompletionScreen.tsx: 하드코딩된 값 10개 (20, 40, 120, 60, 80 등)
+  
+  리팩토링 후:
+  - HomeScreen.tsx: LAYOUT 상수 사용, 하드코딩 0개
+  - StudySessionScreen.tsx: shouldDisableCareItems 헬퍼, useCallback 최적화
+  - CompletionScreen.tsx: LAYOUT 상수 사용, 하드코딩 0개
+  - theme.ts: LAYOUT.spacing.extraLarge, LAYOUT.image 추가
+  ```
+
+### 📝 학습 내용 (Learnings)
+
+1. **React Hooks 순서 규칙의 중요성**:
+   - Hooks는 항상 같은 순서로 호출되어야 함
+   - 조건문, 반복문, 중첩 함수 내부에서 Hook 호출 금지
+   - Early return 이전에 모든 Hook 호출 완료
+   - 위반 시 "change in the order of Hooks" 에러 발생
+
+2. **메모이제이션의 적절한 사용**:
+   - useMemo는 비용이 큰 계산에만 사용
+   - 단순 계산(O(1))은 메모이제이션 불필요
+   - 메모이제이션 자체도 비용이 있음 (메모리, 비교 연산)
+   - useCallback은 자식 컴포넌트 최적화에 유용
+
+3. **헬퍼 함수 추출의 이점**:
+   - 복잡한 조건문을 명확한 함수명으로 표현
+   - 테스트 용이성 향상 (독립적으로 테스트 가능)
+   - 재사용성 향상
+   - 코드 가독성 대폭 향상
+
+4. **테마 상수 관리 전략**:
+   - 반복되는 값은 즉시 상수로 추출
+   - 관련 상수는 그룹화 (LAYOUT.spacing, LAYOUT.image)
+   - 의미 있는 이름 사용 (extraLarge, turtleIllustration)
+   - 타입 안정성 보장 (`as const`)
+
+5. **리팩토링의 점진적 접근**:
+   - 작은 변경 → 테스트 → 다음 변경
+   - 한 번에 하나의 리팩토링만 수행
+   - 테스트가 실패하면 즉시 롤백하고 원인 분석
+   - 모든 변경 후 전체 테스트 실행
+
+6. **성능 최적화의 균형**:
+   - 과도한 최적화는 코드 복잡도 증가
+   - 실제 성능 문제가 있을 때 최적화
+   - 단순성과 성능 사이의 균형 유지
+   - 프로파일링으로 병목 지점 확인 후 최적화
+
+### 🔗 관련 커밋
+- Commit: (예정) `refactor: 화면 컴포넌트 리팩토링 - 테마 상수 사용 및 핸들러 최적화`
+- Branch: `feat/refactor-screens`
+- PR: (예정) `#X` - refactor: 화면 컴포넌트 리팩토링 (Task 13.5)
+
+### 📊 변경 사항
+
+**수정된 파일**:
+- `src/screens/HomeScreen.tsx` - LAYOUT 상수 사용, 하드코딩 제거 (-5개 값)
+- `src/screens/StudySessionScreen.tsx` - shouldDisableCareItems 헬퍼 추가, useCallback 최적화 (+20줄, -10줄)
+- `src/screens/CompletionScreen.tsx` - LAYOUT 상수 사용, 하드코딩 제거 (-10개 값)
+- `src/constants/theme.ts` - LAYOUT.spacing.extraLarge, LAYOUT.image 추가 (+10줄)
+
+**통계**:
+- 4개 파일 변경
+- 30줄 추가, 25줄 수정
+- 하드코딩 제거: 15개 값 → 0개
+- 헬퍼 함수 추가: 1개 (shouldDisableCareItems)
+- 최적화된 핸들러: 6개 (useCallback 적용)
+
+**테스트 유지**:
+- 이전: 530 tests
+- 이후: 530 tests (변경 없음, 모두 통과)
+
+### 🎯 다음 단계
+
+Task 13.5 완료 후 다음 작업:
+1. Task 14: Touch interaction and responsiveness
+2. Task 15: Integration testing
+3. Task 16: Final verification and documentation
+
+### 💡 리팩토링 체크리스트
+
+이번 리팩토링에서 확인한 항목들:
+
+- ✅ 중복 제거: 스타일 상수 중앙화
+- ✅ 명확한 네이밍: shouldDisableCareItems 헬퍼 함수
+- ✅ 공통 패턴 추출: LAYOUT.spacing, LAYOUT.image
+- ✅ 하드코딩 제거: 15개 값 → 0개
+- ✅ 성능 최적화: useCallback으로 핸들러 메모이제이션
+- ✅ 테스트 통과 유지: 530/530 (100%)
+- ✅ 타입 안정성 유지: type-check 통과
+- ✅ Hook 규칙 준수: 순서 위반 해결
+- ✅ 코드 가독성 향상: 헬퍼 함수, 명확한 상수명
+- ✅ 유지보수성 향상: 변경 시 한 곳만 수정
+
+### 📈 성과 요약
+
+**코드 품질 개선**:
+- 하드코딩 제거율: 100% (15개 → 0개)
+- 헬퍼 함수 추가: 1개
+- 최적화된 핸들러: 6개
+- 테마 상수 확장: 5개 항목
+
+**테스트 안정성**:
+- 전체 테스트 통과율: 100% (530/530)
+- 타입 체크: 에러 0개
+- 리팩토링 중 테스트 실패: 1회 (Hook 순서 위반, 즉시 해결)
+
+**학습 포인트**:
+- React Hooks 규칙의 중요성 체득
+- 메모이제이션의 적절한 사용 시점 이해
+- 헬퍼 함수 추출의 이점 경험
+- 점진적 리팩토링의 안정성 확인
+
+---
