@@ -29,9 +29,8 @@ import {
   Platform,
   ViewStyle,
 } from 'react-native';
-import carePanelBase from '../../assets/돌봐주기_베이스만.jpeg';
-import carePanelIcons from '../../assets/돌봐주기_아이콘만.jpeg';
-import timePanelNumber from '../../assets/images/time_pannel_number.jpeg';
+import carePanelBase from '../../assets/care-panel-base.jpeg';
+import carePanelIcons from '../../assets/care-panel-icons.jpeg';
 
 // Constants
 const DEBOUNCE_DURATION_MS = 1000;
@@ -42,28 +41,9 @@ const PANEL_BASE_RATIO = 2110 / 745;
 const PANEL_ICON_SHEET_WIDTH = 1919;
 const PANEL_ICON_SHEET_HEIGHT = 820;
 const PANEL_ICON_HALF_WIDTH = PANEL_ICON_SHEET_WIDTH / 2;
-const PANEL_COUNT_SHEET_COLUMNS = 5;
-const PANEL_COUNT_SHEET_ROWS = 2;
-const PANEL_COUNT_SHEET_WIDTH = 1774;
-const PANEL_COUNT_SHEET_HEIGHT = 887;
-const PANEL_COUNT_DIGIT_WIDTH = PANEL_COUNT_SHEET_WIDTH / PANEL_COUNT_SHEET_COLUMNS;
-const PANEL_COUNT_DIGIT_HEIGHT = PANEL_COUNT_SHEET_HEIGHT / PANEL_COUNT_SHEET_ROWS;
 
 type ItemType = 'carrot' | 'water';
 type TurtleState = 'walking' | 'eating' | 'happy' | 'sleeping' | 'arrived';
-const ITEM_ORDER: ItemType[] = ['water', 'carrot'];
-const DIGIT_INDEX: Record<string, number> = {
-  '0': 0,
-  '1': 1,
-  '2': 2,
-  '3': 3,
-  '4': 4,
-  '5': 5,
-  '6': 6,
-  '7': 7,
-  '8': 8,
-  '9': 9,
-};
 
 interface CareItemsPanelProps {
   onItemTap: (itemType: ItemType) => void;
@@ -229,31 +209,6 @@ interface CareItemButtonProps {
   opacityAnim: Animated.Value;
 }
 
-const CountDigit: React.FC<{ digit: string }> = ({ digit }) => {
-  const index = DIGIT_INDEX[digit] ?? 0;
-  const column = index % PANEL_COUNT_SHEET_COLUMNS;
-  const row = Math.floor(index / PANEL_COUNT_SHEET_COLUMNS);
-
-  return (
-    <View style={styles.countDigitViewport}>
-      <Image
-        source={
-          Platform.OS === 'web'
-            ? timePanelNumber
-            : require('../../assets/images/time_pannel_number.jpeg')
-        }
-        style={[
-          styles.countDigitSheet,
-          {
-            left: -column * styles.countDigitViewport.width,
-            top: -row * styles.countDigitViewport.height,
-          },
-        ]}
-      />
-    </View>
-  );
-};
-
 const CareItemButton: React.FC<CareItemButtonProps> = ({
   itemType,
   count,
@@ -305,7 +260,7 @@ const CareItemButton: React.FC<CareItemButtonProps> = ({
                 source={
                   Platform.OS === 'web'
                     ? carePanelIcons
-                    : require('../../assets/돌봐주기_아이콘만.jpeg')
+                    : require('../../assets/care-panel-icons.jpeg')
                 }
                 style={[
                   styles.iconSheet,
@@ -321,7 +276,7 @@ const CareItemButton: React.FC<CareItemButtonProps> = ({
       </Animated.View>
       <View style={styles.countWrap}>
         <Text style={styles.countX}>×</Text>
-        <CountDigit digit={String(Math.max(0, Math.min(9, count)))} />
+        <Text style={styles.countText}>{count}</Text>
       </View>
       {isShaking && <View testID={`${itemType}-button-shake`} />}
     </Animated.View>
@@ -408,7 +363,7 @@ const CareItemsPanel: React.FC<CareItemsPanelProps> = ({
         source={
           Platform.OS === 'web'
             ? carePanelBase
-            : require('../../assets/돌봐주기_베이스만.jpeg')
+            : require('../../assets/care-panel-base.jpeg')
         }
         style={styles.panelBase}
         resizeMode="contain"
@@ -515,22 +470,14 @@ const styles = StyleSheet.create({
     color: '#8B6B46',
     marginRight: 2,
   },
-  countDigitViewport: {
-    width: 30,
-    height: 42,
-    overflow: 'hidden',
-    position: 'relative',
-  },
-  countDigitSheet: {
-    position: 'absolute',
-    width:
-      PANEL_COUNT_DIGIT_WIDTH > 0
-        ? (PANEL_COUNT_SHEET_WIDTH / PANEL_COUNT_DIGIT_WIDTH) * 30
-        : 30,
-    height:
-      PANEL_COUNT_DIGIT_HEIGHT > 0
-        ? (PANEL_COUNT_SHEET_HEIGHT / PANEL_COUNT_DIGIT_HEIGHT) * 42
-        : 42,
+  countText: {
+    fontSize: 34,
+    fontWeight: '700',
+    lineHeight: 38,
+    color: '#7B6344',
+    textShadowColor: 'rgba(255, 255, 255, 0.55)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 1,
   },
 });
 

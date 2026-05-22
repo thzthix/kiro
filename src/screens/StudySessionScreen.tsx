@@ -15,7 +15,7 @@
  */
 
 import React, { useState, useCallback, useMemo } from 'react';
-import { View, StyleSheet, Platform } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import { useStudySession } from '../hooks/useStudySession';
 import SessionHeader from '../components/SessionHeader';
 import StudyCanvas from '../components/StudyCanvas';
@@ -125,10 +125,6 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.beige,
     width: '100%',
     height: '100%',
-    ...(Platform.OS === 'web' && {
-      width: '100vw',
-      minHeight: '100vh',
-    }),
   },
   stage: {
     width: '100%',
@@ -153,11 +149,6 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
     justifyContent: 'space-between',
     zIndex: 3,
-    ...(Platform.OS === 'web' && {
-      left: '3vw',
-      right: '3vw',
-      bottom: '3vh',
-    }),
   },
   headerWrap: {
     position: 'absolute',
@@ -166,9 +157,6 @@ const styles = StyleSheet.create({
     right: 0,
     zIndex: 3,
     alignItems: 'center',
-    ...(Platform.OS === 'web' && {
-      top: '3vh',
-    }),
   },
   carePanel: {
     flex: 1,
