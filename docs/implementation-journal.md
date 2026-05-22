@@ -463,6 +463,11 @@ export const LAYOUT = {
 2. **타입 체크**: TypeScript 컴파일 에러 확인
 3. **테스트 커버리지**: 주요 모듈의 커버리지 확인 (선택적)
 
+### 🔧 트러블슈팅 (Troubleshooting)
+
+#### 상황
+Checkpoint 작업으로 특별한 트러블슈팅 없음. 모든 테스트가 정상 통과.
+
 ### ✅ 검증 (Verification)
 
 #### 전체 테스트 실행
