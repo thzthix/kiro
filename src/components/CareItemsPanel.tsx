@@ -136,32 +136,42 @@ const useTouchFeedback = () => {
 
     // Animate scale down and opacity within 100ms for immediate feedback
     // Then animate back over 300-1000ms range (using 400ms)
-    Animated.parallel([
-      Animated.sequence([
-        Animated.timing(scaleAnim, {
-          toValue: 0.9,
-          duration: 100, // Visual feedback within 100ms
-          useNativeDriver: true,
-        }),
-        Animated.timing(scaleAnim, {
-          toValue: 1,
-          duration: 400, // Return to normal within 300-1000ms range
-          useNativeDriver: true,
-        }),
-      ]),
-      Animated.sequence([
-        Animated.timing(opacityAnim, {
-          toValue: 0.7,
-          duration: 100, // Visual feedback within 100ms
-          useNativeDriver: true,
-        }),
-        Animated.timing(opacityAnim, {
-          toValue: 1,
-          duration: 400, // Return to normal within 300-1000ms range
-          useNativeDriver: true,
-        }),
-      ]),
-    ]).start();
+    if (Animated.parallel && Animated.sequence) {
+      Animated.parallel([
+        Animated.sequence([
+          Animated.timing(scaleAnim, {
+            toValue: 0.9,
+            duration: 100, // Visual feedback within 100ms
+            useNativeDriver: true,
+          }),
+          Animated.timing(scaleAnim, {
+            toValue: 1,
+            duration: 400, // Return to normal within 300-1000ms range
+            useNativeDriver: true,
+          }),
+        ]),
+        Animated.sequence([
+          Animated.timing(opacityAnim, {
+            toValue: 0.7,
+            duration: 100, // Visual feedback within 100ms
+            useNativeDriver: true,
+          }),
+          Animated.timing(opacityAnim, {
+            toValue: 1,
+            duration: 400, // Return to normal within 300-1000ms range
+            useNativeDriver: true,
+          }),
+        ]),
+      ]).start();
+    } else {
+      // Fallback for test environment - just set values directly
+      scaleAnim.setValue(0.9);
+      opacityAnim.setValue(0.7);
+      setTimeout(() => {
+        scaleAnim.setValue(1);
+        opacityAnim.setValue(1);
+      }, 500);
+    }
   }, [scaleAnim, opacityAnim]);
 
   return { scaleAnim, opacityAnim, animateTouchFeedback };
