@@ -300,7 +300,7 @@ The implementation follows a bottom-up approach: core business logic first, then
     - Run tests - they should PASS
     - _Requirements: 1.3, 1.4, 1.5, 1.6, 3.5_
   
-  - [ ] 8.5 Refactor display components (REFACTOR)
+  - [x] 8.5 Refactor display components (REFACTOR)
     - Clean up code while keeping tests green
     - Ensure no duplication, clear naming
     - Extract styling if needed
@@ -308,7 +308,7 @@ The implementation follows a bottom-up approach: core business logic first, then
 
 - [ ] 9. Implement UI components - Turtle and animation (TDD: Red-Green-Refactor)
   
-  - [ ] 9.1 Write unit tests for turtle components (RED)
+  - [x] 9.1 Write unit tests for turtle components (RED)
     - Write failing test for TurtleCharacter renders correct sprite for each state (walking, eating with turtle_eating.jpeg, happy with turtle_happy.jpeg, sleeping, arrived with turtle_arrived.png)
     - Write failing test for TurtleCharacter always faces rightward (toward GOAL direction)
     - Write failing test for TurtleCharacter position updates based on progress
@@ -350,7 +350,7 @@ The implementation follows a bottom-up approach: core business logic first, then
     - Optimize animation performance if needed
     - Run tests - they should still PASS
 
-- [ ] 10. Checkpoint - Ensure all tests pass
+- [x] 10. Checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
 - [x] 11. Implement UI components - Interaction (TDD: Red-Green-Refactor)
