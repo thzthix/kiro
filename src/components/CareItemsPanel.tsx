@@ -29,8 +29,7 @@ import {
   Platform,
   ViewStyle,
 } from 'react-native';
-import carePanelBase from '../../assets/care-panel-base.jpeg';
-import carePanelIcons from '../../assets/care-panel-icons.jpeg';
+import carePanelIcons from '../../assets/care-panel-icons.png';
 
 // Constants
 const DEBOUNCE_DURATION_MS = 1000;
@@ -38,9 +37,8 @@ const SHAKE_ANIMATION_DURATION_MS = 200;
 const SHAKE_DISTANCE = 10;
 const SHOULD_USE_NATIVE_DRIVER = Platform.OS !== 'web';
 const PANEL_BASE_RATIO = 2110 / 745;
-const PANEL_ICON_SHEET_WIDTH = 1919;
-const PANEL_ICON_SHEET_HEIGHT = 820;
-const PANEL_ICON_HALF_WIDTH = PANEL_ICON_SHEET_WIDTH / 2;
+const ICON_VIEWPORT_WIDTH = 138;
+const ICON_VIEWPORT_HEIGHT = 118;
 
 type ItemType = 'carrot' | 'water';
 type TurtleState = 'walking' | 'eating' | 'happy' | 'sleeping' | 'arrived';
@@ -207,6 +205,7 @@ interface CareItemButtonProps {
   onTouchFeedback: () => void;
   scaleAnim: Animated.Value;
   opacityAnim: Animated.Value;
+  slotStyle: ViewStyle;
 }
 
 const CareItemButton: React.FC<CareItemButtonProps> = ({
@@ -219,6 +218,7 @@ const CareItemButton: React.FC<CareItemButtonProps> = ({
   onTouchFeedback,
   scaleAnim,
   opacityAnim,
+  slotStyle,
 }) => {
   const handlePressIn = () => {
     if (!isDisabled || count === 0) {
@@ -236,14 +236,18 @@ const CareItemButton: React.FC<CareItemButtonProps> = ({
     <Animated.View
       style={[
         styles.itemHitArea,
+        slotStyle,
         { transform: [{ translateX: shakeAnim }] },
       ]}
     >
       <Animated.View
-        style={{
+        style={[
+          styles.buttonWrap,
+          {
           transform: [{ scale: scaleAnim }],
           opacity: opacityAnim,
-        }}
+          },
+        ]}
       >
         <Pressable
           style={[styles.button, isDisabled && styles.buttonDisabled]}
@@ -257,15 +261,16 @@ const CareItemButton: React.FC<CareItemButtonProps> = ({
           <View style={styles.buttonOverlay}>
             <View style={styles.iconViewport}>
               <Image
+                testID={`${itemType}-icon-sheet`}
                 source={
                   Platform.OS === 'web'
                     ? carePanelIcons
-                    : require('../../assets/care-panel-icons.jpeg')
+                    : require('../../assets/care-panel-icons.png')
                 }
                 style={[
                   styles.iconSheet,
                   {
-                    left: itemType === 'water' ? 0 : -styles.iconViewport.width,
+                    left: itemType === 'water' ? 0 : -ICON_VIEWPORT_WIDTH,
                     top: 0,
                   },
                 ]}
@@ -275,8 +280,10 @@ const CareItemButton: React.FC<CareItemButtonProps> = ({
         </Pressable>
       </Animated.View>
       <View style={styles.countWrap}>
-        <Text style={styles.countX}>×</Text>
-        <Text style={styles.countText}>{count}</Text>
+        <Text style={styles.countX}>x</Text>
+        <Text style={styles.countText} testID={`${itemType}-count`}>
+          {count}
+        </Text>
       </View>
       {isShaking && <View testID={`${itemType}-button-shake`} />}
     </Animated.View>
@@ -359,19 +366,14 @@ const CareItemsPanel: React.FC<CareItemsPanelProps> = ({
       carrotCount={carrotCount}
       waterCount={waterCount}
     >
-      <Image
-        source={
-          Platform.OS === 'web'
-            ? carePanelBase
-            : require('../../assets/care-panel-base.jpeg')
-        }
-        style={styles.panelBase}
-        resizeMode="contain"
-      />
-
-      <Text style={styles.hiddenTitle} testID="care-items-title">
-        돌봐주기
-      </Text>
+      <View style={styles.panelBase} testID="care-panel-base">
+        <View style={styles.panelInnerBorder} />
+        <Text style={styles.titleText} testID="care-items-title">
+          돌봐주기
+        </Text>
+        <View style={[styles.slotCircle, styles.waterCircle]} />
+        <View style={[styles.slotCircle, styles.carrotCircle]} />
+      </View>
 
       <View style={styles.buttonsContainer} testID="care-items-buttons-container">
         <CareItemButton
@@ -384,6 +386,7 @@ const CareItemsPanel: React.FC<CareItemsPanelProps> = ({
           onTouchFeedback={waterFeedback.animateTouchFeedback}
           scaleAnim={waterFeedback.scaleAnim}
           opacityAnim={waterFeedback.opacityAnim}
+          slotStyle={styles.waterSlot}
         />
         <CareItemButton
           itemType="carrot"
@@ -395,6 +398,7 @@ const CareItemsPanel: React.FC<CareItemsPanelProps> = ({
           onTouchFeedback={carrotFeedback.animateTouchFeedback}
           scaleAnim={carrotFeedback.scaleAnim}
           opacityAnim={carrotFeedback.opacityAnim}
+          slotStyle={styles.carrotSlot}
         />
       </View>
     </View>
@@ -412,68 +416,135 @@ const styles = StyleSheet.create({
     position: 'absolute',
     width: '100%',
     height: '100%',
+    borderRadius: 34,
+    backgroundColor: '#FFF8E7',
+    borderWidth: 1,
+    borderColor: 'rgba(227, 205, 164, 0.95)',
+    shadowColor: '#D8C18A',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.2,
+    shadowRadius: 14,
+    elevation: 6,
+    overflow: 'hidden',
   },
-  hiddenTitle: {
+  panelInnerBorder: {
     position: 'absolute',
-    opacity: 0,
+    left: 10,
+    right: 10,
+    top: 10,
+    bottom: 10,
+    borderRadius: 26,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 251, 240, 0.85)',
+  },
+  titleText: {
+    position: 'absolute',
+    left: '5.7%',
+    top: '29.5%',
+    fontFamily: 'Nanum Gothic, Arial, sans-serif',
+    fontSize: 44,
+    fontWeight: '700',
+    color: '#6F4A2D',
+    letterSpacing: -1.1,
+    textShadowColor: 'rgba(255, 255, 255, 0.8)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 1,
+  },
+  slotCircle: {
+    position: 'absolute',
+    width: '16.9%',
+    aspectRatio: 1,
+    top: '11.8%',
+    borderRadius: 999,
+    backgroundColor: '#FFF6D6',
+    borderWidth: 1,
+    borderColor: 'rgba(236, 215, 166, 0.95)',
+  },
+  waterCircle: {
+    left: '47.9%',
+  },
+  carrotCircle: {
+    left: '78%',
   },
   buttonsContainer: {
     position: 'absolute',
-    left: '32%',
-    right: '5.5%',
-    top: '10%',
-    bottom: '10%',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
   },
   button: {
-    width: 128,
-    height: 128,
-    borderRadius: 64,
+    width: 136,
+    height: 136,
+    borderRadius: 68,
     backgroundColor: 'transparent',
   },
   buttonDisabled: {
     opacity: 0.45,
   },
   itemHitArea: {
-    width: '46%',
-    flexDirection: 'row',
+    position: 'absolute',
+    top: '16.2%',
+    width: '21.2%',
+    height: '54%',
     alignItems: 'center',
     justifyContent: 'center',
+    flexDirection: 'row',
+  },
+  waterSlot: {
+    left: '35.7%',
+  },
+  carrotSlot: {
+    left: '63.5%',
   },
   buttonOverlay: {
     flex: 1,
-    borderRadius: 64,
+    borderRadius: 68,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  buttonWrap: {
+    width: '71%',
+    height: '100%',
     alignItems: 'center',
     justifyContent: 'center',
   },
   iconViewport: {
-    width: 126,
-    height: 104,
+    width: ICON_VIEWPORT_WIDTH,
+    height: ICON_VIEWPORT_HEIGHT,
     overflow: 'hidden',
     position: 'relative',
   },
   iconSheet: {
     position: 'absolute',
-    width: (PANEL_ICON_SHEET_WIDTH / PANEL_ICON_HALF_WIDTH) * 126,
-    height: (PANEL_ICON_SHEET_HEIGHT / 104) * 104,
+    width: ICON_VIEWPORT_WIDTH * 2,
+    height: ICON_VIEWPORT_HEIGHT,
   },
   countWrap: {
-    marginLeft: 8,
+    marginLeft: 6,
+    marginTop: -1,
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: 58,
   },
   countX: {
-    fontSize: 38,
-    fontWeight: '700',
-    color: '#8B6B46',
-    marginRight: 2,
-  },
-  countText: {
+    fontFamily: 'Nanum Gothic, Arial, sans-serif',
     fontSize: 34,
     fontWeight: '700',
     lineHeight: 38,
+    color: '#7B6344',
+    marginRight: 4,
+    textShadowColor: 'rgba(255, 255, 255, 0.55)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 1,
+  },
+  countText: {
+    fontFamily: 'Nanum Gothic, Arial, sans-serif',
+    fontSize: 38,
+    fontWeight: '700',
+    lineHeight: 40,
+    letterSpacing: -0.3,
     color: '#7B6344',
     textShadowColor: 'rgba(255, 255, 255, 0.55)',
     textShadowOffset: { width: 0, height: 1 },

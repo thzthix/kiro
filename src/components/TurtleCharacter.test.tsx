@@ -13,7 +13,7 @@ describe('TurtleCharacter', () => {
     ],
   };
 
-  it('renders the walking sprite sheet when the turtle is walking', () => {
+  it('renders the display walking sprite sheet when the turtle is walking', () => {
     const { getByTestId } = render(
       <TurtleCharacter
         progress={50}
@@ -25,7 +25,7 @@ describe('TurtleCharacter', () => {
     const turtleImage = getByTestId('turtle-image');
     expect(getByTestId('turtle-character-walking')).toBeTruthy();
     expect(turtleImage.props.source).toEqual(
-      require('../../assets/images/turtle_walking_frame.jpeg')
+      require('../../assets/images/turtle_walking_sheet_display.png')
     );
   });
 

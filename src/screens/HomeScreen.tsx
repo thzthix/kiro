@@ -18,7 +18,7 @@ import { Text, Image, StyleSheet, Platform } from 'react-native';
 import TimeInputPopup from '../components/TimeInputPopup';
 import ScreenLayout from '../components/ScreenLayout';
 import { COLORS, LAYOUT } from '../constants/theme';
-import turtleHappy from '../../assets/images/turtle/turtle_happy.jpeg';
+import turtleHappy from '../../assets/images/turtle/turtle_happy.png';
 
 interface HomeScreenProps {
   onStartSession?: (duration: number) => void;
@@ -47,7 +47,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onStartSession }) => {
       {/* Turtle illustration */}
       <Image
         testID="home-turtle-illustration"
-        source={Platform.OS === 'web' ? turtleHappy : require('../../assets/images/turtle/turtle_happy.jpeg')}
+        source={Platform.OS === 'web' ? turtleHappy : require('../../assets/images/turtle/turtle_happy.png')}
         style={styles.turtleIllustration}
         resizeMode="contain"
       />

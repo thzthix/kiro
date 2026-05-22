@@ -21,13 +21,22 @@ describe('CareItemsPanel', () => {
     jest.useRealTimers();
   });
 
-  it('renders the current care panel structure and exposes counts on the container', () => {
+  it('renders the care panel with the base asset and icon sprite asset', () => {
     const { getByTestId } = render(<CareItemsPanel {...defaultProps} />);
 
     const container = getByTestId('care-items-panel-container');
     expect(container).toBeTruthy();
-    expect(getByTestId('care-items-title')).toBeTruthy();
+    expect(getByTestId('care-panel-base')).toBeTruthy();
+    expect(getByTestId('care-items-title').props.children).toBe('돌봐주기');
     expect(getByTestId('care-items-buttons-container')).toBeTruthy();
+    expect(getByTestId('water-icon-sheet').props.source).toEqual(
+      require('../../assets/care-panel-icons.png')
+    );
+    expect(getByTestId('carrot-icon-sheet').props.source).toEqual(
+      require('../../assets/care-panel-icons.png')
+    );
+    expect(getByTestId('water-count').props.children).toBe(3);
+    expect(getByTestId('carrot-count').props.children).toBe(3);
     expect(container.props.carrotCount).toBe(3);
     expect(container.props.waterCount).toBe(3);
   });

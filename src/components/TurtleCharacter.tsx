@@ -6,12 +6,12 @@ import { handleAnimationError, handleImageLoadError } from '../utils/ErrorHandle
 import { CANVAS_REFERENCE } from '../constants/theme';
 
 // Import images for web compatibility
-import turtleWalking from '../../assets/images/turtle/turtle_walking.jpeg';
-import turtleEating from '../../assets/images/turtle/turtle_eating.jpeg';
-import turtleHappy from '../../assets/images/turtle/turtle_happy.jpeg';
-import turtleSleeping from '../../assets/images/turtle/turtle_sleeping.jpeg';
+import turtleWalking from '../../assets/images/turtle/turtle_walking.png';
+import turtleEating from '../../assets/images/turtle/turtle_eating.png';
+import turtleHappy from '../../assets/images/turtle/turtle_happy.png';
+import turtleSleeping from '../../assets/images/turtle/turtle_sleeping.png';
 import turtleArrived from '../../assets/images/turtle/turtle_arrived.png';
-import turtleWalkingFrame from '../../assets/images/turtle_walking_frame.jpeg';
+import turtleWalkingSheetDisplay from '../../assets/images/turtle_walking_sheet_display.png';
 
 interface TurtleCharacterProps {
   progress: number; // 0-100
@@ -31,11 +31,14 @@ const TURTLE_SIZE = 116;
 const SHOULD_USE_NATIVE_DRIVER = Platform.OS !== 'web';
 const WALKING_SPRITE_COLUMNS = 6;
 const WALKING_SPRITE_ROWS = 4;
-const WALKING_FRAME_COUNT = 24;
-const WALKING_SPRITE_WIDTH = 1696;
-const WALKING_SPRITE_HEIGHT = 927;
-const WALKING_FRAME_WIDTH = WALKING_SPRITE_WIDTH / WALKING_SPRITE_COLUMNS;
-const WALKING_FRAME_HEIGHT = WALKING_SPRITE_HEIGHT / WALKING_SPRITE_ROWS;
+const WALKING_FRAME_COUNT = WALKING_SPRITE_COLUMNS * WALKING_SPRITE_ROWS;
+const WALKING_FRAME_WIDTH = TURTLE_SIZE;
+const WALKING_FRAME_HEIGHT = TURTLE_SIZE;
+const WALKING_FRAME_GAP_X = 16;
+const WALKING_FRAME_GAP_Y = 16;
+const WALKING_VIEWPORT_HEIGHT = TURTLE_SIZE;
+const WALKING_FRAME_STEP_X = WALKING_FRAME_WIDTH + WALKING_FRAME_GAP_X;
+const WALKING_FRAME_STEP_Y = WALKING_FRAME_HEIGHT + WALKING_FRAME_GAP_Y;
 
 // Sprite mapping for each turtle state
 const TURTLE_SPRITES: Record<TurtleState, any> = Platform.OS === 'web' ? {
@@ -45,10 +48,10 @@ const TURTLE_SPRITES: Record<TurtleState, any> = Platform.OS === 'web' ? {
   sleeping: turtleSleeping,
   arrived: turtleArrived,
 } : {
-  walking: require('../../assets/images/turtle/turtle_walking.jpeg'),
-  eating: require('../../assets/images/turtle/turtle_eating.jpeg'),
-  happy: require('../../assets/images/turtle/turtle_happy.jpeg'),
-  sleeping: require('../../assets/images/turtle/turtle_sleeping.jpeg'),
+  walking: require('../../assets/images/turtle/turtle_walking.png'),
+  eating: require('../../assets/images/turtle/turtle_eating.png'),
+  happy: require('../../assets/images/turtle/turtle_happy.png'),
+  sleeping: require('../../assets/images/turtle/turtle_sleeping.png'),
   arrived: require('../../assets/images/turtle/turtle_arrived.png'),
 };
 
@@ -207,20 +210,20 @@ const TurtleCharacter: React.FC<TurtleCharacterProps> = ({
             testID="turtle-image"
             source={
               Platform.OS === 'web'
-                ? turtleWalkingFrame
-                : require('../../assets/images/turtle_walking_frame.jpeg')
+                ? turtleWalkingSheetDisplay
+                : require('../../assets/images/turtle_walking_sheet_display.png')
             }
             style={[
               styles.walkingSpriteSheet,
               {
-                left: -frameColumn * styles.spriteViewport.width,
-                top: -frameRow * styles.spriteViewport.height,
+                left: -frameColumn * WALKING_FRAME_STEP_X,
+                top: -frameRow * WALKING_FRAME_STEP_Y,
               },
             ]}
             onError={(error) => {
-              handleImageLoadError(error, 'turtle-walking-frame-sheet', {
+              handleImageLoadError(error, 'turtle-walking-sheet-display', {
                 component: 'TurtleCharacter',
-                metadata: { state: validState },
+                metadata: { frameIndex, state: validState },
               });
             }}
           />
@@ -275,17 +278,18 @@ const styles = StyleSheet.create({
   },
   spriteViewport: {
     width: TURTLE_SIZE,
-    height: TURTLE_SIZE * (WALKING_FRAME_HEIGHT / WALKING_FRAME_WIDTH),
+    height: WALKING_VIEWPORT_HEIGHT,
     overflow: 'hidden',
     position: 'relative',
   },
   walkingSpriteSheet: {
     position: 'absolute',
-    width: TURTLE_SIZE * WALKING_SPRITE_COLUMNS,
+    width:
+      WALKING_SPRITE_COLUMNS * TURTLE_SIZE +
+      (WALKING_SPRITE_COLUMNS - 1) * WALKING_FRAME_GAP_X,
     height:
-      TURTLE_SIZE *
-      (WALKING_FRAME_HEIGHT / WALKING_FRAME_WIDTH) *
-      WALKING_SPRITE_ROWS,
+      WALKING_SPRITE_ROWS * WALKING_VIEWPORT_HEIGHT +
+      (WALKING_SPRITE_ROWS - 1) * WALKING_FRAME_GAP_Y,
   },
   heartEffect: {
     position: 'absolute',

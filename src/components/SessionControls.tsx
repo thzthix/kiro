@@ -28,7 +28,7 @@ import {
   ViewStyle,
   ImageBackground,
 } from 'react-native';
-import pausePanelImage from '../../assets/pause-panel-full.jpeg';
+import pausePanelImage from '../../assets/pause-panel-full.png';
 
 // Constants for styling and configuration
 const PAUSE_PANEL_WIDTH_HEIGHT_RATIO = 2.15; // Approximate ratio from image
@@ -243,7 +243,7 @@ const SessionControls: React.FC<SessionControlsProps> = ({
           source={
             Platform.OS === 'web'
               ? pausePanelImage
-              : require('../../assets/pause-panel-full.jpeg')
+              : require('../../assets/pause-panel-full.png')
           }
           style={styles.panelImage}
           resizeMode="contain"
