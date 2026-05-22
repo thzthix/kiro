@@ -1,5 +1,5 @@
 /**
- * HomeScreen Component (GREEN Phase)
+ * HomeScreen Component
  * Feature: turtle-study-app
  * Task: 13.2 Create HomeScreen (GREEN)
  * Refactored: Task 13.5 Refactor screens (REFACTOR)
@@ -8,6 +8,7 @@
  * watercolor background, and automatically opens TimeInputPopup.
  * 
  * Uses ScreenLayout for common background and decorative elements.
+ * TimeInputPopup remains open when cancel is pressed (as per requirements).
  * 
  * Requirements: 1.1, 6.1, 6.2, 6.5
  */

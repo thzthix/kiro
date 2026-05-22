@@ -1,5 +1,5 @@
 /**
- * CompletionScreen Component (GREEN Phase)
+ * CompletionScreen Component
  * Feature: turtle-study-app
  * Task: 13.4 Create CompletionScreen (GREEN)
  * Refactored: Task 13.5 Refactor screens (REFACTOR)
@@ -9,11 +9,12 @@
  * session summary in MM:SS format, and action buttons.
  * 
  * Uses ScreenLayout for common background and decorative elements.
+ * Button presses are debounced to prevent rapid repeated taps.
  * 
  * Requirements: 4.7, 5.9, 7.1, 7.2, 7.3, 7.4, 7.5
  */
 
-import React, { useCallback, useRef } from 'react';
+import React, { useCallback } from 'react';
 import {
   View,
   Text,
@@ -23,6 +24,7 @@ import {
 } from 'react-native';
 import ScreenLayout from '../components/ScreenLayout';
 import { formatTime } from '../utils/ProgressCalculator';
+import { useButtonDebounce } from '../hooks/useButtonDebounce';
 import { COLORS, LAYOUT } from '../constants/theme';
 
 interface CompletionScreenProps {
@@ -36,23 +38,7 @@ export const CompletionScreen: React.FC<CompletionScreenProps> = ({
   onStartNew,
   onClose,
 }) => {
-  const lastPressTime = useRef<{ [key: string]: number }>({});
-
-  // Debounce button presses (500ms cooldown)
-  const handlePress = useCallback(
-    (key: string, callback?: (payload?: { action: string }) => void, payload?: { action: string }) => {
-      const now = Date.now();
-      const lastPress = lastPressTime.current[key] || 0;
-
-      if (now - lastPress < 500) {
-        return; // Ignore rapid presses
-      }
-
-      lastPressTime.current[key] = now;
-      callback?.(payload);
-    },
-    []
-  );
+  const { handlePress } = useButtonDebounce(500);
 
   const handleStartNew = useCallback(() => {
     handlePress('startNew', onStartNew, { action: 'openTimeInput' });
