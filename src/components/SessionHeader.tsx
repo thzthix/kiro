@@ -13,64 +13,18 @@ import { View, Text, StyleSheet, Image, Platform } from 'react-native';
 import { formatTime } from '../utils/ProgressCalculator';
 import { COLORS } from '../constants/theme';
 import timerPanelBase from '../../assets/images/timer_pannel_base.jpeg';
-import timePanelNumber from '../../assets/images/time_pannel_number.jpeg';
 
 interface SessionHeaderProps {
   remainingSeconds: number;
   progress: number; // 0-100 (kept for compatibility but not displayed)
 }
 
-const NUMBER_SHEET_COLUMNS = 5;
-const NUMBER_SHEET_ROWS = 2;
-const NUMBER_SHEET_WIDTH = 1774;
-const NUMBER_SHEET_HEIGHT = 887;
-const DIGIT_WIDTH = NUMBER_SHEET_WIDTH / NUMBER_SHEET_COLUMNS;
-const DIGIT_HEIGHT = NUMBER_SHEET_HEIGHT / NUMBER_SHEET_ROWS;
-
-const DIGIT_INDEX: Record<string, number> = {
-  '0': 0,
-  '1': 1,
-  '2': 2,
-  '3': 3,
-  '4': 4,
-  '5': 5,
-  '6': 6,
-  '7': 7,
-  '8': 8,
-  '9': 9,
-};
-
-const TimerDigit: React.FC<{ digit: string }> = ({ digit }) => {
-  const index = DIGIT_INDEX[digit] ?? 0;
-  const column = index % NUMBER_SHEET_COLUMNS;
-  const row = Math.floor(index / NUMBER_SHEET_COLUMNS);
-
-  return (
-    <View style={styles.digitViewport}>
-      <Image
-        source={
-          Platform.OS === 'web'
-            ? timePanelNumber
-            : require('../../assets/images/time_pannel_number.jpeg')
-        }
-        style={[
-          styles.digitSheet,
-          {
-            left: -column * styles.digitViewport.width,
-            top: -row * styles.digitViewport.height,
-          },
-        ]}
-      />
-    </View>
-  );
-};
-
 const SessionHeader: React.FC<SessionHeaderProps> = ({
   remainingSeconds,
 }) => {
   const safeRemainingSeconds = Math.max(0, remainingSeconds);
   const formattedTime = formatTime(safeRemainingSeconds);
-  const [minuteTens, minuteOnes, secondTens, secondOnes] = formattedTime.replace(':', '');
+  const [minutes, seconds] = formattedTime.split(':');
 
   return (
     <View
@@ -88,11 +42,19 @@ const SessionHeader: React.FC<SessionHeaderProps> = ({
           resizeMode="contain"
         />
 
-        <View style={styles.spriteTimerRow} pointerEvents="none">
-          <TimerDigit digit={minuteTens} />
-          <TimerDigit digit={minuteOnes} />
-          <TimerDigit digit={secondTens} />
-          <TimerDigit digit={secondOnes} />
+        <View style={styles.textTimerWrap} pointerEvents="none">
+          <Text
+            style={[styles.timerText, styles.minutesText]}
+            testID="timer-minutes"
+          >
+            {minutes}
+          </Text>
+          <Text
+            style={[styles.timerText, styles.secondsText]}
+            testID="timer-seconds"
+          >
+            {seconds}
+          </Text>
         </View>
 
         <Text
@@ -116,40 +78,43 @@ const styles = StyleSheet.create({
   },
   innerContainer: {
     width: '100%',
-    maxWidth: 320,
+    maxWidth: 372,
     aspectRatio: 1756 / 895,
     justifyContent: 'center',
     alignItems: 'center',
-    ...(Platform.OS === 'web' && {
-      maxWidth: '28vw',
-      minWidth: 280,
-    }),
+    minWidth: 320,
   },
   panelBase: {
     width: '100%',
     height: '100%',
     position: 'absolute',
   },
-  spriteTimerRow: {
+  textTimerWrap: {
     position: 'absolute',
-    top: '34.5%',
-    width: '55%',
-    height: '38%',
+    top: '36.2%',
+    width: '56%',
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: '2.5%',
+    justifyContent: 'center',
   },
-  digitViewport: {
-    width: 42,
-    height: 54,
-    overflow: 'hidden',
-    position: 'relative',
+  timerText: {
+    fontFamily:
+      'Avenir Next Rounded, Avenir Next, Nunito, Arial Rounded MT Bold, Trebuchet MS, sans-serif',
+    fontSize: 82,
+    fontWeight: '600',
+    letterSpacing: 0.2,
+    lineHeight: 90,
+    color: '#7B6344',
+    textAlign: 'center',
+    textShadowColor: 'rgba(255, 255, 255, 0.7)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
   },
-  digitSheet: {
-    position: 'absolute',
-    width: DIGIT_WIDTH > 0 ? (NUMBER_SHEET_WIDTH / DIGIT_WIDTH) * 42 : 42,
-    height: DIGIT_HEIGHT > 0 ? (NUMBER_SHEET_HEIGHT / DIGIT_HEIGHT) * 54 : 54,
+  minutesText: {
+    marginRight: '15.5%',
+  },
+  secondsText: {
+    marginLeft: '15.5%',
   },
   hiddenTimer: {
     position: 'absolute',

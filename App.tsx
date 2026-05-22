@@ -87,10 +87,10 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.beige,
     width: '100%',
     height: '100%',
-    ...(Platform.OS === 'web' && {
+    ...(Platform.OS === 'web' && ({
       width: '100vw',
       minHeight: '100vh',
-    }),
+    } as any)),
   },
 });
 
