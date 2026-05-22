@@ -1,5 +1,5 @@
 /**
- * TimerDisplay Component
+ * TimerDisplay Component (REFACTOR Phase)
  * Feature: turtle-study-app
  * 
  * Displays remaining time in MM:SS format with large, bold, centered typography.
@@ -13,6 +13,8 @@
 import React from 'react';
 import { Text, StyleSheet } from 'react-native';
 import { formatTime } from '../utils/ProgressCalculator';
+import { sanitizeSeconds, createTimeAccessibilityLabel } from '../utils/progressUtils';
+import { COLORS, TYPOGRAPHY } from '../constants/theme';
 
 interface TimerDisplayProps {
   remainingSeconds: number;
@@ -25,14 +27,9 @@ interface TimerDisplayProps {
  * @returns Text component displaying formatted time
  */
 const TimerDisplay: React.FC<TimerDisplayProps> = ({ remainingSeconds }) => {
-  // Handle edge cases: negative, NaN, or decimal values
   const sanitizedSeconds = sanitizeSeconds(remainingSeconds);
-  
-  // Format time to MM:SS
   const formattedTime = formatTime(sanitizedSeconds);
-  
-  // Create accessibility label with readable time
-  const accessibilityLabel = createAccessibilityLabel(sanitizedSeconds);
+  const accessibilityLabel = createTimeAccessibilityLabel(sanitizedSeconds);
 
   return (
     <Text
@@ -47,57 +44,12 @@ const TimerDisplay: React.FC<TimerDisplayProps> = ({ remainingSeconds }) => {
   );
 };
 
-/**
- * Sanitize seconds input to handle edge cases.
- * - Negative values → 0
- * - NaN → 0
- * - Decimals → floor to integer
- * 
- * @param seconds - Raw seconds value
- * @returns Sanitized non-negative integer seconds
- */
-function sanitizeSeconds(seconds: number): number {
-  // Handle NaN
-  if (isNaN(seconds)) {
-    return 0;
-  }
-  
-  // Handle negative values
-  if (seconds < 0) {
-    return 0;
-  }
-  
-  // Floor decimal values
-  return Math.floor(seconds);
-}
-
-/**
- * Create accessibility label with readable time information.
- * 
- * @param seconds - Time in seconds
- * @returns Accessibility label string
- */
-function createAccessibilityLabel(seconds: number): string {
-  const minutes = Math.floor(seconds / 60);
-  const remainingSeconds = seconds % 60;
-  
-  if (minutes === 0) {
-    return `${remainingSeconds} seconds remaining`;
-  }
-  
-  if (remainingSeconds === 0) {
-    return `${minutes} minutes remaining`;
-  }
-  
-  return `${minutes} minutes and ${remainingSeconds} seconds remaining`;
-}
-
 const styles = StyleSheet.create({
   timer: {
-    fontSize: 48,
-    fontWeight: 'bold',
+    fontSize: TYPOGRAPHY.timerFontSize,
+    fontWeight: TYPOGRAPHY.timerFontWeight,
     textAlign: 'center',
-    color: '#2C3E50', // Dark color for readability
+    color: COLORS.textPrimary,
     letterSpacing: 2,
   },
 });

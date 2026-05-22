@@ -16,6 +16,33 @@ export const COLORS = {
   lightYellow: '#FFFACD',
   mint: '#A8D5BA',
   oliveGreen: '#8B9556',
+  darkGray: '#4A4A4A',
+  lightGray: '#E5E5E5',
+  textPrimary: '#2C3E50',
+} as const;
+
+/**
+ * Typography constants for consistent text styling
+ */
+export const TYPOGRAPHY = {
+  timerFontSize: 48,
+  timerFontWeight: '700' as const,
+  turtleIconSize: 20,
+} as const;
+
+/**
+ * Layout and spacing constants
+ */
+export const LAYOUT = {
+  borderRadiusSmall: 4,
+  borderRadiusLarge: 20,
+  progressBarHeight: 8,
+  turtleSliderSize: 24,
+  spacing: {
+    small: 8,
+    medium: 16,
+    large: 20,
+  },
 } as const;
 
 /**
