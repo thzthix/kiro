@@ -647,7 +647,7 @@ The implementation follows a bottom-up approach: core business logic first, then
     - Run tests - they should PASS
     - _Requirements: 2.3, 4.4, 4.5, 4.8, 4.9, 4.10, 5.5, 5.6, 5.10, 9.3, 9.8_
   
-  - [ ] 17.4 Integrate care items with turtle state (GREEN)
+  - [x] 17.4 Integrate care items with turtle state (GREEN)
     - Connect care item button taps to turtle eating state changes
     - Trigger eating state immediately when care item button tapped (display turtle_eating.jpeg with head nodding + mouth movement for 1s)
     - Decrement item count on tap
@@ -658,7 +658,7 @@ The implementation follows a bottom-up approach: core business logic first, then
     - Run tests - they should PASS
     - _Requirements: 4.4, 4.5, 5.2, 5.4, 5.5, 5.6, 5.7, 5.8, 5.13, 9.10_
   
-  - [ ] 17.5 Integrate pause/resume with all timers (GREEN)
+  - [x] 17.5 Integrate pause/resume with all timers (GREEN)
     - Pause timer, eating timer, and happy timer on pause action
     - Store remainingEatingDuration or remainingHappyDuration when pausing during eating/happy states
     - Resume all timers from paused state on resume action
