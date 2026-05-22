@@ -50,7 +50,9 @@ export function calculatePosition(
   pathCoordinates: PathCoordinates
 ): Point {
   const t = progress / 100; // Normalize to [0, 1]
-  const { start, end, controlPoints } = pathCoordinates;
+  const { start, goal, waypoints } = pathCoordinates;
+  const end = goal;
+  const controlPoints = waypoints;
 
   return cubicBezier(t, start, controlPoints[0], controlPoints[1], end);
 }

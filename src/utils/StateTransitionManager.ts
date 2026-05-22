@@ -1,4 +1,4 @@
-import { TurtleState, CareItem } from '../types';
+import { TurtleState, CareItemType } from '../types';
 
 // State duration constants (in milliseconds)
 const EATING_DURATION_MS = 1000; // 1 second
@@ -29,7 +29,7 @@ export function getNextState(
   currentState: TurtleState,
   trigger: TransitionTrigger,
   currentTime: number,
-  item?: CareItem,
+  _item?: CareItemType,
   previousStateBeforePause?: TurtleState
 ): StateTransitionResult {
   switch (trigger) {
@@ -139,7 +139,7 @@ export function shouldImmediatelyTransitionToArrived(
  * @returns Remaining duration in milliseconds
  */
 export function calculateRemainingStateDuration(
-  state: TurtleState,
+  _state: TurtleState,
   stateEndTime: number,
   currentTime: number
 ): number {

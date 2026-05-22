@@ -6,10 +6,11 @@ module.exports = {
   ],
   transform: {
     '^.+\\.(js|jsx|ts|tsx)$': 'babel-jest',
+    '\\.(jpg|jpeg|png|gif|svg)$': '<rootDir>/__mocks__/assetTransformer.js',
   },
-  moduleNameMapper: {
-    '\\.(jpg|jpeg|png|gif|svg)$': '<rootDir>/__mocks__/fileMock.js',
-  },
+  transformIgnorePatterns: [
+    'node_modules/(?!(react-native|@react-native|@testing-library)/)',
+  ],
   collectCoverageFrom: [
     'src/**/*.{ts,tsx}',
     '!src/**/*.d.ts',
@@ -25,4 +26,5 @@ module.exports = {
     },
   },
   testEnvironment: 'node',
+  setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
 };

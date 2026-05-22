@@ -106,8 +106,8 @@ describe('ProgressCalculator - Property-Based Tests', () => {
   describe('Position Calculation', () => {
     const mockPath: PathCoordinates = {
       start: { x: 0, y: 100 },
-      end: { x: 300, y: 100 },
-      controlPoints: [
+      goal: { x: 300, y: 100 },
+      waypoints: [
         { x: 100, y: 80 },
         { x: 200, y: 120 },
       ],
@@ -140,10 +140,10 @@ describe('ProgressCalculator - Property-Based Tests', () => {
       expect(result.y).toBeCloseTo(mockPath.start.y, 1);
     });
 
-    it('should return end position when progress is 100', () => {
+    it('should return goal position when progress is 100', () => {
       const result = calculatePosition(100, mockPath);
-      expect(result.x).toBeCloseTo(mockPath.end.x, 1);
-      expect(result.y).toBeCloseTo(mockPath.end.y, 1);
+      expect(result.x).toBeCloseTo(mockPath.goal.x, 1);
+      expect(result.y).toBeCloseTo(mockPath.goal.y, 1);
     });
   });
 });

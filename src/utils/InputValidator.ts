@@ -3,10 +3,12 @@ const MIN_DURATION_MINUTES = 1;
 const MAX_DURATION_MINUTES = 180;
 const INTEGER_PATTERN = /^-?\d+$/;
 
+export type ValidationErrorType = 'empty' | 'non-integer' | 'out-of-range';
+
 export interface ValidationResult {
   valid: boolean;
   value?: number;
-  errorType?: 'empty' | 'non-integer' | 'out-of-range';
+  errorType?: ValidationErrorType;
 }
 
 /**
@@ -64,9 +66,7 @@ function isInValidRange(value: number): boolean {
 /**
  * Creates a validation error result.
  */
-function createErrorResult(
-  errorType: 'empty' | 'non-integer' | 'out-of-range'
-): ValidationResult {
+function createErrorResult(errorType: ValidationErrorType): ValidationResult {
   return {
     valid: false,
     errorType,
