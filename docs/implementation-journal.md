@@ -3507,3 +3507,160 @@ Task 17.2 완료로 Turtle Study App의 핵심 기능 구현이 완료되었습�
 - Task 17.6: Integration code refactoring
 
 ---
+
+
+---
+
+## 날짜: 2025-01-22 Task 17.4: 돌봄 아이템과 거북이 상태 통합 (GREEN)
+
+### 📋 Task 개요
+- **Task ID**: 17.4
+- **목표**: 돌봄 아이템 탭과 거북이 상태 전환 통합, eating (1s) → happy (3s) → walking 플로우 구현, 아이템 카운트 감소, 버튼 비활성화, 디바운싱 처리
+- **관련 Requirements**: 5.1-5.8, 5.13-5.16, 6.4, 6.5, 6.7, 6.8
+- **소요 시간**: 약 15분
+
+### 🎯 설계 결정 (Design Decisions)
+
+#### 구현 상태 확인
+
+이 작업을 시작하기 전에 전체 통합 테스트를 실행한 결과, **모든 돌봄 아이템 통합 기능이 이미 완벽하게 구현되어 있음**을 확인했습니다.
+
+**확인된 기능**:
+1. ✅ 돌봄 아이템 탭 시 즉시 eating 상태로 전환
+2. ✅ eating (1s) → happy (3s) → walking 플로우 정상 작동
+3. ✅ 아이템 카운트 감소 (carrotCount, waterCount)
+4. ✅ 카운트 0일 때 버튼 비활성화
+5. ✅ 비활성화된 버튼 탭 시 shake 애니메이션
+6. ✅ 1초 디바운싱 (rapid tap 방지)
+7. ✅ eating/happy 상태 중 버튼 비활성화
+8. ✅ 타이머 완료 시 eating/happy 상태에서 즉시 arrived로 전환
+9. ✅ pause 중 eating/happy 상태 duration 보존 및 복원
+
+#### 통합 테스트 결과
+
+```bash
+npm test -- src/__tests__/integration.test.tsx --runInBand --no-coverage
+```
+
+**결과**:
+- ✅ Test Suites: 1 passed, 1 total
+- ✅ Tests: 24 passed, 24 total
+- ✅ Time: 0.844s
+
+**통과한 통합 테스트**:
+1. ✅ Complete care item flow: give item → eating → happy → walking
+2. ✅ Water item with same eating → happy → walking flow
+3. ✅ Disable individual button when count reaches 0
+4. ✅ Play shake animation when depleted button is tapped
+5. ✅ Debounce rapid taps on care item buttons
+6. ✅ Immediately transition to arrived if timer completes during eating state
+7. ✅ Immediately transition to arrived if timer completes during happy state
+8. ✅ Clear all async intervals when transitioning to arrived during eating/happy
+9. ✅ Preserve remaining eating duration when paused during eating
+10. ✅ Preserve remaining happy duration when paused during happy
+
+#### 전체 테스트 스위트 결과
+
+```bash
+npm test -- --runInBand --no-coverage
+```
+
+**결과**:
+- ✅ Test Suites: 31 passed, 31 total
+- ✅ Tests: 656 passed, 656 total
+- ✅ Time: 6.711s
+
+### 🔧 구현 세부사항
+
+#### 이미 구현된 컴포넌트 및 로직
+
+1. **CareItemsPanel.tsx**
+   - 돌봄 아이템 버튼 (당근, 물) 렌더링
+   - 아이템 카운트 표시 (🥕 ×3, 💧 ×3)
+   - 탭 이벤트 처리 및 디바운싱 (1초)
+   - 버튼 비활성화 로직 (카운트 0, eating/happy 상태, paused)
+   - Shake 애니메이션 (카운트 0일 때)
+   - 터치 피드백 애니메이션 (<100ms)
+
+2. **StudySessionScreen.tsx**
+   - CareItemsPanel 통합
+   - provideItem 콜백 연결
+   - 세션 상태에서 carrotCount, waterCount 전달
+   - careItemsDisabled 계산 로직
+
+3. **useStudySession.ts**
+   - provideItem 함수 구현
+   - eating (1s) → happy (3s) 전환 스케줄링
+   - 타이머 완료 시 eating/happy 상태에서 arrived로 즉시 전환
+   - pause 시 eating/happy 상태 duration 보존
+   - resume 시 eating/happy 상태 복원
+
+4. **AppReducer.ts**
+   - PROVIDE_ITEM 액션 처리
+   - 아이템 카운트 감소 로직
+   - eating 상태로 전환
+   - eatingStateEndTime 설정
+
+### ✅ 검증 (Verification)
+
+- **통합 테스트**: ✅ 24/24 통과
+  - 돌봄 아이템 플로우 테스트 5개 모두 통과
+  - 타이머 완료 중 eating/happy 테스트 3개 모두 통과
+  - pause 중 eating/happy 테스트 2개 모두 통과
+  - 디바운싱 테스트 통과
+
+- **전체 테스트 스위트**: ✅ 656/656 통과
+  - 31개 테스트 스위트 모두 통과
+  - 회귀 테스트 없음
+
+- **타입 체크**: ✅ 통과
+  - TypeScript 컴파일 에러 없음
+  - 모든 타입 정의 정상
+
+### 📝 학습 내용 (Learnings)
+
+1. **TDD의 효과**:
+   - 이전 작업들에서 TDD를 철저히 따른 결과, 통합 작업이 이미 완료되어 있었음
+   - 각 컴포넌트와 훅이 독립적으로 테스트되어 통합 시 문제 없음
+   - 통합 테스트가 먼저 작성되어 있어 구현 완료 여부를 즉시 확인 가능
+
+2. **상태 관리 아키텍처**:
+   - AppReducer의 중앙 집중식 상태 관리가 통합을 단순화
+   - useStudySession 훅이 비즈니스 로직을 캡슐화하여 컴포넌트 간 결합도 낮춤
+   - 명확한 액션 타입과 페이로드로 상태 전환 추적 용이
+
+3. **컴포넌트 설계**:
+   - CareItemsPanel이 독립적으로 동작하면서도 외부 상태와 잘 통합됨
+   - Props를 통한 명확한 인터페이스로 테스트와 재사용 용이
+   - 디바운싱, 애니메이션 등 복잡한 로직이 컴포넌트 내부에 캡슐화됨
+
+4. **비동기 상태 전환**:
+   - setTimeout을 사용한 eating/happy 전환이 안정적으로 작동
+   - pause/resume 시 남은 duration 보존 로직이 정확히 구현됨
+   - 타이머 완료 시 비동기 작업 즉시 정리하여 메모리 누수 방지
+
+### 🔗 관련 커밋
+- Commit: (예정) `feat: 돌봄 아이템과 거북이 상태 통합 (Task 17.4)`
+- Branch: `feat/care-items-integration`
+- PR: (예정) `feat: 돌봄 아이템과 거북이 상태 통합 (Task 17.4)`
+
+### 📊 변경 사항
+
+**수정된 파일**: 없음 (모든 기능이 이미 구현되어 있음)
+
+**검증된 기능**:
+- ✅ CareItemsPanel 컴포넌트 완전 구현
+- ✅ StudySessionScreen 통합 완료
+- ✅ useStudySession 훅 비즈니스 로직 완료
+- ✅ AppReducer 상태 관리 완료
+- ✅ 모든 통합 테스트 통과
+
+### 🎯 다음 단계
+
+Task 17.4 완료 후 다음 작업:
+1. Git 커밋 및 PR 생성
+2. PR 리뷰 및 머지
+3. main 브랜치로 복귀
+4. 다음 작업 진행
+
+---
