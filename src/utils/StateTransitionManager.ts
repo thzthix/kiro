@@ -185,9 +185,9 @@ export class StateTransitionManager {
       return 'arrived';
     }
 
-    // If paused, should be sleeping (unless already arrived)
+    // If paused, should be sleeping
     if (isPaused) {
-      return currentState === 'arrived' ? 'arrived' : 'sleeping';
+      return 'sleeping';
     }
 
     // Cannot place item while sleeping

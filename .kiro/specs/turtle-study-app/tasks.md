@@ -577,7 +577,7 @@ The implementation follows a bottom-up approach: core business logic first, then
     - Run tests - they should FAIL (no implementation yet)
     - _Requirements: 2.5, 6.6, 8.1, 8.4, 9.1_
   
-  - [-] 15.2 Add error handling for timer failures (GREEN)
+  - [x] 15.2 Add error handling for timer failures (GREEN)
     - Catch timer initialization errors, show "타이머를 시작할 수 없습니다" message, return to home
     - Recalculate from start time if timer becomes out of sync
     - Implement logic to make tests pass
@@ -591,7 +591,7 @@ The implementation follows a bottom-up approach: core business logic first, then
     - Run tests - they should PASS
     - _Requirements: 6.6_
   
-  - [-] 15.4 Add error handling for state transitions (GREEN)
+  - [x] 15.4 Add error handling for state transitions (GREEN)
     - Log error and maintain current state if invalid transition attempted
     - Validate all state transitions before execution
     - Implement logic to make tests pass
