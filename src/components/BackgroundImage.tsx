@@ -14,7 +14,7 @@
 import React, { useState, useCallback } from 'react';
 import { View, ImageBackground, StyleSheet, Platform } from 'react-native';
 import { COLORS } from '../constants/theme';
-import backgroundImage from '../../assets/images/background.png';
+import backgroundImage from '../../assets/full_background_road.jpeg';
 
 /**
  * Landscape element types that are part of the background image
@@ -34,7 +34,7 @@ const BackgroundImage: React.FC = () => {
 
   const imageSource = Platform.OS === 'web' 
     ? backgroundImage 
-    : require('../../assets/images/background.png');
+    : require('../../assets/full_background_road.jpeg');
 
   return (
     <View
@@ -49,6 +49,8 @@ const BackgroundImage: React.FC = () => {
           testID="background-watercolor-image"
           source={imageSource}
           style={styles.imageBackground}
+          imageStyle={styles.image}
+          resizeMode="cover"
           onError={handleImageError}
         >
           <View testID="landscape-elements" style={styles.landscapeContainer}>
@@ -81,6 +83,9 @@ const styles = StyleSheet.create({
   },
   imageBackground: {
     flex: 1,
+  },
+  image: {
+    transform: [{ scale: 1.02 }],
   },
   landscapeContainer: {
     flex: 1,

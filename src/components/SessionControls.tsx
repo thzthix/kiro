@@ -2,11 +2,10 @@
  * SessionControls Component (REFACTOR Phase)
  * Feature: turtle-study-app
  * 
- * Provides pause/resume and stop buttons for study session control.
+ * Provides pause/resume and stop buttons for study session control using panel image.
  * 
  * Requirements:
- * - Provide pause/resume and stop buttons as round square buttons
- * - Position controls at bottom right of screen
+ * - Use 일시정지패널_전체.jpeg as the base panel image
  * - Show pause button (⏸️) when status is 'running'
  * - Show resume button when status is 'paused'
  * - Always show stop button (⏹️)
@@ -20,19 +19,19 @@
 import React, { useState, useRef, useCallback } from 'react';
 import {
   View,
-  TouchableOpacity,
+  Pressable,
   Text,
   StyleSheet,
   Modal,
-  Pressable,
   Animated,
+  Platform,
+  ViewStyle,
+  ImageBackground,
 } from 'react-native';
+import pausePanelImage from '../../assets/일시정지패널_전체.jpeg';
 
 // Constants for styling and configuration
-const BUTTON_SIZE = 56;
-const BUTTON_BORDER_RADIUS = 12;
-const BUTTON_GAP = 12;
-const BUTTON_BACKGROUND_COLOR = '#A8D5BA';
+const PAUSE_PANEL_WIDTH_HEIGHT_RATIO = 2.15; // Approximate ratio from image
 const DIALOG_BORDER_RADIUS = 16;
 const DIALOG_BUTTON_BORDER_RADIUS = 8;
 const DIALOG_MAX_WIDTH = 400;
@@ -40,14 +39,9 @@ const DIALOG_PADDING = 24;
 const CANCEL_BUTTON_COLOR = '#E0E0E0';
 const CONFIRM_BUTTON_COLOR = '#FF6B6B';
 const MODAL_OVERLAY_COLOR = 'rgba(0, 0, 0, 0.5)';
+const SHOULD_USE_NATIVE_DRIVER = Platform.OS !== 'web';
 
-const BUTTON_ICONS = {
-  pause: '⏸️',
-  resume: '▶️',
-  stop: '⏹️',
-} as const;
-
-const CONFIRMATION_MESSAGE = 'Are you sure you want to stop this session?';
+const CONFIRMATION_MESSAGE = '세션을 종료하시겠습니까?';
 
 /**
  * Custom hook for managing touch feedback animation (< 100ms for buttons)
@@ -69,24 +63,24 @@ const useTouchFeedback = () => {
           Animated.timing(scaleAnim, {
             toValue: 0.95,
             duration: 50,
-            useNativeDriver: true,
+            useNativeDriver: SHOULD_USE_NATIVE_DRIVER,
           }),
           Animated.timing(scaleAnim, {
             toValue: 1,
             duration: 50,
-            useNativeDriver: true,
+            useNativeDriver: SHOULD_USE_NATIVE_DRIVER,
           }),
         ]),
         Animated.sequence([
           Animated.timing(opacityAnim, {
             toValue: 0.8,
             duration: 50,
-            useNativeDriver: true,
+            useNativeDriver: SHOULD_USE_NATIVE_DRIVER,
           }),
           Animated.timing(opacityAnim, {
             toValue: 1,
             duration: 50,
-            useNativeDriver: true,
+            useNativeDriver: SHOULD_USE_NATIVE_DRIVER,
           }),
         ]),
       ]).start();
@@ -109,16 +103,17 @@ interface SessionControlsProps {
   onPause: () => void;
   onResume: () => void;
   onStop: () => void;
+  style?: ViewStyle;
 }
 
 interface ControlButtonProps {
-  icon: string;
   onPress: () => void;
   testID: string;
   accessibilityLabel: string;
   onTouchFeedback: () => void;
   scaleAnim: Animated.Value;
   opacityAnim: Animated.Value;
+  buttonStyle: any;
 }
 
 interface StopConfirmationDialogProps {
@@ -129,15 +124,16 @@ interface StopConfirmationDialogProps {
 
 /**
  * Reusable control button component with touch feedback
+ * Buttons are positioned over the panel image
  */
 const ControlButton: React.FC<ControlButtonProps> = ({
-  icon,
   onPress,
   testID,
   accessibilityLabel,
   onTouchFeedback,
   scaleAnim,
   opacityAnim,
+  buttonStyle,
 }) => {
   const handlePressIn = () => {
     onTouchFeedback();
@@ -145,22 +141,23 @@ const ControlButton: React.FC<ControlButtonProps> = ({
 
   return (
     <Animated.View
-      style={{
-        transform: [{ scale: scaleAnim }],
-        opacity: opacityAnim,
-      }}
+      style={[
+        buttonStyle,
+        {
+          transform: [{ scale: scaleAnim }],
+          opacity: opacityAnim,
+        },
+      ]}
     >
-      <TouchableOpacity
-        style={styles.button}
+      <Pressable
+        style={styles.buttonTouchArea}
         onPress={onPress}
         onPressIn={handlePressIn}
         testID={testID}
         accessible={true}
         accessibilityLabel={accessibilityLabel}
         accessibilityRole="button"
-      >
-        <Text style={styles.buttonText}>{icon}</Text>
-      </TouchableOpacity>
+      />
     </Animated.View>
   );
 };
@@ -192,7 +189,7 @@ const StopConfirmationDialog: React.FC<StopConfirmationDialogProps> = ({
             accessibilityLabel="cancel stop"
             accessibilityRole="button"
           >
-            <Text style={styles.dialogButtonText}>Cancel</Text>
+            <Text style={styles.dialogButtonText}>취소</Text>
           </Pressable>
 
           <Pressable
@@ -203,7 +200,7 @@ const StopConfirmationDialog: React.FC<StopConfirmationDialogProps> = ({
             accessibilityLabel="confirm stop"
             accessibilityRole="button"
           >
-            <Text style={styles.dialogButtonText}>Stop</Text>
+            <Text style={styles.dialogButtonText}>종료</Text>
           </Pressable>
         </View>
       </View>
@@ -216,6 +213,7 @@ const SessionControls: React.FC<SessionControlsProps> = ({
   onPause,
   onResume,
   onStop,
+  style,
 }) => {
   const [showStopConfirmation, setShowStopConfirmation] = useState(false);
 
@@ -240,40 +238,50 @@ const SessionControls: React.FC<SessionControlsProps> = ({
 
   return (
     <>
-      <View style={styles.container} testID="session-controls-container">
-        {/* Pause/Resume Button */}
-        {isRunning ? (
-          <ControlButton
-            icon={BUTTON_ICONS.pause}
-            onPress={onPause}
-            testID="pause-button"
-            accessibilityLabel="pause session"
-            onTouchFeedback={pauseResumeFeedback.animateTouchFeedback}
-            scaleAnim={pauseResumeFeedback.scaleAnim}
-            opacityAnim={pauseResumeFeedback.opacityAnim}
-          />
-        ) : (
-          <ControlButton
-            icon={BUTTON_ICONS.resume}
-            onPress={onResume}
-            testID="resume-button"
-            accessibilityLabel="resume session"
-            onTouchFeedback={pauseResumeFeedback.animateTouchFeedback}
-            scaleAnim={pauseResumeFeedback.scaleAnim}
-            opacityAnim={pauseResumeFeedback.opacityAnim}
-          />
-        )}
+      <View style={[styles.container, style]} testID="session-controls-container">
+        <ImageBackground
+          source={
+            Platform.OS === 'web'
+              ? pausePanelImage
+              : require('../../assets/일시정지패널_전체.jpeg')
+          }
+          style={styles.panelImage}
+          resizeMode="contain"
+        >
+          {/* Pause/Resume Button - Left button area */}
+          {isRunning ? (
+            <ControlButton
+              onPress={onPause}
+              testID="pause-button"
+              accessibilityLabel="pause session"
+              onTouchFeedback={pauseResumeFeedback.animateTouchFeedback}
+              scaleAnim={pauseResumeFeedback.scaleAnim}
+              opacityAnim={pauseResumeFeedback.opacityAnim}
+              buttonStyle={styles.leftButton}
+            />
+          ) : (
+            <ControlButton
+              onPress={onResume}
+              testID="resume-button"
+              accessibilityLabel="resume session"
+              onTouchFeedback={pauseResumeFeedback.animateTouchFeedback}
+              scaleAnim={pauseResumeFeedback.scaleAnim}
+              opacityAnim={pauseResumeFeedback.opacityAnim}
+              buttonStyle={styles.leftButton}
+            />
+          )}
 
-        {/* Stop Button */}
-        <ControlButton
-          icon={BUTTON_ICONS.stop}
-          onPress={handleStopPress}
-          testID="stop-button"
-          accessibilityLabel="stop session"
-          onTouchFeedback={stopFeedback.animateTouchFeedback}
-          scaleAnim={stopFeedback.scaleAnim}
-          opacityAnim={stopFeedback.opacityAnim}
-        />
+          {/* Stop Button - Right button area */}
+          <ControlButton
+            onPress={handleStopPress}
+            testID="stop-button"
+            accessibilityLabel="stop session"
+            onTouchFeedback={stopFeedback.animateTouchFeedback}
+            scaleAnim={stopFeedback.scaleAnim}
+            opacityAnim={stopFeedback.opacityAnim}
+            buttonStyle={styles.rightButton}
+          />
+        </ImageBackground>
       </View>
 
       {/* Stop Confirmation Dialog */}
@@ -291,29 +299,36 @@ const SessionControls: React.FC<SessionControlsProps> = ({
 const styles = StyleSheet.create({
   // Container styles
   container: {
-    position: 'absolute',
-    bottom: 20,
-    right: 20,
-    flexDirection: 'column',
-    gap: BUTTON_GAP,
+    width: '100%',
+    maxWidth: 260,
+    aspectRatio: PAUSE_PANEL_WIDTH_HEIGHT_RATIO,
+  },
+  panelImage: {
+    width: '100%',
+    height: '100%',
+    position: 'relative',
   },
 
-  // Button styles
-  button: {
-    width: BUTTON_SIZE,
-    height: BUTTON_SIZE,
-    borderRadius: BUTTON_BORDER_RADIUS,
-    backgroundColor: BUTTON_BACKGROUND_COLOR,
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+  // Button positioning - overlay on panel image
+  leftButton: {
+    position: 'absolute',
+    left: '8%',
+    top: '15%',
+    width: '42%',
+    height: '70%',
   },
-  buttonText: {
-    fontSize: 24,
+  rightButton: {
+    position: 'absolute',
+    right: '8%',
+    top: '15%',
+    width: '42%',
+    height: '70%',
+  },
+  buttonTouchArea: {
+    width: '100%',
+    height: '100%',
+    minWidth: 44,
+    minHeight: 44,
   },
 
   // Modal styles

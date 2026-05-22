@@ -17,7 +17,6 @@ import React, { useState } from 'react';
 import { Text, Image, StyleSheet, Platform } from 'react-native';
 import TimeInputPopup from '../components/TimeInputPopup';
 import ScreenLayout from '../components/ScreenLayout';
-import { useStudySession } from '../hooks/useStudySession';
 import { COLORS, LAYOUT } from '../constants/theme';
 import turtleHappy from '../../assets/images/turtle/turtle_happy.jpeg';
 
@@ -27,25 +26,10 @@ interface HomeScreenProps {
 
 export const HomeScreen: React.FC<HomeScreenProps> = ({ onStartSession }) => {
   const [showPopup, setShowPopup] = useState(true);
-  
-  // Try to use context, but don't fail if not available (for unit tests)
-  let startSessionFromContext: ((durationSeconds: number) => void) | null = null;
-  try {
-    const { startSession } = useStudySession();
-    startSessionFromContext = startSession;
-  } catch (error) {
-    // Context not available, will use onStartSession prop instead
-  }
 
   const handleSubmit = (duration: number): void => {
-    // If onStartSession prop is provided (e.g., from App.tsx), use it
-    // Otherwise, use the context directly (for integration tests)
     if (onStartSession) {
       onStartSession(duration);
-    } else if (startSessionFromContext) {
-      // Start session directly via context (for integration tests)
-      const durationSeconds = duration * 60;
-      startSessionFromContext(durationSeconds);
     }
     setShowPopup(false);
   };

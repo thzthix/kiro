@@ -1,8 +1,9 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { View, Image, Animated, StyleSheet, Platform } from 'react-native';
 import { PathCoordinates, TurtleState } from '../types';
 import { calculatePosition } from '../utils/ProgressCalculator';
 import { handleAnimationError, handleImageLoadError } from '../utils/ErrorHandler';
+import { CANVAS_REFERENCE } from '../constants/theme';
 
 // Import images for web compatibility
 import turtleWalking from '../../assets/images/turtle/turtle_walking.jpeg';
@@ -10,15 +11,31 @@ import turtleEating from '../../assets/images/turtle/turtle_eating.jpeg';
 import turtleHappy from '../../assets/images/turtle/turtle_happy.jpeg';
 import turtleSleeping from '../../assets/images/turtle/turtle_sleeping.jpeg';
 import turtleArrived from '../../assets/images/turtle/turtle_arrived.png';
+import turtleWalkingFrame from '../../assets/images/turtle_walking_frame.jpeg';
 
 interface TurtleCharacterProps {
   progress: number; // 0-100
   state: TurtleState;
   pathCoordinates: PathCoordinates;
+  canvasSize?: {
+    width: number;
+    height: number;
+  };
 }
 
 // Animation constants
 const ANIMATION_DURATION = 250; // 250ms is within 200-300ms range for battery efficiency
+const WALK_CYCLE_INTERVAL_MS = 140;
+const WALK_BOB_OFFSET = 4;
+const TURTLE_SIZE = 116;
+const SHOULD_USE_NATIVE_DRIVER = Platform.OS !== 'web';
+const WALKING_SPRITE_COLUMNS = 6;
+const WALKING_SPRITE_ROWS = 4;
+const WALKING_FRAME_COUNT = 24;
+const WALKING_SPRITE_WIDTH = 1696;
+const WALKING_SPRITE_HEIGHT = 927;
+const WALKING_FRAME_WIDTH = WALKING_SPRITE_WIDTH / WALKING_SPRITE_COLUMNS;
+const WALKING_FRAME_HEIGHT = WALKING_SPRITE_HEIGHT / WALKING_SPRITE_ROWS;
 
 // Sprite mapping for each turtle state
 const TURTLE_SPRITES: Record<TurtleState, any> = Platform.OS === 'web' ? {
@@ -43,10 +60,13 @@ const TurtleCharacter: React.FC<TurtleCharacterProps> = ({
   progress,
   state,
   pathCoordinates,
+  canvasSize,
 }) => {
   // Animated values for smooth position transitions
   const animatedX = useRef(new Animated.Value(0)).current;
   const animatedY = useRef(new Animated.Value(0)).current;
+  const walkBob = useRef(new Animated.Value(0)).current;
+  const [frameIndex, setFrameIndex] = useState(0);
 
   // Validate and clamp progress to 0-100 range
   const validProgress = Math.max(0, Math.min(100, progress || 0));
@@ -61,22 +81,35 @@ const TurtleCharacter: React.FC<TurtleCharacterProps> = ({
     waypoints: [],
   };
 
+  const scaleX =
+    canvasSize && canvasSize.width > 0
+      ? canvasSize.width / CANVAS_REFERENCE.width
+      : 1;
+  const scaleY =
+    canvasSize && canvasSize.height > 0
+      ? canvasSize.height / CANVAS_REFERENCE.height
+      : 1;
+
   // Update turtle position based on progress along the path
   useEffect(() => {
     try {
       const position = calculatePosition(validProgress, validPathCoordinates);
+      const scaledPosition = {
+        x: position.x * scaleX,
+        y: position.y * scaleY,
+      };
 
       // Animate position smoothly for fluid movement
       Animated.parallel([
         Animated.timing(animatedX, {
-          toValue: position.x,
+          toValue: scaledPosition.x,
           duration: ANIMATION_DURATION,
-          useNativeDriver: true,
+          useNativeDriver: SHOULD_USE_NATIVE_DRIVER,
         }),
         Animated.timing(animatedY, {
-          toValue: position.y,
+          toValue: scaledPosition.y,
           duration: ANIMATION_DURATION,
-          useNativeDriver: true,
+          useNativeDriver: SHOULD_USE_NATIVE_DRIVER,
         }),
       ]).start();
     } catch (error) {
@@ -85,8 +118,8 @@ const TurtleCharacter: React.FC<TurtleCharacterProps> = ({
         error,
         () => {
           const position = calculatePosition(validProgress, validPathCoordinates);
-          animatedX.setValue(position.x);
-          animatedY.setValue(position.y);
+          animatedX.setValue(position.x * scaleX);
+          animatedY.setValue(position.y * scaleY);
         },
         {
           component: 'TurtleCharacter',
@@ -95,7 +128,64 @@ const TurtleCharacter: React.FC<TurtleCharacterProps> = ({
         }
       );
     }
-  }, [validProgress, validPathCoordinates, animatedX, animatedY]);
+  }, [validProgress, validPathCoordinates, animatedX, animatedY, scaleX, scaleY]);
+
+  useEffect(() => {
+    if (validState !== 'walking') {
+      if ('stopAnimation' in walkBob && typeof walkBob.stopAnimation === 'function') {
+        walkBob.stopAnimation();
+      }
+      walkBob.setValue(0);
+      return;
+    }
+
+    if (!Animated.sequence || !Animated.loop) {
+      walkBob.setValue(0);
+      return;
+    }
+
+    const animation = Animated.loop(
+      Animated.sequence([
+        Animated.timing(walkBob, {
+          toValue: -WALK_BOB_OFFSET,
+          duration: WALK_CYCLE_INTERVAL_MS,
+          useNativeDriver: SHOULD_USE_NATIVE_DRIVER,
+        }),
+        Animated.timing(walkBob, {
+          toValue: 0,
+          duration: WALK_CYCLE_INTERVAL_MS,
+          useNativeDriver: SHOULD_USE_NATIVE_DRIVER,
+        }),
+      ])
+    );
+
+    animation.start();
+
+    return () => {
+      if ('stop' in animation && typeof animation.stop === 'function') {
+        animation.stop();
+      }
+      walkBob.setValue(0);
+    };
+  }, [validState, walkBob]);
+
+  useEffect(() => {
+    if (validState !== 'walking') {
+      setFrameIndex(0);
+      return;
+    }
+
+    const intervalId = setInterval(() => {
+      setFrameIndex((currentFrame) => (currentFrame + 1) % WALKING_FRAME_COUNT);
+    }, WALK_CYCLE_INTERVAL_MS);
+
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, [validState]);
+
+  const frameColumn = frameIndex % WALKING_SPRITE_COLUMNS;
+  const frameRow = Math.floor(frameIndex / WALKING_SPRITE_COLUMNS);
 
   return (
     <Animated.View
@@ -103,23 +193,52 @@ const TurtleCharacter: React.FC<TurtleCharacterProps> = ({
       style={[
         styles.container,
         {
-          transform: [{ translateX: animatedX }, { translateY: animatedY }],
+          transform: [
+            { translateX: animatedX },
+            { translateY: animatedY },
+            { translateY: walkBob },
+          ],
         },
       ]}
     >
-      {/* Turtle sprite - always faces rightward toward GOAL */}
-      <Image
-        testID="turtle-image"
-        source={TURTLE_SPRITES[validState]}
-        style={styles.turtleImage}
-        resizeMode="contain"
-        onError={(error) => {
-          handleImageLoadError(error, `turtle-sprite-${validState}`, {
-            component: 'TurtleCharacter',
-            metadata: { state: validState },
-          });
-        }}
-      />
+      {validState === 'walking' ? (
+        <View style={styles.spriteViewport}>
+          <Image
+            testID="turtle-image"
+            source={
+              Platform.OS === 'web'
+                ? turtleWalkingFrame
+                : require('../../assets/images/turtle_walking_frame.jpeg')
+            }
+            style={[
+              styles.walkingSpriteSheet,
+              {
+                left: -frameColumn * styles.spriteViewport.width,
+                top: -frameRow * styles.spriteViewport.height,
+              },
+            ]}
+            onError={(error) => {
+              handleImageLoadError(error, 'turtle-walking-frame-sheet', {
+                component: 'TurtleCharacter',
+                metadata: { state: validState },
+              });
+            }}
+          />
+        </View>
+      ) : (
+        <Image
+          testID="turtle-image"
+          source={TURTLE_SPRITES[validState]}
+          style={styles.turtleImage}
+          resizeMode="contain"
+          onError={(error) => {
+            handleImageLoadError(error, `turtle-sprite-${validState}`, {
+              component: 'TurtleCharacter',
+              metadata: { state: validState },
+            });
+          }}
+        />
+      )}
 
       {/* Heart effect displayed above turtle during happy state */}
       {validState === 'happy' && (
@@ -143,14 +262,30 @@ const TurtleCharacter: React.FC<TurtleCharacterProps> = ({
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
-    width: 60,
-    height: 60,
+    width: TURTLE_SIZE,
+    height: TURTLE_SIZE,
     alignItems: 'center',
     justifyContent: 'center',
+    marginLeft: -TURTLE_SIZE / 2,
+    marginTop: -TURTLE_SIZE / 2,
   },
   turtleImage: {
-    width: 60,
-    height: 60,
+    width: TURTLE_SIZE,
+    height: TURTLE_SIZE,
+  },
+  spriteViewport: {
+    width: TURTLE_SIZE,
+    height: TURTLE_SIZE * (WALKING_FRAME_HEIGHT / WALKING_FRAME_WIDTH),
+    overflow: 'hidden',
+    position: 'relative',
+  },
+  walkingSpriteSheet: {
+    position: 'absolute',
+    width: TURTLE_SIZE * WALKING_SPRITE_COLUMNS,
+    height:
+      TURTLE_SIZE *
+      (WALKING_FRAME_HEIGHT / WALKING_FRAME_WIDTH) *
+      WALKING_SPRITE_ROWS,
   },
   heartEffect: {
     position: 'absolute',

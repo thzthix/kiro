@@ -12,12 +12,10 @@
  * Requirements: 5.2, 5.3, 6.1, 6.2, 6.5, 6.7, 8.1
  */
 
-import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import React, { useState } from 'react';
+import { View, StyleSheet, LayoutChangeEvent } from 'react-native';
 import BackgroundImage from './BackgroundImage';
-import PathComponent from './PathComponent';
 import TurtleCharacter from './TurtleCharacter';
-import DecorativeElements from './DecorativeElements';
 import { DEFAULT_PATH_COORDINATES, COLORS } from '../constants/theme';
 
 interface StudyCanvasProps {
@@ -45,28 +43,29 @@ const StudyCanvas: React.FC<StudyCanvasProps> = ({
   // carrotCount and waterCount are intentionally unused in current implementation
   // but kept in props for API compatibility
 }) => {
+  const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 });
+
+  const handleLayout = (event: LayoutChangeEvent) => {
+    const { width, height } = event.nativeEvent.layout;
+    setCanvasSize({ width, height });
+  };
+
   return (
     <View
       testID="study-canvas"
       style={styles.container}
+      onLayout={handleLayout}
       accessible={true}
       accessibilityLabel="study canvas"
       accessibilityRole="none"
     >
-      {/* Layer 1: Watercolor background (bottom layer) */}
       <BackgroundImage />
 
-      {/* Layer 2: Decorative elements (plants, stones, etc.) */}
-      <DecorativeElements />
-
-      {/* Layer 3: Path from START to GOAL */}
-      <PathComponent pathCoordinates={DEFAULT_PATH_COORDINATES} />
-
-      {/* Layer 4: Turtle character (top layer) */}
       <TurtleCharacter
         progress={progress}
         state={turtleState}
         pathCoordinates={DEFAULT_PATH_COORDINATES}
+        canvasSize={canvasSize}
       />
     </View>
   );
@@ -77,6 +76,8 @@ const styles = StyleSheet.create({
     flex: 1,
     position: 'relative',
     backgroundColor: COLORS.beige, // Fallback color
+    overflow: 'hidden',
+    borderRadius: 28,
   },
 });
 
