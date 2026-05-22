@@ -1,5 +1,5 @@
 /**
- * StudySessionScreen Component (GREEN Phase)
+ * StudySessionScreen Component
  * Feature: turtle-study-app
  * Task: 13.3 Create StudySessionScreen (GREEN)
  * Refactored: Task 13.5 Refactor screens (REFACTOR)
@@ -33,10 +33,10 @@ interface StudySessionScreenProps {
 }
 
 /**
- * Helper function to determine if care items panel should be disabled
- * Disabled when session is paused or turtle is eating/happy
+ * Determines if care items panel should be disabled.
+ * Disabled when session is paused or turtle is in eating/happy state.
  */
-const shouldDisableCareItems = (
+const isCareItemsDisabled = (
   status: SessionStatus,
   turtleState: TurtleState
 ): boolean => {
@@ -51,22 +51,17 @@ export const StudySessionScreen: React.FC<StudySessionScreenProps> = () => {
   const { session, pauseSession, resumeSession, stopSession, provideItem } = useStudySession();
   const [showStopConfirmation, setShowStopConfirmation] = useState(false);
 
-  // If no session exists, render empty screen (should not happen in normal flow)
-  if (!session) {
-    return <View testID="study-session-screen" style={styles.container} />;
-  }
-
   // Calculate progress percentage from elapsed time
-  const elapsedSeconds = session.totalDuration - session.remainingTime;
+  const elapsedSeconds = session ? session.totalDuration - session.remainingTime : 0;
   const progress = useMemo(
-    () => calculateProgress(elapsedSeconds, session.totalDuration),
-    [elapsedSeconds, session.totalDuration]
+    () => session ? calculateProgress(elapsedSeconds, session.totalDuration) : 0,
+    [session, elapsedSeconds]
   );
 
   // Determine if care items panel should be disabled
-  const isCareItemsDisabled = useMemo(
-    () => shouldDisableCareItems(session.status, session.turtleState),
-    [session.status, session.turtleState]
+  const careItemsDisabled = useMemo(
+    () => session ? isCareItemsDisabled(session.status, session.turtleState) : false,
+    [session]
   );
 
   const handleItemTap = useCallback(
@@ -97,6 +92,11 @@ export const StudySessionScreen: React.FC<StudySessionScreenProps> = () => {
     setShowStopConfirmation(false);
   }, []);
 
+  // If no session exists, render empty screen (should not happen in normal flow)
+  if (!session) {
+    return <View testID="study-session-screen" style={styles.container} />;
+  }
+
   return (
     <View testID="study-session-screen" style={styles.container}>
       {/* SessionHeader at top with timer and progress bar */}
@@ -116,7 +116,7 @@ export const StudySessionScreen: React.FC<StudySessionScreenProps> = () => {
       {/* CareItemsPanel at bottom left */}
       <CareItemsPanel
         onItemTap={handleItemTap}
-        disabled={isCareItemsDisabled}
+        disabled={careItemsDisabled}
         carrotCount={session.carrotCount}
         waterCount={session.waterCount}
         turtleState={session.turtleState}

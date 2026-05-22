@@ -53,7 +53,10 @@ export type AppAction =
       type: 'PROVIDE_ITEM';
       payload: { itemType: CareItemType; timestamp: number };
     }
-  | { type: 'COMPLETE_SESSION' };
+  | { type: 'COMPLETE_SESSION' }
+  | { type: 'NAVIGATE_TO_HOME' }
+  | { type: 'NAVIGATE_TO_SESSION' }
+  | { type: 'NAVIGATE_TO_COMPLETE' };
 
 // ============================================================================
 // Action Creators
@@ -427,6 +430,28 @@ export const appReducer = (state: AppState, action: AppAction): AppState => {
           ...state.session,
           status: 'completed',
         },
+      };
+    }
+
+    case 'NAVIGATE_TO_HOME': {
+      return {
+        ...state,
+        screen: 'home',
+        session: null,
+      };
+    }
+
+    case 'NAVIGATE_TO_SESSION': {
+      return {
+        ...state,
+        screen: 'session',
+      };
+    }
+
+    case 'NAVIGATE_TO_COMPLETE': {
+      return {
+        ...state,
+        screen: 'complete',
       };
     }
 

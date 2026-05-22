@@ -12,29 +12,33 @@ This note captures current review findings and the recommended next execution or
 
 ## Current Assessment
 
-- The branch baseline is fully recovered.
-- `npm run type-check` passes.
-- `npm test -- --runInBand` passes.
+- The branch has regressed in the integration layer.
+- `npm run type-check` did not surface a blocking error in the latest review.
+- `npm test -- --runInBand` fails.
 - Current test status:
-  - 24 suites passing
-  - 0 suites failing
-  - 518 tests passing
-  - 0 tests failing
-- The previous UI contract regressions appear resolved.
-- The next risk is no longer baseline instability; it is making sure task bookkeeping, implementation quality, and spec alignment stay honest as work continues.
-- `tasks.md` was updated to mark `8.5`, `9.1`, and checkpoint `10` complete.
-- Checkpoint `10` is now consistent with reality because the full suite and type-check are green.
+  - 30 suites passing
+  - 1 suite failing
+  - 636 tests passing
+  - 20 tests failing
+- All current failures are concentrated in `src/__tests__/integration.test.tsx`.
+- The common symptom is that `StudySessionScreen` renders only the empty `study-session-screen` container during integration flows, which strongly suggests the session never gets created in the `AppProvider`/`HomeScreen`/`useStudySession` path.
+- This is not a broad UI-contract regression. It is a higher-level state/bootstrap regression in the active session flow.
+- The previous type-check blockers are no longer the main issue. The priority has shifted to restoring an actual running session in integration scenarios.
 
 ## Highest Priority Fixes
 
-### 1. Protect the green baseline
+### 1. Restore the integration baseline
 
-- Re-run focused suites before and after each new UI change.
-- Do not merge “many new files + many new tests” without verifying the full suite remains green.
-- Keep public component contracts explicit:
-  - stable `testID`s
-  - accessibility roles/labels on actual pressable hosts
-  - tests asserting rendered behavior rather than private implementation props
+- Fix the session bootstrap path before adding more UI or error-handling scope.
+- Start with the components/hooks that decide whether a session exists:
+  - `src/hooks/useStudySession.ts`
+  - `src/screens/HomeScreen.tsx`
+  - `src/screens/StudySessionScreen.tsx`
+  - `src/context/AppContext.tsx`
+- In integration runs, `StudySessionScreen` is hitting the `if (!session)` early return, so trace why the session is missing after the Home screen flow should have started one.
+- Re-run focused integration tests first:
+  - `npm test -- src/__tests__/integration.test.tsx --runInBand`
+- Then re-run the full suite.
 
 ### 2. Keep TDD honest
 
@@ -50,12 +54,13 @@ This note captures current review findings and the recommended next execution or
   - dumping many new suites into the branch before stabilizing earlier ones
   - partial render-helper failures like `render method has not been called`
   - assertions against non-public implementation props on host nodes
+  - claiming GREEN progress from isolated component tests while the integration path is still broken
 
 ### 3. Verify task bookkeeping against reality
 
 - If `tasks.md` marks items complete, ensure the implementation and tests truly back that claim.
 - Avoid claiming completion just because a component file exists; confirm behavior against the spec.
-- The newly checked checkpoint for “all tests pass” is currently justified; keep it that way while subsequent UI work continues.
+- Do not treat any new screen/session task as complete while the main integration flow still renders an empty session screen.
 - When moving to the next task, check that the current branch still aligns with:
   - `requirements.md`
   - `design.md`
@@ -79,10 +84,11 @@ This note captures current review findings and the recommended next execution or
 
 ## Recommended Next Order
 
-1. Preserve the green baseline
-2. Compare current implementation coverage against `tasks.md` and the spec
-3. Only then move to the next unfinished feature area
-4. Keep full type-check and full test suite green after every meaningful chunk
+1. Restore session creation in the `AppProvider` -> `HomeScreen` -> `useStudySession` flow
+2. Make `StudySessionScreen` render the actual session subcomponents during integration tests
+3. Re-run `src/__tests__/integration.test.tsx`
+4. Re-run the full suite
+5. Only then continue with the next unfinished feature area
 
 ## Definition of “Good Progress”
 

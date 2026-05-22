@@ -8,7 +8,8 @@ export type ValidationErrorType = 'empty' | 'non-integer' | 'out-of-range';
 export interface ValidationResult {
   valid: boolean;
   value?: number;
-  errorType?: ValidationErrorType;
+  error?: ValidationErrorType;
+  errorType?: ValidationErrorType; // Keep for backward compatibility
 }
 
 /**
@@ -69,7 +70,8 @@ function isInValidRange(value: number): boolean {
 function createErrorResult(errorType: ValidationErrorType): ValidationResult {
   return {
     valid: false,
-    errorType,
+    error: errorType,
+    errorType, // Keep for backward compatibility
   };
 }
 

@@ -17,7 +17,7 @@
  * Validates: Requirements 9.1, 9.2, 9.4, 9.5, 9.6, 9.7, 9.8, 9.9
  */
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import {
   View,
   TouchableOpacity,
@@ -25,6 +25,7 @@ import {
   StyleSheet,
   Modal,
   Pressable,
+  Animated,
 } from 'react-native';
 
 // Constants for styling and configuration
@@ -48,6 +49,61 @@ const BUTTON_ICONS = {
 
 const CONFIRMATION_MESSAGE = 'Are you sure you want to stop this session?';
 
+/**
+ * Custom hook for managing touch feedback animation (< 100ms for buttons)
+ */
+const useTouchFeedback = () => {
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+  const opacityAnim = useRef(new Animated.Value(1)).current;
+
+  const animateTouchFeedback = useCallback(() => {
+    // Reset animations
+    scaleAnim.setValue(1);
+    opacityAnim.setValue(1);
+
+    // Check if Animated.parallel and Animated.sequence are available (not in test environment)
+    if (Animated.parallel && Animated.sequence) {
+      // Quick feedback animation (< 100ms total)
+      Animated.parallel([
+        Animated.sequence([
+          Animated.timing(scaleAnim, {
+            toValue: 0.95,
+            duration: 50,
+            useNativeDriver: true,
+          }),
+          Animated.timing(scaleAnim, {
+            toValue: 1,
+            duration: 50,
+            useNativeDriver: true,
+          }),
+        ]),
+        Animated.sequence([
+          Animated.timing(opacityAnim, {
+            toValue: 0.8,
+            duration: 50,
+            useNativeDriver: true,
+          }),
+          Animated.timing(opacityAnim, {
+            toValue: 1,
+            duration: 50,
+            useNativeDriver: true,
+          }),
+        ]),
+      ]).start();
+    } else {
+      // Fallback for test environment
+      scaleAnim.setValue(0.95);
+      opacityAnim.setValue(0.8);
+      setTimeout(() => {
+        scaleAnim.setValue(1);
+        opacityAnim.setValue(1);
+      }, 100);
+    }
+  }, [scaleAnim, opacityAnim]);
+
+  return { scaleAnim, opacityAnim, animateTouchFeedback };
+};
+
 interface SessionControlsProps {
   status: 'running' | 'paused';
   onPause: () => void;
@@ -60,6 +116,9 @@ interface ControlButtonProps {
   onPress: () => void;
   testID: string;
   accessibilityLabel: string;
+  onTouchFeedback: () => void;
+  scaleAnim: Animated.Value;
+  opacityAnim: Animated.Value;
 }
 
 interface StopConfirmationDialogProps {
@@ -69,25 +128,42 @@ interface StopConfirmationDialogProps {
 }
 
 /**
- * Reusable control button component
+ * Reusable control button component with touch feedback
  */
 const ControlButton: React.FC<ControlButtonProps> = ({
   icon,
   onPress,
   testID,
   accessibilityLabel,
-}) => (
-  <TouchableOpacity
-    style={styles.button}
-    onPress={onPress}
-    testID={testID}
-    accessible={true}
-    accessibilityLabel={accessibilityLabel}
-    accessibilityRole="button"
-  >
-    <Text style={styles.buttonText}>{icon}</Text>
-  </TouchableOpacity>
-);
+  onTouchFeedback,
+  scaleAnim,
+  opacityAnim,
+}) => {
+  const handlePressIn = () => {
+    onTouchFeedback();
+  };
+
+  return (
+    <Animated.View
+      style={{
+        transform: [{ scale: scaleAnim }],
+        opacity: opacityAnim,
+      }}
+    >
+      <TouchableOpacity
+        style={styles.button}
+        onPress={onPress}
+        onPressIn={handlePressIn}
+        testID={testID}
+        accessible={true}
+        accessibilityLabel={accessibilityLabel}
+        accessibilityRole="button"
+      >
+        <Text style={styles.buttonText}>{icon}</Text>
+      </TouchableOpacity>
+    </Animated.View>
+  );
+};
 
 /**
  * Stop confirmation dialog component
@@ -143,6 +219,10 @@ const SessionControls: React.FC<SessionControlsProps> = ({
 }) => {
   const [showStopConfirmation, setShowStopConfirmation] = useState(false);
 
+  // Touch feedback hooks for each button
+  const pauseResumeFeedback = useTouchFeedback();
+  const stopFeedback = useTouchFeedback();
+
   const handleStopPress = () => {
     setShowStopConfirmation(true);
   };
@@ -168,6 +248,9 @@ const SessionControls: React.FC<SessionControlsProps> = ({
             onPress={onPause}
             testID="pause-button"
             accessibilityLabel="pause session"
+            onTouchFeedback={pauseResumeFeedback.animateTouchFeedback}
+            scaleAnim={pauseResumeFeedback.scaleAnim}
+            opacityAnim={pauseResumeFeedback.opacityAnim}
           />
         ) : (
           <ControlButton
@@ -175,6 +258,9 @@ const SessionControls: React.FC<SessionControlsProps> = ({
             onPress={onResume}
             testID="resume-button"
             accessibilityLabel="resume session"
+            onTouchFeedback={pauseResumeFeedback.animateTouchFeedback}
+            scaleAnim={pauseResumeFeedback.scaleAnim}
+            opacityAnim={pauseResumeFeedback.opacityAnim}
           />
         )}
 
@@ -184,6 +270,9 @@ const SessionControls: React.FC<SessionControlsProps> = ({
           onPress={handleStopPress}
           testID="stop-button"
           accessibilityLabel="stop session"
+          onTouchFeedback={stopFeedback.animateTouchFeedback}
+          scaleAnim={stopFeedback.scaleAnim}
+          opacityAnim={stopFeedback.opacityAnim}
         />
       </View>
 

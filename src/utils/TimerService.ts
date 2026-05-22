@@ -4,6 +4,8 @@
  * **Validates: Requirements 2.2, 2.3, 2.4, 2.5, 2.6, 2.7**
  */
 
+import { handleTimerError } from './ErrorHandler';
+
 // Timer constants
 const TICK_INTERVAL_MS = 1000; // 1 second
 const MS_PER_SECOND = 1000;
@@ -35,12 +37,29 @@ export class TimerService {
    * @param onTick - Callback triggered every second with remaining time
    * @param onComplete - Callback triggered when timer reaches 0
    * @returns TimerHandle to control the timer
+   * @throws Error if duration is invalid or callbacks are missing
    */
   start(
     duration: number,
     onTick: (remaining: number) => void,
     onComplete: () => void
   ): TimerHandle {
+    // Validate duration
+    if (typeof duration !== 'number' || isNaN(duration)) {
+      throw new Error('Timer duration must be a valid number');
+    }
+    if (duration <= 0) {
+      throw new Error('Timer duration must be greater than 0');
+    }
+
+    // Validate callbacks
+    if (typeof onTick !== 'function') {
+      throw new Error('onTick callback is required and must be a function');
+    }
+    if (typeof onComplete !== 'function') {
+      throw new Error('onComplete callback is required and must be a function');
+    }
+
     const id = this.generateId();
     const intervalId = this.createInterval(id);
     const state = this.createTimerState(
@@ -61,12 +80,26 @@ export class TimerService {
 
   /**
    * Pause a running timer.
+   * Gracefully handles non-existent timers without throwing.
    * 
    * @param handle - Timer handle returned from start()
    */
   pause(handle: TimerHandle): void {
+    if (!handle || !handle.id) {
+      handleTimerError('pause', 'unknown', 'Invalid timer handle provided');
+      return;
+    }
+
     const state = this.timers.get(handle.id);
-    if (!state || !state.intervalId) return;
+    if (!state) {
+      handleTimerError('pause', handle.id, 'Timer not found');
+      return;
+    }
+    
+    if (!state.intervalId) {
+      handleTimerError('pause', handle.id, 'Timer is already paused');
+      return;
+    }
 
     this.clearInterval(state);
     this.saveRemainingTime(state);
@@ -74,12 +107,31 @@ export class TimerService {
 
   /**
    * Resume a paused timer.
+   * Gracefully handles non-existent timers without throwing.
    * 
    * @param handle - Timer handle returned from start()
    */
   resume(handle: TimerHandle): void {
+    if (!handle || !handle.id) {
+      handleTimerError('resume', 'unknown', 'Invalid timer handle provided');
+      return;
+    }
+
     const state = this.timers.get(handle.id);
-    if (!state || state.intervalId || state.remainingAtPause === null) return;
+    if (!state) {
+      handleTimerError('resume', handle.id, 'Timer not found');
+      return;
+    }
+    
+    if (state.intervalId) {
+      handleTimerError('resume', handle.id, 'Timer is already running');
+      return;
+    }
+    
+    if (state.remainingAtPause === null) {
+      handleTimerError('resume', handle.id, 'Timer was not paused, cannot resume');
+      return;
+    }
 
     this.resetTimerFromPause(state);
     state.intervalId = this.createInterval(handle.id);
@@ -87,12 +139,21 @@ export class TimerService {
 
   /**
    * Stop a timer and clear all resources.
+   * Gracefully handles non-existent timers without throwing.
    * 
    * @param handle - Timer handle returned from start()
    */
   stop(handle: TimerHandle): void {
+    if (!handle || !handle.id) {
+      handleTimerError('stop', 'unknown', 'Invalid timer handle provided');
+      return;
+    }
+
     const state = this.timers.get(handle.id);
-    if (!state) return;
+    if (!state) {
+      handleTimerError('stop', handle.id, 'Timer not found');
+      return;
+    }
 
     if (state.intervalId) {
       this.clearInterval(state);
@@ -103,13 +164,22 @@ export class TimerService {
 
   /**
    * Get remaining time for a timer.
+   * Gracefully handles non-existent timers by returning 0.
    * 
    * @param handle - Timer handle returned from start()
-   * @returns Remaining time in seconds
+   * @returns Remaining time in seconds (0 if timer not found)
    */
   getRemainingTime(handle: TimerHandle): number {
+    if (!handle || !handle.id) {
+      handleTimerError('getRemainingTime', 'unknown', 'Invalid timer handle provided');
+      return 0;
+    }
+
     const state = this.timers.get(handle.id);
-    if (!state) return 0;
+    if (!state) {
+      handleTimerError('getRemainingTime', handle.id, 'Timer not found');
+      return 0;
+    }
 
     return this.isPaused(state)
       ? state.remainingAtPause!
@@ -125,12 +195,13 @@ export class TimerService {
 
     const remaining = this.calculateRemainingTime(state);
 
+    // Always call onTick first, even when completing
+    state.onTick(remaining);
+
     if (this.isCompleted(remaining)) {
       this.handleCompletion(state);
       return;
     }
-
-    state.onTick(remaining);
   }
 
   /**
