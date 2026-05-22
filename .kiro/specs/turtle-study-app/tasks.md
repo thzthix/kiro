@@ -628,7 +628,7 @@ The implementation follows a bottom-up approach: core business logic first, then
     - Run tests - they should FAIL (no implementation yet)
     - _Requirements: 1.4, 2.4, 4.4, 4.5, 4.7, 4.8, 4.10, 5.2, 5.7, 5.8, 5.10, 7.1, 8.1, 9.1, 9.2, 9.5, 9.8_
   
-  - [ ] 17.2 Wire App root with navigation and context (GREEN)
+  - [-] 17.2 Wire App root with navigation and context (GREEN)
     - Create App component with AppProvider
     - Set up navigation between HomeScreen, StudySessionScreen, CompletionScreen
     - Pass state and callbacks through context

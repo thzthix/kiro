@@ -195,12 +195,13 @@ export class TimerService {
 
     const remaining = this.calculateRemainingTime(state);
 
+    // Always call onTick first, even when completing
+    state.onTick(remaining);
+
     if (this.isCompleted(remaining)) {
       this.handleCompletion(state);
       return;
     }
-
-    state.onTick(remaining);
   }
 
   /**

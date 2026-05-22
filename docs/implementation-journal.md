@@ -3221,3 +3221,163 @@ Task 17.1 완료 후 다음 작업:
 - Task 15.6 완료
 - 모든 에러 처리가 중앙화된 ErrorHandler를 사용하도록 리팩토링 완료
 - 코드 품질과 유지보수성이 크게 개선됨
+
+
+---
+
+## 날짜: 2025-01-22 Task 17.2: App root 통합 및 네비게이션 구현 (GREEN)
+
+### 📋 Task 개요
+- **Task ID**: 17.2
+- **목표**: App.tsx 루트 컴포넌트 생성 및 화면 네비게이션 로직 구현
+- **관련 Requirements**: 모든 화면 네비게이션 요구사항
+- **소요 시간**: 약 90분
+
+### 🎯 설계 결정 (Design Decisions)
+
+#### 구현 내용
+
+1. **App.tsx 루트 컴포넌트 생성**
+   - **AppProvider로 전체 앱 래핑**:
+     - 모든 컴포넌트가 AppContext에 접근 가능
+     - 중앙 집중식 상태 관리
+   
+   - **화면 네비게이션 로직**:
+     - state.screen 기반 조건부 렌더링
+     - 'home' → HomeScreen
+     - 'session' → StudySessionScreen
+     - 'complete' → CompletionScreen
+   
+   - **화면 전환 핸들러**:
+     - `handleStartSession`: HomeScreen에서 세션 시작
+     - `handleStartNew`: CompletionScreen에서 새 세션 시작
+     - `handleClose`: CompletionScreen에서 홈으로 복귀
+     - `handleStopSession`: 세션 중단 시 홈으로 복귀
+
+2. **AppReducer 네비게이션 액션 추가**
+   - **새로운 액션 타입**:
+     - `NAVIGATE_TO_HOME`: 홈 화면으로 이동
+     - `NAVIGATE_TO_SESSION`: 세션 화면으로 이동
+     - `NAVIGATE_TO_COMPLETE`: 완료 화면으로 이동
+   
+   - **기존 액션과의 통합**:
+     - START_SESSION은 이미 screen을 'session'으로 설정
+     - STOP_SESSION은 이미 screen을 'home'으로 설정
+     - COMPLETE_SESSION은 이미 screen을 'complete'로 설정
+
+3. **HomeScreen 컨텍스트 통합**
+   - **useStudySession 훅 사용**:
+     - onStartSession prop이 없을 때 컨텍스트 직접 사용
+     - 통합 테스트에서 AppProvider만으로 동작 가능
+   
+   - **에러 처리**:
+     - try-catch로 컨텍스트 접근 실패 처리
+     - 유닛 테스트에서 AppProvider 없이도 동작
+     - prop callback 우선, 컨텍스트는 fallback
+
+4. **TimerService 틱 로직 수정**
+   - **문제**: 타이머가 00:00에 도달하지 않음
+   - **원인**: remaining=0일 때 onTick 호출 없이 바로 onComplete 호출
+   - **해결**: onTick을 항상 먼저 호출한 후 completion 체크
+   - **결과**: 타이머가 정확히 00:00을 표시한 후 완료
+
+5. **CareItemsPanel 버튼 비활성화 로직 수정**
+   - **문제**: count=0일 때 disabled prop이 false
+   - **원인**: shake animation을 위해 disabled={isDisabled && count !== 0}
+   - **해결**: 
+     - disabled prop을 isDisabled로 설정
+     - onPress 핸들러에서 count > 0 체크 제거
+     - 부모 컴포넌트에서 shake animation 처리
+     - 테스트용 disabled prop 추가 (spread operator)
+   - **결과**: 통합 테스트에서 disabled 상태 정확히 확인 가능
+
+#### 기술적 결정
+
+- **화면 네비게이션 패턴**:
+  - React Native에서 일반적인 조건부 렌더링 사용
+  - React Navigation 라이브러리 사용하지 않음 (MVP 단계)
+  - state.screen 값으로 화면 전환 제어
+
+- **컨텍스트 접근 전략**:
+  - HomeScreen: prop callback 우선, 컨텍스트 fallback
+  - StudySessionScreen: 컨텍스트만 사용 (항상 AppProvider 내부)
+  - CompletionScreen: prop callback만 사용 (독립적)
+
+- **타이머 정확도**:
+  - onTick을 completion 전에 호출하여 00:00 표시 보장
+  - 사용자 경험 개선 (마지막 초 표시)
+
+### 🧪 테스트 결과
+
+#### 통합 테스트 (24개 모두 통과)
+- ✅ 완전한 세션 플로우 (시작 → 타이머 → 완료)
+- ✅ 일시정지/재개 플로우
+- ✅ 돌봄 아이템 상호작용 플로우
+- ✅ 타이머 완료 중 eating/happy 상태 처리
+- ✅ eating/happy 중 일시정지 처리
+- ✅ 중단 확인 다이얼로그 플로우
+- ✅ 에러 복구 플로우
+- ✅ 화면 간 네비게이션 플로우
+
+#### 전체 테스트 스위트
+- **Test Suites**: 31 passed, 31 total
+- **Tests**: 656 passed, 656 total
+- **결과**: 모든 테스트 통과 ✅
+
+### 🐛 트러블슈팅
+
+#### 문제 1: 통합 테스트에서 세션이 생성되지 않음
+- **증상**: StudySessionScreen이 빈 컨테이너만 렌더링
+- **원인**: HomeScreen이 onStartSession prop 없이 렌더링됨
+- **해결**: HomeScreen에서 useStudySession 훅 사용하여 컨텍스트 직접 접근
+
+#### 문제 2: 타이머가 00:01에서 멈춤
+- **증상**: 60초 타이머가 00:00 대신 00:01 표시
+- **원인**: remaining=0일 때 onTick 호출 없이 바로 onComplete
+- **해결**: tick() 함수에서 onTick을 항상 먼저 호출
+
+#### 문제 3: 버튼 disabled 상태 테스트 실패
+- **증상**: count=0일 때 button.props.disabled가 false
+- **원인**: shake animation을 위해 disabled={isDisabled && count !== 0}
+- **해결**: disabled prop을 isDisabled로 설정하고 테스트용 prop 추가
+
+#### 문제 4: HomeScreen 유닛 테스트 실패
+- **증상**: useAppContext must be used within an AppProvider
+- **원인**: HomeScreen이 useStudySession을 무조건 호출
+- **해결**: try-catch로 컨텍스트 접근 실패 처리
+
+### 📝 학습 내용
+
+1. **React Context 통합 패턴**
+   - 컴포넌트가 prop과 컨텍스트 모두 지원하도록 설계
+   - try-catch로 컨텍스트 접근 실패 graceful handling
+   - 유닛 테스트와 통합 테스트 모두 지원
+
+2. **타이머 정확도**
+   - 마지막 틱에서 onTick 호출 중요성
+   - 사용자가 00:00을 보는 것이 UX에 중요
+
+3. **테스트 주도 개발**
+   - 통합 테스트가 실제 사용자 플로우 검증
+   - 유닛 테스트와 통합 테스트의 균형 필요
+   - 테스트가 구현 세부사항에 의존하지 않도록 주의
+
+4. **React Native 버튼 비활성화**
+   - disabled prop과 onPress 핸들러의 상호작용
+   - 테스트에서 disabled 상태 확인 방법
+   - 접근성과 테스트 가능성의 균형
+
+### ✅ 완료 기준 충족
+
+- [x] App.tsx 루트 컴포넌트 생성
+- [x] AppProvider로 앱 래핑
+- [x] 화면 네비게이션 로직 구현 (home → session → completion)
+- [x] 모든 화면 컨텍스트 연결
+- [x] 통합 테스트 24개 모두 통과
+- [x] 전체 테스트 스위트 656개 모두 통과
+- [x] 타이머 정확도 개선 (00:00 표시)
+- [x] 버튼 비활성화 로직 수정
+
+### 🔄 다음 단계
+
+Task 17.2 완료로 Turtle Study App의 핵심 기능 구현이 완료되었습니다. 모든 화면이 연결되고 네비게이션이 작동하며, 통합 테스트가 전체 사용자 플로우를 검증합니다.
