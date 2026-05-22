@@ -1601,3 +1601,234 @@ Task 14.4 완료 후 다음 작업:
 - ✅ 메모리 누수 없음
 
 ---
+
+
+---
+
+## 날짜: 2026-05-22 Task 14.5: 터치 인터랙션 리팩토링 (REFACTOR)
+
+### 📋 Task 개요
+- **Task ID**: 14.5
+- **목표**: CareItemsPanel, SessionControls, StudyCanvas 컴포넌트의 터치 인터랙션 코드 리팩토링 - 중복 제거, 공통 로직 추출, 성능 최적화
+- **관련 Requirements**: 5.1-5.8, 5.13, 5.15, 5.16, 9.1-9.9, 8.1
+- **소요 시간**: 약 30분
+
+### 🎯 설계 결정 (Design Decisions)
+
+#### 고려한 대안들
+
+1. **CareItemsPanel의 디바운스 로직**
+   - **커스텀 useDebounce 훅 유지**:
+     - 장점: 컴포넌트 독립성 유지
+     - 단점: 중복 코드 (이미 useButtonDebounce 훅 존재)
+   - **기존 useButtonDebounce 훅 사용 (선택)**:
+     - 장점: 중복 제거, 일관된 디바운스 로직, 테스트 용이
+     - 단점: 약간의 API 차이 (key 기반 디바운스)
+
+2. **애니메이션 상수 관리**
+   - **컴포넌트 내부에 하드코딩**:
+     - 장점: 컴포넌트 독립성
+     - 단점: 중복, 일관성 유지 어려움
+   - **상수로 추출 (선택)**:
+     - 장점: 명확한 의도, 재사용 가능, 변경 용이
+     - 단점: 파일 상단 코드 증가
+
+3. **useShakeAnimation 훅 위치**
+   - **CareItemsPanel 내부에 유지**:
+     - 장점: 현재는 한 곳에서만 사용
+     - 단점: 향후 재사용 시 이동 필요
+   - **별도 파일로 추출**:
+     - 장점: 재사용 가능
+     - 단점: 현재는 과도한 추상화
+   - **컴포넌트 내부 유지 (선택)**:
+     - 이유: YAGNI 원칙 (You Aren't Gonna Need It), 필요할 때 추출
+
+#### 선택한 방법
+
+- **선택**: useButtonDebounce 훅 사용 + 애니메이션 상수 추출 + useShakeAnimation 컴포넌트 내부 유지
+- **이유**:
+  1. **중복 제거**: 기존 useButtonDebounce 훅 활용으로 중복 코드 제거
+  2. **일관성**: 모든 버튼 디바운스가 동일한 로직 사용
+  3. **명확성**: 애니메이션 상수로 의도 명확히 표현
+  4. **YAGNI**: 현재 필요하지 않은 추상화 피함
+
+#### 코드 예시
+
+**CareItemsPanel.tsx 리팩토링 전후**:
+```typescript
+// 리팩토링 전 (커스텀 useDebounce 훅)
+const useDebounce = () => {
+  const debounceRef = useRef<boolean>(false);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
+
+  const executeDebouncedAction = useCallback((action: () => void) => {
+    if (debounceRef.current) {
+      return false;
+    }
+
+    debounceRef.current = true;
+    action();
+
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+
+    timeoutRef.current = setTimeout(() => {
+      debounceRef.current = false;
+      timeoutRef.current = null;
+    }, DEBOUNCE_DURATION_MS);
+
+    return true;
+  }, []);
+
+  return { executeDebouncedAction };
+};
+
+// 리팩토링 후 (기존 useButtonDebounce 훅 사용)
+import { useButtonDebounce } from '../hooks/useButtonDebounce';
+
+const { handlePress } = useButtonDebounce(DEBOUNCE_DURATION_MS);
+
+// 사용
+handlePress(itemType, () => onItemTap(itemType));
+```
+
+**애니메이션 상수 추출**:
+```typescript
+// 리팩토링 전
+Animated.timing(shakeAnim, {
+  toValue: 10,
+  duration: 50,
+  useNativeDriver: true,
+})
+
+// 리팩토링 후
+const SHAKE_DISTANCE = 10;
+const SHAKE_STEP_DURATION = 50;
+
+Animated.timing(shakeAnim, {
+  toValue: SHAKE_DISTANCE,
+  duration: SHAKE_STEP_DURATION,
+  useNativeDriver: true,
+})
+```
+
+### 🔧 트러블슈팅 (Troubleshooting)
+
+#### 상황
+리팩토링 작업으로 특별한 트러블슈팅 없음. 모든 테스트가 정상 통과.
+
+### ✅ 검증 (Verification)
+
+- **테스트 실행**: ✅ 통과 (152/152)
+  - CareItemsPanel: 59/59 통과
+  - SessionControls: 45/45 통과
+  - StudyCanvas: 48/48 통과
+  - 전체 3개 컴포넌트 테스트 모두 통과
+
+- **타입 체크**: ✅ 통과 (`npm run type-check`)
+  - 모든 타입 정의 에러 없음
+  - useButtonDebounce 통합 정상 작동
+
+- **코드 품질**:
+  - ✅ 중복 코드 제거: useDebounce 훅 제거 (30줄)
+  - ✅ 애니메이션 상수 추출: 명확한 의도 표현
+  - ✅ 일관된 디바운스 로직: useButtonDebounce 사용
+  - ✅ 함수 길이: 모두 20줄 이하
+  - ✅ 명확한 네이밍: SHAKE_DISTANCE, SHAKE_STEP_DURATION
+
+- **리팩토링 전후 비교**:
+  ```
+  리팩토링 전:
+  - CareItemsPanel.tsx: 커스텀 useDebounce 훅 (30줄)
+  - 하드코딩된 애니메이션 값: 4개
+  - import 문: 1개 (React)
+  
+  리팩토링 후:
+  - CareItemsPanel.tsx: useButtonDebounce 사용 (1줄)
+  - 애니메이션 상수: 3개 (SHAKE_DISTANCE, SHAKE_STEP_DURATION, SHAKE_ANIMATION_DURATION_MS)
+  - import 문: 2개 (React, useButtonDebounce)
+  
+  순 변화: -29줄 (중복 코드 제거)
+  ```
+
+### 📝 학습 내용 (Learnings)
+
+1. **기존 유틸리티 활용의 중요성**:
+   - 새로운 훅을 만들기 전에 기존 훅 확인
+   - useButtonDebounce가 이미 존재하여 중복 제거 가능
+   - 일관된 디바운스 로직으로 유지보수성 향상
+
+2. **YAGNI 원칙 (You Aren't Gonna Need It)**:
+   - useShakeAnimation을 별도 파일로 추출하지 않음
+   - 현재는 한 곳에서만 사용하므로 컴포넌트 내부 유지
+   - 필요할 때 추출하는 것이 더 효율적
+
+3. **애니메이션 상수의 가치**:
+   - 하드코딩된 숫자 대신 명명된 상수 사용
+   - SHAKE_DISTANCE, SHAKE_STEP_DURATION으로 의도 명확
+   - 변경 시 한 곳만 수정하면 됨
+
+4. **리팩토링의 범위**:
+   - 모든 것을 리팩토링할 필요 없음
+   - 중복 코드와 명확성 개선에 집중
+   - 과도한 추상화 피함
+
+5. **테스트 주도 리팩토링**:
+   - 리팩토링 전 모든 테스트 통과 확인
+   - 리팩토링 후에도 모든 테스트 통과
+   - 기능 변경 없이 코드 품질만 개선
+
+### 🔗 관련 커밋
+- Commit: (예정) `refactor: 터치 인터랙션 리팩토링 - useButtonDebounce 통합`
+- Branch: `main`
+- PR: N/A (직접 커밋)
+
+### 📊 변경 사항
+
+**수정된 파일**:
+- `src/components/CareItemsPanel.tsx` - useDebounce 제거, useButtonDebounce 사용, 애니메이션 상수 추출 (-29줄)
+
+**통계**:
+- 1개 파일 변경
+- 중복 코드 제거: 30줄
+- 애니메이션 상수 추가: 3개
+- 순 감소: 29줄
+
+**테스트 유지**:
+- 이전: 152 tests passing
+- 이후: 152 tests passing
+- 변화: 0 (모든 테스트 여전히 통과)
+
+### 🎯 다음 단계
+
+Task 14.5 완료 후 다음 작업:
+1. 변경 사항 커밋
+2. 전체 테스트 스위트 실행 확인
+3. 구현 일지 업데이트
+4. 다음 Task로 진행
+
+### 💡 리팩토링 체크리스트
+
+이번 리팩토링에서 확인한 항목들:
+
+- ✅ 중복 코드 제거 (useDebounce → useButtonDebounce)
+- ✅ 애니메이션 상수 추출 (명확한 의도)
+- ✅ 일관된 디바운스 로직 (useButtonDebounce 사용)
+- ✅ 테스트 통과 유지 (152/152)
+- ✅ 타입 안정성 유지 (type-check 통과)
+- ✅ 함수 길이 적절 (모두 20줄 이하)
+- ✅ 명확한 네이밍 (SHAKE_DISTANCE, SHAKE_STEP_DURATION)
+- ✅ YAGNI 원칙 준수 (과도한 추상화 피함)
+- ✅ 코드 가독성 향상
+- ✅ 유지보수성 향상
+
+---
