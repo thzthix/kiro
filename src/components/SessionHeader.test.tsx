@@ -1,19 +1,18 @@
 import React from 'react';
-import { Image } from 'react-native';
 import { render } from '@testing-library/react-native';
 import SessionHeader from './SessionHeader';
 
 describe('SessionHeader', () => {
-  it('renders the timer panel base image and hides the old progress UI', () => {
-    const { getByTestId, queryByTestId, UNSAFE_getAllByType } = render(
+  it('renders a code-based timer panel and hides the old progress UI', () => {
+    const { getByTestId, queryByTestId } = render(
       <SessionHeader remainingSeconds={1500} progress={0} />
     );
 
     expect(getByTestId('session-header')).toBeTruthy();
     expect(getByTestId('session-header-container')).toBeTruthy();
+    expect(getByTestId('timer-panel-base')).toBeTruthy();
     expect(queryByTestId('progress-bar')).toBeNull();
     expect(queryByTestId('progress-bar-turtle-slider')).toBeNull();
-    expect(UNSAFE_getAllByType(Image)).toHaveLength(1);
   });
 
   it('formats remaining seconds as MM:SS for accessibility text', () => {
@@ -30,26 +29,23 @@ describe('SessionHeader', () => {
     expect(getByTestId('timer-display').props.children).toBe('00:00');
   });
 
-  it('renders separated minute and second text so the base image colon stays visible', () => {
-    const { getByTestId } = render(
+  it('renders a full MM:SS timer string with rounded typography', () => {
+    const { getByTestId, getByText } = render(
       <SessionHeader remainingSeconds={2399} progress={0} />
     );
 
-    const minuteText = getByTestId('timer-minutes');
-    const secondText = getByTestId('timer-seconds');
+    const visibleTimer = getByTestId('timer-display-visible');
 
-    expect(minuteText.props.children).toBe('39');
-    expect(secondText.props.children).toBe('59');
-    expect(minuteText.props.style[0]).toMatchObject({
-      fontSize: 82,
-      fontWeight: '600',
+    expect(getByText('남은 시간')).toBeTruthy();
+    expect(visibleTimer.props.children).toBe('39:59');
+    expect(visibleTimer.props.style).toMatchObject({
+      fontSize: 84,
+      fontWeight: '700',
       color: '#7B6344',
       textAlign: 'center',
-      letterSpacing: 0.2,
-      fontFamily:
-        'Avenir Next Rounded, Avenir Next, Nunito, Arial Rounded MT Bold, Trebuchet MS, sans-serif',
+      letterSpacing: -0.3,
+      fontFamily: 'Nanum Gothic, Arial, sans-serif',
     });
-    expect(secondText.props.style[0]).toMatchObject(minuteText.props.style[0]);
   });
 
   it('uses a centered timer-panel layout sized like the reference asset', () => {
@@ -67,6 +63,10 @@ describe('SessionHeader', () => {
       aspectRatio: 1756 / 895,
       justifyContent: 'center',
       alignItems: 'center',
+    });
+
+    expect(getByTestId('timer-panel-base').props.style).toMatchObject({
+      backgroundColor: '#FFF7E2',
     });
   });
 });
