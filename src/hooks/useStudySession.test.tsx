@@ -1,6 +1,7 @@
+import React from 'react';
 import { renderHook, act } from '@testing-library/react-native';
 import { useStudySession } from './useStudySession';
-import { CareItemType } from '../types';
+import { AppProvider } from '../context/AppContext';
 
 /**
  * Unit Tests for useStudySession Hook (RED Phase)
@@ -20,13 +21,18 @@ describe('useStudySession Hook - Unit Tests (RED Phase)', () => {
     jest.useRealTimers();
   });
 
+  // Wrapper component to provide AppContext
+  const wrapper = ({ children }: { children: React.ReactNode }) => (
+    <AppProvider>{children}</AppProvider>
+  );
+
   // ============================================================================
   // Start Session with Duration
   // ============================================================================
 
   describe('Start session with duration', () => {
     it('should initialize session with provided duration', () => {
-      const { result } = renderHook(() => useStudySession());
+      const { result } = renderHook(() => useStudySession(), { wrapper });
 
       act(() => {
         result.current.startSession(60);
@@ -38,7 +44,7 @@ describe('useStudySession Hook - Unit Tests (RED Phase)', () => {
     });
 
     it('should initialize session with running status', () => {
-      const { result } = renderHook(() => useStudySession());
+      const { result } = renderHook(() => useStudySession(), { wrapper });
 
       act(() => {
         result.current.startSession(60);
@@ -48,7 +54,7 @@ describe('useStudySession Hook - Unit Tests (RED Phase)', () => {
     });
 
     it('should initialize turtle in walking state', () => {
-      const { result } = renderHook(() => useStudySession());
+      const { result } = renderHook(() => useStudySession(), { wrapper });
 
       act(() => {
         result.current.startSession(60);
@@ -58,7 +64,7 @@ describe('useStudySession Hook - Unit Tests (RED Phase)', () => {
     });
 
     it('should initialize carrot count to 3', () => {
-      const { result } = renderHook(() => useStudySession());
+      const { result } = renderHook(() => useStudySession(), { wrapper });
 
       act(() => {
         result.current.startSession(60);
@@ -68,7 +74,7 @@ describe('useStudySession Hook - Unit Tests (RED Phase)', () => {
     });
 
     it('should initialize water count to 3', () => {
-      const { result } = renderHook(() => useStudySession());
+      const { result } = renderHook(() => useStudySession(), { wrapper });
 
       act(() => {
         result.current.startSession(60);
@@ -84,7 +90,7 @@ describe('useStudySession Hook - Unit Tests (RED Phase)', () => {
 
   describe('Pause session', () => {
     it('should change status to paused when pause is called', () => {
-      const { result } = renderHook(() => useStudySession());
+      const { result } = renderHook(() => useStudySession(), { wrapper });
 
       act(() => {
         result.current.startSession(60);
@@ -98,7 +104,7 @@ describe('useStudySession Hook - Unit Tests (RED Phase)', () => {
     });
 
     it('should change turtle to sleeping state when paused', () => {
-      const { result } = renderHook(() => useStudySession());
+      const { result } = renderHook(() => useStudySession(), { wrapper });
 
       act(() => {
         result.current.startSession(60);
@@ -112,7 +118,7 @@ describe('useStudySession Hook - Unit Tests (RED Phase)', () => {
     });
 
     it('should preserve remaining time when paused', () => {
-      const { result } = renderHook(() => useStudySession());
+      const { result } = renderHook(() => useStudySession(), { wrapper });
 
       act(() => {
         result.current.startSession(60);
@@ -143,7 +149,7 @@ describe('useStudySession Hook - Unit Tests (RED Phase)', () => {
     });
 
     it('should store previous state when paused from walking', () => {
-      const { result } = renderHook(() => useStudySession());
+      const { result } = renderHook(() => useStudySession(), { wrapper });
 
       act(() => {
         result.current.startSession(60);

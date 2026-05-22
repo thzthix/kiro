@@ -13,29 +13,26 @@ This note captures current review findings and the recommended next execution or
 ## Current Assessment
 
 - Global `npm run type-check` now passes, which is a meaningful improvement in branch consistency.
-- Full test status is now much better: 11 test suites pass and only 2 remain red.
-- The branch is still not PR-ready because the remaining failures are not yet acceptable RED-state failures.
-- The next priority is to convert the remaining failures into either green tests or intentional RED tests with valid syntax and realistic fixtures.
+- Full test status improved again: only one failing suite remains.
+- The previous `ProgressCalculator` fixture/runtime mismatch appears resolved.
+- The branch is still not PR-ready because `useStudySession` is now blocked by a missing implementation module rather than a behavioral RED failure.
+- The next priority is to restore a valid TDD shape for `useStudySession`: the suite should be able to import a real module and then fail or pass for meaningful reasons.
 
 ## Highest Priority Fixes
 
-### 1. Fix the remaining test blockers
+### 1. Fix the remaining test blocker
 
-- Fix `src/utils/ProgressCalculator.test.ts`
-  - The current `mockPath` fixture is inconsistent with the canonical `PathCoordinates` shape used by the implementation.
-  - Right now `calculatePosition` expects the canonical fields, but the test data still produces `undefined` waypoints/control points at runtime.
-  - Resolve this by making the test fixture and implementation agree on one canonical path structure.
-  - This is causing 3 currently failing tests in the full suite.
-- Fix `src/hooks/useStudySession.test.ts`
-  - The suite is still blocked by a parse error around line 161.
-  - RED tests must be syntactically valid and runnable; they may fail behaviorally, but not at parse time.
-  - This is one entire suite failure and is currently the biggest TDD hygiene issue.
+- Fix `src/hooks/useStudySession.test.ts` / `src/hooks/useStudySession.ts`
+  - The parse error is gone, which is good progress.
+  - The suite now fails because `./useStudySession` cannot be imported.
+  - Add the missing implementation file or correct the import path so the suite can execute.
+  - After that, keep the failure mode meaningful: behavioral RED or green, not module-resolution failure.
 
 ### 2. Be strict about TDD state quality
 
 - Ensure newly added test files are parsable and consistent with the current TDD phase.
 - If a file is intentionally RED, it must fail for behavioral reasons only.
-- Remove fixture drift where tests still reflect an older interface shape.
+- Avoid module-resolution failures; create the implementation shell before expanding tests further.
 
 ### 3. Continue UI work in disciplined TDD order
 
@@ -64,10 +61,10 @@ This note captures current review findings and the recommended next execution or
 
 ## Recommended Next Order
 
-1. Repair `src/hooks/useStudySession.test.ts` so the suite can execute
-2. Fix `src/utils/ProgressCalculator.test.ts` fixture/runtime mismatch
+1. Add or correct `src/hooks/useStudySession.ts` so the test suite can import it
+2. Run the `useStudySession` tests and decide the correct TDD phase from actual results
 3. Re-run the full test suite and only then update task status claims
-4. Continue `useStudySession` / UI work only after the baseline is stable again
+4. Continue feature work only after the baseline is stable again
 
 ## Definition of “Good Progress”
 

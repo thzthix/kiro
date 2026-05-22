@@ -1,128 +1,77 @@
 /**
- * TimeInputPopup Component (REFACTOR Phase)
+ * TimeInputPopup Component
+ * Feature: turtle-study-app
  * 
- * A modal popup that collects study duration from the user with validation.
- * Validates input (integer, 1-180 minutes range, non-empty).
- * Shows error messages for invalid input.
- * Provides submit and cancel actions.
+ * Modal popup for time input with validation (1-180 minutes).
+ * Displays error messages for invalid input and calls onSubmit with valid duration.
  */
 
 import React, { useState } from 'react';
-import { Modal, View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
-import { validateTimeInput, ValidationErrorType } from '../utils/InputValidator';
+import {
+  Modal,
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+} from 'react-native';
+import { validateTimeInput } from '../utils/InputValidator';
 
-/**
- * Props for the TimeInputPopup component
- */
 interface TimeInputPopupProps {
-  /** Controls the visibility of the popup */
   visible: boolean;
-  /** Callback invoked when user submits a valid duration */
   onSubmit: (duration: number) => void;
-  /** Callback invoked when user cancels the input */
   onCancel: () => void;
 }
 
-// ============================================================================
-// Constants
-// ============================================================================
-
-/**
- * Error messages displayed for different validation failures
- */
-const ERROR_MESSAGES: Record<ValidationErrorType, string> = {
-  empty: '시간을 입력해주세요',
-  'non-integer': '정수를 입력해주세요',
-  'out-of-range': '1분에서 180분 사이의 시간을 입력해주세요',
-};
-
-/**
- * UI text constants
- */
-const UI_TEXT = {
-  TITLE: '얼마나 집중하시겠어요?',
-  UNIT_LABEL: '분',
-  SUBMIT_BUTTON: '시작하기',
-  CANCEL_BUTTON: '취소',
-  INPUT_PLACEHOLDER: '시간 입력',
-} as const;
-
-// ============================================================================
-// Helper Functions
-// ============================================================================
-
-/**
- * Gets the appropriate error message for a validation error type
- * @param errorType - The type of validation error
- * @returns The localized error message
- */
-const getErrorMessage = (errorType: ValidationErrorType): string => {
-  return ERROR_MESSAGES[errorType];
-};
-
-/**
- * Resets the input state to initial values
- * @param setInputValue - State setter for input value
- * @param setErrorMessage - State setter for error message
- */
-const resetInputState = (
-  setInputValue: (value: string) => void,
-  setErrorMessage: (message: string | null) => void
-): void => {
-  setInputValue('');
-  setErrorMessage(null);
-};
-
-// ============================================================================
-// Component
-// ============================================================================
-
-/**
- * TimeInputPopup component for collecting study duration from user
- * 
- * Features:
- * - Input validation (1-180 minutes, integer only)
- * - Error message display
- * - Auto-clear error on input change
- * - Submit and cancel actions
- * 
- * @param props - Component props
- * @returns The rendered popup component or null if not visible
- */
-const TimeInputPopup: React.FC<TimeInputPopupProps> = ({ visible, onSubmit, onCancel }) => {
+const TimeInputPopup: React.FC<TimeInputPopupProps> = ({
+  visible,
+  onSubmit,
+  onCancel,
+}) => {
   const [inputValue, setInputValue] = useState<string>('');
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string>('');
 
-  /**
-   * Handles input text changes and clears any existing error message
-   * @param text - The new input text
-   */
   const handleInputChange = (text: string): void => {
     setInputValue(text);
+    // Clear error when user modifies input
     if (errorMessage) {
-      setErrorMessage(null);
+      setErrorMessage('');
     }
   };
 
-  /**
-   * Validates input and submits if valid, otherwise displays error message
-   */
   const handleSubmit = (): void => {
-    const validationResult = validateTimeInput(inputValue);
+    const validation = validateTimeInput(inputValue);
 
-    if (!validationResult.valid) {
-      setErrorMessage(getErrorMessage(validationResult.errorType!));
+    if (!validation.valid) {
+      // Display error message based on error type
+      switch (validation.errorType) {
+        case 'empty':
+          setErrorMessage('시간을 입력해주세요');
+          break;
+        case 'non-integer':
+          setErrorMessage('정수를 입력해주세요');
+          break;
+        case 'out-of-range':
+          setErrorMessage('1분에서 180분 사이의 시간을 입력해주세요');
+          break;
+        default:
+          setErrorMessage('올바른 시간을 입력해주세요');
+      }
       return;
     }
 
-    onSubmit(validationResult.value!);
+    // Valid input - call onSubmit with duration
+    onSubmit(validation.value!);
+    
+    // Reset state
+    setInputValue('');
+    setErrorMessage('');
   };
 
-  /**
-   * Resets input state and invokes the cancel callback
-   */
   const handleCancel = (): void => {
-    resetInputState(setInputValue, setErrorMessage);
+    // Reset state
+    setInputValue('');
+    setErrorMessage('');
     onCancel();
   };
 
@@ -135,46 +84,53 @@ const TimeInputPopup: React.FC<TimeInputPopupProps> = ({ visible, onSubmit, onCa
       visible={visible}
       transparent={true}
       animationType="fade"
-      testID="time-input-popup"
+      onRequestClose={handleCancel}
     >
-      <View style={styles.overlay}>
+      <View style={styles.overlay} testID="time-input-popup">
         <View style={styles.popup}>
-          <Text style={styles.title}>{UI_TEXT.TITLE}</Text>
+          <Text style={styles.title}>얼마나 집중하시겠어요?</Text>
 
           <View style={styles.inputContainer}>
             <TextInput
-              testID="time-input-field"
               style={styles.input}
+              testID="time-input-field"
               value={inputValue}
               onChangeText={handleInputChange}
               keyboardType="numeric"
-              placeholder={UI_TEXT.INPUT_PLACEHOLDER}
+              placeholder="30"
+              placeholderTextColor="#999"
+              maxLength={3}
               accessible={true}
+              accessibilityLabel="시간 입력"
             />
-            <Text style={styles.unitLabel}>{UI_TEXT.UNIT_LABEL}</Text>
+            <Text style={styles.unit}>분</Text>
           </View>
 
-          {errorMessage && (
+          {errorMessage ? (
             <Text style={styles.errorText}>{errorMessage}</Text>
-          )}
+          ) : null}
 
           <View style={styles.buttonContainer}>
             <TouchableOpacity
-              testID="cancel-button"
               style={[styles.button, styles.cancelButton]}
               onPress={handleCancel}
+              testID="cancel-button"
               accessible={true}
+              accessibilityLabel="취소"
+              accessibilityRole="button"
             >
-              <Text style={styles.cancelButtonText}>{UI_TEXT.CANCEL_BUTTON}</Text>
+              <Text style={styles.cancelButtonText}>취소</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
               style={[styles.button, styles.submitButton]}
               onPress={handleSubmit}
               accessible={true}
+              accessibilityLabel="시작하기"
+              accessibilityRole="button"
               accessibilityState={{ disabled: false }}
             >
-              <Text style={styles.submitButtonText} accessible={true}>{UI_TEXT.SUBMIT_BUTTON}</Text>
+              <Text style={styles.submitButtonText}>시작하기</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -183,84 +139,27 @@ const TimeInputPopup: React.FC<TimeInputPopupProps> = ({ visible, onSubmit, onCa
   );
 };
 
-// ============================================================================
-// Style Constants
-// ============================================================================
-
-/**
- * Color palette used in the component
- */
-const COLORS = {
-  BEIGE: '#F5F1E8',
-  OLIVE_GREEN: '#4A5D3F',
-  WHITE: '#FFFFFF',
-  BORDER: '#D4C5B0',
-  TEXT_DARK: '#333333',
-  ERROR: '#D32F2F',
-  CANCEL_BG: '#E8E8E8',
-  CANCEL_TEXT: '#666666',
-  MINT: '#9BC4BC',
-  OVERLAY: 'rgba(0, 0, 0, 0.5)',
-  SHADOW: '#000',
-} as const;
-
-/**
- * Spacing and sizing constants
- */
-const DIMENSIONS = {
-  BORDER_RADIUS: 20,
-  BORDER_RADIUS_SMALL: 12,
-  PADDING: 24,
-  PADDING_HORIZONTAL: 16,
-  PADDING_VERTICAL: 12,
-  MAX_WIDTH: 400,
-  MIN_TOUCH_TARGET: 44,
-  BUTTON_GAP: 12,
-} as const;
-
-/**
- * Typography constants
- */
-const TYPOGRAPHY = {
-  TITLE_SIZE: 20,
-  INPUT_SIZE: 18,
-  UNIT_SIZE: 18,
-  ERROR_SIZE: 14,
-  BUTTON_SIZE: 16,
-} as const;
-
-// ============================================================================
-// Styles
-// ============================================================================
-
-/**
- * Component styles
- */
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: COLORS.OVERLAY,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   popup: {
-    backgroundColor: COLORS.BEIGE,
-    borderRadius: DIMENSIONS.BORDER_RADIUS,
-    padding: DIMENSIONS.PADDING,
+    backgroundColor: '#FFF',
+    borderRadius: 20,
+    padding: 30,
     width: '80%',
-    maxWidth: DIMENSIONS.MAX_WIDTH,
-    shadowColor: COLORS.SHADOW,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
+    maxWidth: 400,
+    alignItems: 'center',
   },
   title: {
-    fontSize: TYPOGRAPHY.TITLE_SIZE,
+    fontSize: 20,
     fontWeight: '600',
-    color: COLORS.OLIVE_GREEN,
+    color: '#333',
+    marginBottom: 24,
     textAlign: 'center',
-    marginBottom: 20,
   },
   inputContainer: {
     flexDirection: 'row',
@@ -268,57 +167,55 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   input: {
-    flex: 1,
-    backgroundColor: COLORS.WHITE,
-    borderRadius: DIMENSIONS.BORDER_RADIUS_SMALL,
-    paddingHorizontal: DIMENSIONS.PADDING_HORIZONTAL,
-    paddingVertical: DIMENSIONS.PADDING_VERTICAL,
-    fontSize: TYPOGRAPHY.INPUT_SIZE,
-    borderWidth: 1,
-    borderColor: COLORS.BORDER,
-    color: COLORS.TEXT_DARK,
+    fontSize: 32,
+    fontWeight: '600',
+    color: '#333',
+    borderBottomWidth: 2,
+    borderBottomColor: '#8FBC8F',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    minWidth: 80,
+    textAlign: 'center',
   },
-  unitLabel: {
-    fontSize: TYPOGRAPHY.UNIT_SIZE,
-    color: COLORS.OLIVE_GREEN,
-    marginLeft: 8,
+  unit: {
+    fontSize: 24,
     fontWeight: '500',
+    color: '#666',
+    marginLeft: 8,
   },
   errorText: {
-    color: COLORS.ERROR,
-    fontSize: TYPOGRAPHY.ERROR_SIZE,
-    marginBottom: 12,
+    fontSize: 14,
+    color: '#E74C3C',
+    marginBottom: 16,
     textAlign: 'center',
   },
   buttonContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 8,
-    gap: DIMENSIONS.BUTTON_GAP,
+    marginTop: 24,
+    gap: 12,
   },
   button: {
-    flex: 1,
-    paddingVertical: DIMENSIONS.PADDING_VERTICAL,
-    borderRadius: DIMENSIONS.BORDER_RADIUS_SMALL,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 12,
+    minWidth: 100,
     alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: DIMENSIONS.MIN_TOUCH_TARGET,
   },
   cancelButton: {
-    backgroundColor: COLORS.CANCEL_BG,
+    backgroundColor: '#E0E0E0',
   },
   cancelButtonText: {
-    color: COLORS.CANCEL_TEXT,
-    fontSize: TYPOGRAPHY.BUTTON_SIZE,
+    fontSize: 16,
     fontWeight: '600',
+    color: '#666',
   },
   submitButton: {
-    backgroundColor: COLORS.MINT,
+    backgroundColor: '#8FBC8F',
   },
   submitButtonText: {
-    color: COLORS.WHITE,
-    fontSize: TYPOGRAPHY.BUTTON_SIZE,
+    fontSize: 16,
     fontWeight: '600',
+    color: '#FFF',
   },
 });
 
