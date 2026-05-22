@@ -290,10 +290,7 @@ describe('Component Error Handling - Unit Tests (RED)', () => {
         progress: 50,
       };
 
-      // Simulate child component error (variable used for test context)
-      const _childError = true;
-
-      // Session state should remain unchanged
+      // Session state should remain unchanged even if child component fails
       expect(sessionState.remainingTime).toBe(1800);
       expect(sessionState.turtleState).toBe('walking');
       expect(sessionState.progress).toBe(50);

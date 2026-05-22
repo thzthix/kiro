@@ -161,9 +161,9 @@ export class StateTransitionManager {
    */
   getNextState(
     currentState: TurtleState | undefined,
-    currentTime: number,
-    eatingStateEndTime: number | null,
-    happyStateEndTime: number | null,
+    _currentTime: number,
+    _eatingStateEndTime: number | null,
+    _happyStateEndTime: number | null,
     isPaused: boolean,
     itemPlaced: boolean,
     hasReachedGoal: boolean,
@@ -197,16 +197,16 @@ export class StateTransitionManager {
     }
 
     // Check if should transition from eating
-    if (currentState === 'eating' && eatingStateEndTime !== null) {
-      if (this.shouldTransitionFromEating(eatingStateEndTime, currentTime)) {
+    if (currentState === 'eating' && _eatingStateEndTime !== null) {
+      if (this.shouldTransitionFromEating(_eatingStateEndTime, _currentTime)) {
         return 'happy';
       }
       return 'eating';
     }
 
     // Check if should transition from happy
-    if (currentState === 'happy' && happyStateEndTime !== null) {
-      if (this.shouldTransitionFromHappy(happyStateEndTime, currentTime)) {
+    if (currentState === 'happy' && _happyStateEndTime !== null) {
+      if (this.shouldTransitionFromHappy(_happyStateEndTime, _currentTime)) {
         return 'walking';
       }
       return 'happy';

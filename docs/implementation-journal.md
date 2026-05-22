@@ -1,5 +1,101 @@
 # Implementation Journal
 
+## 날짜: 2025-01-22 Task 15.2: 타이머 실패 에러 처리 추가 (GREEN)
+
+### 📋 Task 개요
+- **Task ID**: 15.2
+- **목표**: 타이머 초기화 및 작업 실패에 대한 에러 처리 구현
+- **관련 Requirements**: 2.8
+- **소요 시간**: 약 45분
+
+### 🎯 설계 결정 (Design Decisions)
+
+#### 구현 내용
+
+1. **TimerService 에러 처리 추가**
+   - **Invalid duration validation**:
+     - duration이 NaN인 경우 throw Error
+     - duration이 0 이하인 경우 throw Error
+     - 명확한 에러 메시지 제공
+   
+   - **Missing callback validation**:
+     - onTick이 function이 아닌 경우 throw Error
+     - onComplete가 function이 아닌 경우 throw Error
+     - 타이머 시작 전 validation 수행
+   
+   - **Non-existent timer operations**:
+     - pause/resume/stop/getRemainingTime 호출 시 timer 존재 확인
+     - 존재하지 않는 timer에 대해 graceful handling (throw하지 않음)
+     - console.warn으로 경고 로그 출력
+     - getRemainingTime은 0 반환 (safe default)
+
+2. **StateTransitionManager 클래스 추가**
+   - 기존 standalone 함수들과 함께 class 버전 제공
+   - 에러 처리 테스트를 위한 class wrapper
+   - 메서드:
+     - `getNextState()`: invalid state transitions 처리
+     - `shouldTransitionFromEating()`: null eatingStateEndTime 처리
+     - `shouldTransitionFromHappy()`: null happyStateEndTime 처리
+     - `calculateRemainingStateDuration()`: null/negative duration 처리
+
+3. **에러 처리 전략**
+   - **Critical errors** (throw): invalid duration, missing callbacks
+   - **Non-critical errors** (warn + continue): non-existent timer operations
+   - **Graceful degradation**: 에러 발생 시 세션 상태 보존
+   - **Safe defaults**: getRemainingTime returns 0, invalid state returns current state
+
+#### 기술적 결정
+
+- **Validation at entry points**:
+  - TimerService.start()에서 모든 입력 validation 수행
+  - 타이머 시작 전에 에러 발견하여 invalid state 방지
+
+- **Dual API (Functions + Class)**:
+  - Production code: standalone functions 사용 (기존 코드와 호환)
+  - Error handling tests: class 사용 (instance methods로 테스트 용이)
+  - 두 API 모두 동일한 로직 공유
+
+- **Console logging strategy**:
+  - console.warn: 복구 가능한 에러 (non-existent timer)
+  - console.error: 심각한 에러 (undefined state)
+  - Production에서 로그 레벨 조정 가능
+
+### ✅ 테스트 결과
+
+#### Error Handling Tests
+- ✅ 36/36 tests passing
+- Invalid duration input: 8 tests
+- Timer service errors: 9 tests
+- State transition errors: 7 tests
+- Animation errors: 4 tests
+- Graceful degradation: 8 tests
+
+#### Full Test Suite
+- ✅ 29/29 test suites passing
+- ✅ 607/607 tests passing
+- No regressions introduced
+
+### 🔍 문제 해결 (Troubleshooting)
+
+#### 문제 1: Duplicate class declaration
+- **증상**: "Identifier 'StateTransitionManager' has already been declared" 에러
+- **원인**: 파일에 두 개의 StateTransitionManager class 선언 존재
+- **해결**: 파일 전체를 재작성하여 하나의 class만 유지
+- **교훈**: 큰 파일 수정 시 전체 구조 확인 필요
+
+#### 문제 2: Test file import mismatch
+- **증상**: ErrorHandling.test.ts에서 StateTransitionManager를 class로 사용
+- **원인**: 원래는 standalone functions만 export되었음
+- **해결**: Class wrapper 추가하여 테스트 요구사항 충족
+- **교훈**: 테스트 파일 먼저 확인하여 API 설계 결정
+
+### 📝 다음 단계
+- Task 15.3: UI 컴포넌트 에러 처리 추가
+- 에러 메시지 UI 표시 구현
+- 홈 화면으로 복귀 로직 구현
+
+---
+
 ## 날짜: 2025-01-22 Task 15.4: 상태 전환 에러 처리 추가 (GREEN)
 
 ### 📋 Task 개요
