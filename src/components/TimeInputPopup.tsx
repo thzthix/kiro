@@ -125,6 +125,7 @@ const TimeInputPopup: React.FC<TimeInputPopupProps> = ({
             <TouchableOpacity
               style={[styles.button, styles.submitButton]}
               onPress={handleSubmit}
+              testID="submit-button"
               accessible={true}
               accessibilityLabel="시작하기"
               accessibilityRole="button"

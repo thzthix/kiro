@@ -217,7 +217,7 @@ const CareItemsPanel: React.FC<CareItemsPanelProps> = ({
   return (
     <View 
       style={styles.container} 
-      testID="care-items-panel"
+      testID="care-items-panel-container"
       // @ts-ignore - Adding disabled prop for testing
       disabled={disabled || isButtonsDisabledByState}
       carrotCount={carrotCount}

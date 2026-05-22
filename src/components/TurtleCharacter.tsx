@@ -55,10 +55,7 @@ const TurtleCharacter: React.FC<TurtleCharacterProps> = ({
 
   return (
     <Animated.View
-      testID="turtle-character"
-      // @ts-ignore - Custom props for testing
-      state={state}
-      direction="right"
+      testID={`turtle-character-${state}`}
       style={[
         styles.container,
         {

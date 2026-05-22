@@ -160,7 +160,7 @@ const SessionControls: React.FC<SessionControlsProps> = ({
 
   return (
     <>
-      <View style={styles.container} testID="session-controls">
+      <View style={styles.container} testID="session-controls-container">
         {/* Pause/Resume Button */}
         {isRunning ? (
           <ControlButton

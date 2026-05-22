@@ -8,7 +8,7 @@
 
 import fc from 'fast-check';
 import React from 'react';
-import { render, fireEvent, waitFor } from '@testing-library/react-native';
+import { render, fireEvent } from '@testing-library/react-native';
 import { CareItemsPanel } from './CareItemsPanel';
 
 describe('CareItemsPanel Property-Based Tests', () => {
@@ -19,13 +19,21 @@ describe('CareItemsPanel Property-Based Tests', () => {
     // ignored for 1 second.
     // Validates: Requirements 5.13
 
-    it('should process only the first tap and ignore subsequent taps within 1 second for any tap sequence', async () => {
-      await fc.assert(
-        fc.asyncProperty(
+    beforeEach(() => {
+      jest.useFakeTimers();
+    });
+
+    afterEach(() => {
+      jest.runOnlyPendingTimers();
+      jest.useRealTimers();
+    });
+
+    it('should process only the first tap and ignore subsequent taps within 1 second for any tap sequence', () => {
+      fc.assert(
+        fc.property(
           fc.constantFrom('carrot', 'water'), // item type
           fc.integer({ min: 2, max: 10 }), // number of rapid taps
-          fc.integer({ min: 10, max: 500 }), // delay between taps in ms (< 1000ms)
-          async (itemType, numTaps, delayMs) => {
+          (itemType, numTaps) => {
             const onItemTap = jest.fn();
             
             const { getByTestId } = render(
@@ -40,31 +48,29 @@ describe('CareItemsPanel Property-Based Tests', () => {
 
             const button = getByTestId(`${itemType}-button`);
 
-            // Perform rapid taps
+            // Perform rapid taps without advancing time (all within same tick)
             for (let i = 0; i < numTaps; i++) {
               fireEvent.press(button);
-              // Small delay between taps (less than 1 second)
-              await new Promise(resolve => setTimeout(resolve, delayMs));
             }
 
-            // Wait for any pending debounce timers
-            await waitFor(() => {
-              // Only the first tap should have been processed
-              expect(onItemTap).toHaveBeenCalledTimes(1);
-              expect(onItemTap).toHaveBeenCalledWith(itemType);
-            });
+            // Advance timers to complete any pending debounce
+            jest.advanceTimersByTime(1000);
+
+            // Only the first tap should have been processed
+            expect(onItemTap).toHaveBeenCalledTimes(1);
+            expect(onItemTap).toHaveBeenCalledWith(itemType);
           }
         ),
         { numRuns: 100 }
       );
     });
 
-    it('should allow a new tap after 1 second cooldown period', async () => {
-      await fc.assert(
-        fc.asyncProperty(
+    it('should allow a new tap after 1 second cooldown period', () => {
+      fc.assert(
+        fc.property(
           fc.constantFrom('carrot', 'water'), // item type
           fc.integer({ min: 1000, max: 2000 }), // delay after first tap (>= 1000ms)
-          async (itemType, delayMs) => {
+          (itemType, delayMs) => {
             const onItemTap = jest.fn();
             
             const { getByTestId } = render(
@@ -83,17 +89,18 @@ describe('CareItemsPanel Property-Based Tests', () => {
             fireEvent.press(button);
             
             // Wait for cooldown period
-            await new Promise(resolve => setTimeout(resolve, delayMs));
+            jest.advanceTimersByTime(delayMs);
             
             // Second tap after cooldown
             fireEvent.press(button);
 
-            await waitFor(() => {
-              // Both taps should have been processed
-              expect(onItemTap).toHaveBeenCalledTimes(2);
-              expect(onItemTap).toHaveBeenNthCalledWith(1, itemType);
-              expect(onItemTap).toHaveBeenNthCalledWith(2, itemType);
-            });
+            // Advance timers to complete any pending debounce
+            jest.advanceTimersByTime(1000);
+
+            // Both taps should have been processed
+            expect(onItemTap).toHaveBeenCalledTimes(2);
+            expect(onItemTap).toHaveBeenNthCalledWith(1, itemType);
+            expect(onItemTap).toHaveBeenNthCalledWith(2, itemType);
           }
         ),
         { numRuns: 50 }

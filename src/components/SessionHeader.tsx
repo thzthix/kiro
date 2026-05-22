@@ -38,42 +38,44 @@ const SessionHeader: React.FC<SessionHeaderProps> = ({
       style={styles.container}
       testID="session-header"
     >
-      <Text
-        style={styles.timer}
-        testID="timer-display"
-        accessible={true}
-        accessibilityLabel={`Remaining time: ${formattedTime}`}
-        accessibilityRole="text"
-      >
-        {formattedTime}
-      </Text>
-      
-      <View
-        style={styles.progressBarContainer}
-        testID="progress-bar"
-        accessible={true}
-        accessibilityLabel={`Progress: ${clampedProgress.toFixed(0)} percent`}
-        accessibilityRole="progressbar"
-        // @ts-ignore - Adding progress prop for testing
-        progress={clampedProgress}
-      >
-        <View style={styles.progressBarBackground}>
-          <View
-            style={[
-              styles.progressBarFill,
-              { width: `${clampedProgress}%` },
-            ]}
-          />
-        </View>
+      <View testID="session-header-container" style={styles.innerContainer}>
+        <Text
+          style={styles.timer}
+          testID="timer-display"
+          accessible={true}
+          accessibilityLabel={`Remaining time: ${formattedTime}`}
+          accessibilityRole="text"
+        >
+          {formattedTime}
+        </Text>
         
         <View
-          style={[
-            styles.turtleSlider,
-            { left: `${clampedProgress}%` },
-          ]}
-          testID="progress-bar-mini-turtle"
+          style={styles.progressBarContainer}
+          testID="progress-bar"
+          accessible={true}
+          accessibilityLabel={`Progress: ${clampedProgress.toFixed(0)} percent`}
+          accessibilityRole="progressbar"
+          // @ts-ignore - Adding progress prop for testing
+          progress={clampedProgress}
         >
-          <Text style={styles.turtleIcon}>🐢</Text>
+          <View style={styles.progressBarBackground}>
+            <View
+              style={[
+                styles.progressBarFill,
+                { width: `${clampedProgress}%` },
+              ]}
+            />
+          </View>
+          
+          <View
+            style={[
+              styles.turtleSlider,
+              { left: `${clampedProgress}%` },
+            ]}
+            testID="progress-bar-turtle-slider"
+          >
+            <Text style={styles.turtleIcon}>🐢</Text>
+          </View>
         </View>
       </View>
     </View>
@@ -84,8 +86,6 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: '#F5F1E8', // Beige color from design assets
     borderRadius: 20,
-    padding: 20,
-    alignItems: 'center',
     marginHorizontal: 20,
     marginTop: 20,
     shadowColor: '#000',
@@ -93,6 +93,10 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
+  },
+  innerContainer: {
+    padding: 20,
+    alignItems: 'center',
   },
   timer: {
     fontSize: 48,

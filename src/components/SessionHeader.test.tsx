@@ -152,7 +152,7 @@ describe('SessionHeader Component - Unit Tests (RED)', () => {
         <SessionHeader remainingSeconds={1800} progress={50} />
       );
 
-      const turtleSlider = getByTestId('progress-bar-mini-turtle');
+      const turtleSlider = getByTestId('progress-bar-turtle-slider');
       expect(turtleSlider).toBeTruthy();
     });
 

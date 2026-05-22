@@ -33,7 +33,7 @@ const BackgroundImage: React.FC = () => {
 
   return (
     <View
-      testID="study-canvas-background"
+      testID="background-image"
       style={styles.container}
       accessible={true}
       accessibilityLabel="Watercolor landscape background"

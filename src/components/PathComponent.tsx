@@ -38,7 +38,7 @@ const PathComponent: React.FC<PathComponentProps> = ({ pathCoordinates }) => {
 
   return (
     <View
-      testID="path-component"
+      testID="path-container"
       style={[
         styles.container,
         {

@@ -125,7 +125,7 @@ describe('TurtleCharacter', () => {
         />
       );
 
-      const container = getByTestId('turtle-character');
+      const container = getByTestId('turtle-character-walking');
       // Position should be calculated from progress 0
       expect(container).toBeTruthy();
     });
@@ -139,7 +139,7 @@ describe('TurtleCharacter', () => {
         />
       );
 
-      const container = getByTestId('turtle-character');
+      const container = getByTestId('turtle-character-arrived');
       // Position should be calculated from progress 100
       expect(container).toBeTruthy();
     });
@@ -153,7 +153,7 @@ describe('TurtleCharacter', () => {
         />
       );
 
-      const container = getByTestId('turtle-character');
+      const container = getByTestId('turtle-character-walking');
       // Position should be calculated from progress 50
       expect(container).toBeTruthy();
     });
@@ -231,7 +231,7 @@ describe('TurtleCharacter', () => {
         />
       );
 
-      const container = getByTestId('turtle-character');
+      const container = getByTestId('turtle-character-arrived');
       // Verify no bouncing animation is applied
       // In a real implementation, we'd check that no animated value is oscillating
       expect(container).toBeTruthy();

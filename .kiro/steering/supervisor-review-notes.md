@@ -24,21 +24,24 @@ This note captures current review findings and the recommended next execution or
   - `StudySessionScreen`
   - `CompletionScreen`
 - This introduced a broad regression in the test baseline.
-- The branch is currently less stable than before:
-  - `npm run type-check` is broken again
-  - full test execution aborts early with a React Native Testing Library screen/render error
-- Do not continue expanding feature surface area until the baseline is restored.
+- Type-check is green again, which is a meaningful recovery.
+- Full test execution now completes instead of aborting early.
+- Current test status:
+  - 20 suites passing
+  - 4 suites failing
+  - 477 tests passing
+  - 41 tests failing
+- The branch is improving, but the remaining failures are concentrated in a few UI contract areas and should be stabilized before more expansion.
 
 ## Highest Priority Fixes
 
 ### 1. Stop expansion and stabilize the UI test baseline
 
-- First restore `npm run type-check`
-  - `CareItemsPanel.property.test.tsx` uses async predicates in `fast-check` incorrectly
-  - several test files have unused bindings that currently fail strict TS checks
-  - `TurtleCharacter.tsx` still passes invalid custom props to `Animated.View`
-  - `CompletionScreen.tsx` passes invalid `onError` prop to `View`
-  - `StudySessionScreen.tsx` narrows `SessionStatus` incorrectly
+- First stabilize the four remaining failing suites:
+  - `src/components/CareItemsPanel.property.test.tsx`
+  - `src/components/StudyCanvas.test.tsx`
+  - `src/components/TurtleCharacter.test.tsx`
+  - `src/screens/StudySessionScreen.test.tsx`
 - Fix `src/components/TimeInputPopup.test.tsx` and `src/components/TimeInputPopup.tsx`
   - The suite executes, but the remaining assertions are brittle.
   - Current failure suggests the test is checking `accessible` on the wrong queried node.
@@ -48,12 +51,18 @@ This note captures current review findings and the recommended next execution or
     - assert against the actual host element that owns those props
   - Remove noisy assumptions if the test is checking props on a text node instead of the button container.
 - Fix `src/components/TurtleCharacter.test.tsx` and `src/components/TurtleCharacter.tsx`
-  - The component renders `testID="turtle-character"` but tests expect `turtle-container`.
-  - Canonicalize the identifier and keep tests/components consistent.
-  - Remove invalid custom props from `Animated.View` such as `progress`, `state`, and `direction`.
+  - The current component/test contract is still inconsistent.
+  - Tests expect state-specific test IDs like `turtle-character-walking` / `turtle-character-arrived`, but the component renders only `turtle-character`.
+  - Canonicalize the identifier strategy and keep tests/components consistent.
 - Fix `src/components/CareItemsPanel.property.test.tsx`
-  - The property tests are currently violating `fast-check` expectations by using async predicates in a non-supported way.
-  - Convert them into valid async property tests or rewrite them synchronously.
+  - The property tests are now structurally runnable, but still need stabilization and noise reduction.
+  - Keep them focused on true properties rather than render noise.
+- Fix `src/components/StudyCanvas.test.tsx` and `src/components/StudyCanvas.tsx`
+  - Tests expect `progress` and `state` to be inspectable on the queried turtle node, but those props are not available on the host element being asserted.
+  - Align tests with the public rendered contract rather than implementation-only props.
+- Fix `src/screens/StudySessionScreen.test.tsx`
+  - Tests expect IDs like `care-items-panel`, `session-controls`, and state-specific turtle IDs that do not match current rendered output.
+  - Some edge-case expectations for restored turtle state are also failing.
 
 ### 2. Restore test hygiene before adding any more UI
 
@@ -65,6 +74,7 @@ This note captures current review findings and the recommended next execution or
   - invalid property-test structure
   - dumping many new suites into the branch before stabilizing earlier ones
   - partial render-helper failures like `render method has not been called`
+  - assertions against non-public implementation props on host nodes
 
 ### 3. Be strict about TDD state quality
 
@@ -100,10 +110,10 @@ This note captures current review findings and the recommended next execution or
 
 ## Recommended Next Order
 
-1. Restore `npm run type-check`
-2. Stabilize `CareItemsPanel` property tests
-3. Stabilize `TurtleCharacter`
-4. Stabilize `TimeInputPopup`
+1. Stabilize `TurtleCharacter`
+2. Stabilize `StudyCanvas`
+3. Stabilize `StudySessionScreen`
+4. Stabilize `CareItemsPanel` property tests
 5. Re-run focused suites first
 6. Re-run the full suite
 7. Only then continue expanding UI/screens

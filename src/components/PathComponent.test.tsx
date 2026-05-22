@@ -19,7 +19,7 @@ describe('PathComponent', () => {
       <PathComponent pathCoordinates={mockPathCoordinates} />
     );
 
-    const pathContainer = getByTestId('path-component');
+    const pathContainer = getByTestId('path-container');
     expect(pathContainer).toBeTruthy();
   });
 

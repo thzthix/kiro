@@ -222,11 +222,11 @@ describe('TimeInputPopup Component - Unit Tests (RED)', () => {
 
   describe('Start Button State', () => {
     it('should have start button enabled by default', () => {
-      const { getByText } = render(
+      const { getByTestId } = render(
         <TimeInputPopup visible={true} onSubmit={jest.fn()} onCancel={jest.fn()} />
       );
 
-      const submitButton = getByText('시작하기');
+      const submitButton = getByTestId('submit-button');
       expect(submitButton.props.accessibilityState?.disabled).toBeFalsy();
     });
 
@@ -243,7 +243,8 @@ describe('TimeInputPopup Component - Unit Tests (RED)', () => {
 
       // After validation error, button should remain enabled for retry
       // but onSubmit should not be called
-      expect(submitButton.props.accessibilityState?.disabled).toBeFalsy();
+      const submitButtonElement = getByTestId('submit-button');
+      expect(submitButtonElement.props.accessibilityState?.disabled).toBeFalsy();
     });
   });
 
@@ -376,11 +377,11 @@ describe('TimeInputPopup Component - Unit Tests (RED)', () => {
 
   describe('Touch Feedback', () => {
     it('should provide visual feedback on start button press within 100ms', () => {
-      const { getByText } = render(
+      const { getByTestId } = render(
         <TimeInputPopup visible={true} onSubmit={jest.fn()} onCancel={jest.fn()} />
       );
 
-      const submitButton = getByText('시작하기');
+      const submitButton = getByTestId('submit-button');
       
       // Button should be touchable and provide feedback
       expect(submitButton.props.accessible).toBeTruthy();
