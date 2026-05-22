@@ -12,8 +12,9 @@
  */
 
 import React, { useState, useCallback } from 'react';
-import { View, ImageBackground, StyleSheet } from 'react-native';
+import { View, ImageBackground, StyleSheet, Platform } from 'react-native';
 import { COLORS } from '../constants/theme';
+import backgroundImage from '../../assets/images/background.png';
 
 /**
  * Landscape element types that are part of the background image
@@ -31,6 +32,10 @@ const BackgroundImage: React.FC = () => {
     setImageError(true);
   }, []);
 
+  const imageSource = Platform.OS === 'web' 
+    ? backgroundImage 
+    : require('../../assets/images/background.png');
+
   return (
     <View
       testID="background-image"
@@ -42,7 +47,7 @@ const BackgroundImage: React.FC = () => {
       {!imageError ? (
         <ImageBackground
           testID="background-watercolor-image"
-          source={require('../../assets/images/background.png')}
+          source={imageSource}
           style={styles.imageBackground}
           onError={handleImageError}
         >

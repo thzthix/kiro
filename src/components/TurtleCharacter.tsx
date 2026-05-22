@@ -1,8 +1,15 @@
 import React, { useEffect, useRef } from 'react';
-import { View, Image, Animated, StyleSheet } from 'react-native';
+import { View, Image, Animated, StyleSheet, Platform } from 'react-native';
 import { PathCoordinates, TurtleState } from '../types';
 import { calculatePosition } from '../utils/ProgressCalculator';
 import { handleAnimationError, handleImageLoadError } from '../utils/ErrorHandler';
+
+// Import images for web compatibility
+import turtleWalking from '../../assets/images/turtle/turtle_walking.jpeg';
+import turtleEating from '../../assets/images/turtle/turtle_eating.jpeg';
+import turtleHappy from '../../assets/images/turtle/turtle_happy.jpeg';
+import turtleSleeping from '../../assets/images/turtle/turtle_sleeping.jpeg';
+import turtleArrived from '../../assets/images/turtle/turtle_arrived.png';
 
 interface TurtleCharacterProps {
   progress: number; // 0-100
@@ -14,7 +21,13 @@ interface TurtleCharacterProps {
 const ANIMATION_DURATION = 250; // 250ms is within 200-300ms range for battery efficiency
 
 // Sprite mapping for each turtle state
-const TURTLE_SPRITES: Record<TurtleState, any> = {
+const TURTLE_SPRITES: Record<TurtleState, any> = Platform.OS === 'web' ? {
+  walking: turtleWalking,
+  eating: turtleEating,
+  happy: turtleHappy,
+  sleeping: turtleSleeping,
+  arrived: turtleArrived,
+} : {
   walking: require('../../assets/images/turtle/turtle_walking.jpeg'),
   eating: require('../../assets/images/turtle/turtle_eating.jpeg'),
   happy: require('../../assets/images/turtle/turtle_happy.jpeg'),

@@ -8,10 +8,13 @@ export default defineConfig({
   resolve: {
     alias: {
       'react-native': 'react-native-web',
+      '@assets': path.resolve(__dirname, './assets'),
     },
     extensions: ['.web.js', '.web.ts', '.web.tsx', '.js', '.ts', '.tsx', '.json'],
   },
   build: {
     outDir: 'dist',
+    assetsInlineLimit: 0, // Don't inline assets, keep them as separate files
   },
+  assetsInclude: ['**/*.png', '**/*.jpg', '**/*.jpeg', '**/*.gif', '**/*.svg'],
 });

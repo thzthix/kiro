@@ -21,11 +21,14 @@ import {
   TouchableOpacity,
   Image,
   StyleSheet,
+  Platform,
 } from 'react-native';
 import ScreenLayout from '../components/ScreenLayout';
 import { formatTime } from '../utils/ProgressCalculator';
 import { useButtonDebounce } from '../hooks/useButtonDebounce';
 import { COLORS, LAYOUT } from '../constants/theme';
+import turtleArrived from '../../assets/images/turtle/turtle_arrived.png';
+import startGoal from '../../assets/images/markers/start-goal.png';
 
 interface CompletionScreenProps {
   totalDuration?: number;
@@ -56,7 +59,7 @@ export const CompletionScreen: React.FC<CompletionScreenProps> = ({
       <View style={styles.turtleSection}>
         <Image
           testID="completion-turtle"
-          source={require('../../assets/images/turtle/turtle_arrived.png')}
+          source={Platform.OS === 'web' ? turtleArrived : require('../../assets/images/turtle/turtle_arrived.png')}
           style={styles.turtleImage}
           // @ts-ignore - Custom props for testing
           state="arrived"
@@ -66,7 +69,7 @@ export const CompletionScreen: React.FC<CompletionScreenProps> = ({
         />
         <Image
           testID="goal-flag"
-          source={require('../../assets/images/markers/start-goal.png')}
+          source={Platform.OS === 'web' ? startGoal : require('../../assets/images/markers/start-goal.png')}
           style={styles.goalFlag}
           resizeMode="contain"
           accessibilityLabel="Goal flag"
