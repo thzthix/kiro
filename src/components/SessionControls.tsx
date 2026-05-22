@@ -17,7 +17,7 @@
  * Validates: Requirements 9.1, 9.2, 9.4, 9.5, 9.6, 9.7, 9.8, 9.9
  */
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import {
   View,
   TouchableOpacity,
@@ -25,6 +25,7 @@ import {
   StyleSheet,
   Modal,
   Pressable,
+  Animated,
 } from 'react-native';
 
 // Constants for styling and configuration

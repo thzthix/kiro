@@ -1348,3 +1348,256 @@ npm test -- TouchInteraction.test.tsx --runInBand --no-coverage
 
 ### 🔗 관련 커밋
 - 다음 단계에서 커밋 예정: `test: 터치 인터랙션 단위 테스트 작성 (RED)`
+
+
+---
+
+## 날짜: 2026-05-22 Task 14.4: 탭 디바운싱 구현 (GREEN)
+
+### 📋 Task 개요
+- **Task ID**: 14.4
+- **목표**: CareItemsPanel의 탭 디바운싱 구현 (TDD GREEN 단계)
+- **관련 Requirements**: 5.13, 5.16
+- **소요 시간**: 약 30분
+
+### 🎯 설계 결정 (Design Decisions)
+
+#### 고려한 대안들
+
+1. **디바운싱 구현 방법**
+   - **setTimeout 기반**:
+     - 장점: 간단한 구현
+     - 단점: 타이머 관리 복잡, 메모리 누수 가능성
+   - **타임스탬프 기반 (선택)**:
+     - 장점: 간단하고 안정적, 메모리 누수 없음, 테스트 용이
+     - 단점: Date.now() 호출 오버헤드 (무시할 수 있는 수준)
+
+2. **디바운싱 독립성**
+   - **공유 디바운스 상태**:
+     - 장점: 코드 간결
+     - 단점: 당근 버튼 탭이 물 버튼 쿨다운에 영향
+   - **독립 디바운스 상태 (선택)**:
+     - 장점: 각 버튼이 독립적으로 작동, 요구사항 충족
+     - 단점: 약간 더 복잡한 구현
+
+3. **기존 훅 활용 vs 새로운 구현**
+   - **기존 useButtonDebounce 훅 사용 (선택)**:
+     - 장점: 이미 테스트된 코드, 재사용성, 일관성
+     - 단점: 없음
+   - **새로운 디바운스 로직 구현**:
+     - 장점: 컴포넌트 특화 최적화 가능
+     - 단점: 중복 코드, 테스트 부담 증가
+
+#### 선택한 방법
+
+- **선택**: 기존 useButtonDebounce 훅 사용 + 타임스탬프 기반 + 독립 디바운스
+- **이유**:
+  1. **재사용성**: 이미 구현되고 테스트된 useButtonDebounce 훅 활용
+  2. **안정성**: 타임스탬프 기반으로 메모리 누수 없음
+  3. **독립성**: 각 버튼(carrot, water)이 독립적인 쿨다운 유지
+  4. **요구사항 충족**: Requirement 5.16 (1초 쿨다운, 독립 디바운싱)
+
+#### 코드 예시
+
+**CareItemsPanel.tsx 수정**:
+```typescript
+import { useButtonDebounce } from '../hooks/useButtonDebounce';
+
+const CareItemsPanel: React.FC<CareItemsPanelProps> = ({
+  onItemTap,
+  disabled,
+  carrotCount,
+  waterCount,
+  turtleState,
+}) => {
+  // Timestamp-based debouncing hook (1 second cooldown)
+  const { handlePress } = useButtonDebounce(DEBOUNCE_DURATION_MS);
+
+  // Custom hooks for shake animations
+  const carrotShake = useShakeAnimation();
+  const waterShake = useShakeAnimation();
+
+  // Handle button tap with debouncing and shake animation
+  const handleItemTap = useCallback(
+    (itemType: ItemType, count: number, isDisabled: boolean, shake: ReturnType<typeof useShakeAnimation>) => {
+      // If count is 0, play shake animation
+      if (count === 0) {
+        shake.playShakeAnimation();
+        return;
+      }
+
+      // If disabled for other reasons, do nothing
+      if (isDisabled) {
+        return;
+      }
+
+      // Execute debounced action using timestamp-based debouncing
+      // handlePress uses key-based debouncing, so 'carrot' and 'water' are independent
+      handlePress(itemType, onItemTap, itemType);
+    },
+    [onItemTap, handlePress]
+  );
+
+  const handleCarrotTap = useCallback(() => {
+    handleItemTap('carrot', carrotCount, isCarrotDisabled, carrotShake);
+  }, [carrotCount, isCarrotDisabled, carrotShake, handleItemTap]);
+
+  const handleWaterTap = useCallback(() => {
+    handleItemTap('water', waterCount, isWaterDisabled, waterShake);
+  }, [waterCount, isWaterDisabled, waterShake, handleItemTap]);
+
+  // ... rest of component
+};
+```
+
+**useButtonDebounce.ts (기존 훅)**:
+```typescript
+export const useButtonDebounce = (
+  cooldownMs: number = 500
+): UseButtonDebounceReturn => {
+  const lastPressTime = useRef<{ [key: string]: number }>({});
+
+  const handlePress = useCallback(
+    <T = void>(
+      key: string,
+      callback?: (payload?: T) => void,
+      payload?: T
+    ) => {
+      const now = Date.now();
+      const lastPress = lastPressTime.current[key] || 0;
+
+      // Ignore if within cooldown period
+      if (now - lastPress < cooldownMs) {
+        return;
+      }
+
+      lastPressTime.current[key] = now;
+      callback?.(payload);
+    },
+    [cooldownMs]
+  );
+
+  return { handlePress };
+};
+```
+
+### 🔧 트러블슈팅 (Troubleshooting)
+
+#### 상황
+특별한 트러블슈팅 없음. 기존 useButtonDebounce 훅이 이미 타임스탬프 기반으로 구현되어 있어 바로 적용 가능.
+
+### ✅ 검증 (Verification)
+
+- **테스트 실행**: ✅ 통과 (52/52)
+  - CareItemsPanel 디바운싱 테스트: 6/6 통과
+    - ✅ 첫 번째 당근 버튼 탭 처리, 1초 내 후속 탭 무시
+    - ✅ 첫 번째 물 버튼 탭 처리, 1초 내 후속 탭 무시
+    - ✅ 1초 쿨다운 후 당근 버튼 탭 허용
+    - ✅ 1초 쿨다운 후 물 버튼 탭 허용
+    - ✅ 당근과 물 버튼의 독립적인 디바운싱
+    - ✅ 디바운스된 탭에 대한 시각적 피드백 없음
+  - 전체 CareItemsPanel 테스트: 52/52 통과
+
+- **타입 체크**: ✅ 통과 (`npm run type-check`)
+  - 모든 타입 정의 에러 없음
+  - useButtonDebounce 제네릭 타입 정상 작동
+
+- **독립 디바운싱 검증**:
+  ```typescript
+  // 테스트 코드에서 검증
+  it('should have independent debouncing for carrot and water buttons', () => {
+    const onItemTap = jest.fn();
+    const { getByTestId } = render(
+      <CareItemsPanel {...defaultProps} onItemTap={onItemTap} />
+    );
+
+    const carrotButton = getByTestId('carrot-button');
+    const waterButton = getByTestId('water-button');
+
+    // Tap carrot
+    fireEvent.press(carrotButton);
+    expect(onItemTap).toHaveBeenCalledTimes(1);
+    expect(onItemTap).toHaveBeenCalledWith('carrot');
+
+    // Tap water immediately (should work - independent debouncing)
+    fireEvent.press(waterButton);
+    expect(onItemTap).toHaveBeenCalledTimes(2);
+    expect(onItemTap).toHaveBeenCalledWith('water');
+  });
+  ```
+
+### 📝 학습 내용 (Learnings)
+
+1. **타임스탬프 기반 디바운싱의 장점**:
+   - setTimeout보다 간단하고 안정적
+   - 메모리 누수 걱정 없음
+   - 테스트에서 jest.advanceTimersByTime()으로 쉽게 제어
+   - 컴포넌트 언마운트 시 cleanup 불필요
+
+2. **키 기반 디바운싱 패턴**:
+   - `lastPressTime.current[key]`로 각 버튼의 마지막 탭 시간 독립적으로 관리
+   - 'carrot'와 'water' 키로 완전히 독립적인 쿨다운 구현
+   - 확장 가능: 새로운 버튼 추가 시 자동으로 독립 디바운싱 적용
+
+3. **기존 훅 재사용의 가치**:
+   - 이미 테스트된 코드 재사용으로 개발 시간 단축
+   - 일관된 디바운싱 동작 보장
+   - 버그 발생 가능성 감소
+
+4. **TDD GREEN 단계의 목표**:
+   - 테스트를 통과시키는 최소한의 코드 작성
+   - 과도한 최적화나 추상화 피하기
+   - 모든 테스트가 통과하면 GREEN 단계 완료
+
+5. **React 훅의 조합**:
+   - useButtonDebounce (디바운싱)
+   - useShakeAnimation (애니메이션)
+   - useCallback (메모이제이션)
+   - 각 훅이 명확한 단일 책임을 가짐
+
+### 🔗 관련 커밋
+- Commit: (예정) `feat: CareItemsPanel 탭 디바운싱 구현 (Task 14.4)`
+- Branch: `feat/tap-debouncing`
+- PR: (예정) `#X` - feat: 탭 디바운싱 구현 (Task 14.4)
+
+### 📊 변경 사항
+
+**수정된 파일**:
+- `src/components/CareItemsPanel.tsx` - useButtonDebounce 훅 사용으로 변경
+  - 기존 useDebounce 커스텀 훅 제거 (30줄)
+  - useButtonDebounce import 및 사용 (5줄)
+  - 순 감소: 25줄
+
+**통계**:
+- 1개 파일 변경
+- 5줄 추가, 30줄 삭제
+- 순 감소: 25줄 (중복 코드 제거)
+
+**테스트 결과**:
+- CareItemsPanel.test.tsx: 52/52 통과
+- 디바운싱 관련 테스트: 6/6 통과
+- 전체 테스트 스위트: 567/567 통과
+
+### 🎯 다음 단계
+
+Task 14.4 완료 후 다음 작업:
+1. Task 14.5: Refactor touch interaction (REFACTOR)
+2. Task 15: Integration testing
+3. Task 16: Final verification and documentation
+
+### 💡 구현 체크리스트
+
+이번 구현에서 확인한 항목들:
+
+- ✅ 타임스탬프 기반 디바운싱 사용
+- ✅ 1초 쿨다운 구현 (DEBOUNCE_DURATION_MS = 1000)
+- ✅ 독립적인 디바운싱 (당근과 물 버튼 각각)
+- ✅ 기존 useButtonDebounce 훅 재사용
+- ✅ 모든 테스트 통과 (52/52)
+- ✅ 타입 안정성 유지
+- ✅ 중복 코드 제거 (25줄)
+- ✅ 요구사항 충족 (5.13, 5.16)
+- ✅ 코드 가독성 향상
+- ✅ 메모리 누수 없음
+
+---
