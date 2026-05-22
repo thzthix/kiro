@@ -2419,3 +2419,181 @@ Task 15.1 완료 후 다음 작업:
 - ✅ 세션 상태 보존
 
 ---
+
+
+---
+
+## 날짜: 2026-05-22 Task 15.5: 터치 인터랙션 에러 핸들링 추가 (GREEN)
+
+### 📋 Task 개요
+- **Task ID**: 15.5
+- **목표**: TimeInputPopup, TurtleCharacter, BackgroundImage, StudyCanvas에 에러 핸들링 추가
+- **관련 Requirements**: 1.7, 1.8, 8.1
+- **소요 시간**: 약 30분
+
+### 🎯 설계 결정 (Design Decisions)
+
+#### 구현 내용
+
+1. **TimeInputPopup 에러 핸들링**
+   - undefined 콜백 처리: onSubmit, onCancel이 undefined일 때 안전하게 처리
+   - 타입 체크: `typeof callback === 'function'` 확인 후 호출
+   - 입력 검증: InputValidator를 통한 검증 유지
+
+2. **TurtleCharacter 에러 핸들링**
+   - missing pathCoordinates 처리: pathCoordinates가 undefined일 때 애니메이션 스킵
+   - invalid state 처리: TURTLE_SPRITES에 없는 state일 때 'walking' 폴백
+   - 조기 반환: useEffect에서 pathCoordinates 체크 후 조기 반환
+
+3. **BackgroundImage testID 일관성**
+   - testID를 `background-image`로 통일
+   - ErrorHandling 테스트 업데이트하여 올바른 testID 사용
+
+4. **비인터랙티브 영역 터치 처리**
+   - StudyCanvas는 이미 onPress를 사용하지 않음 (완전히 무시)
+   - 에러 메시지 없음, 시각적 피드백 없음
+   - 세션 상태 보존
+
+#### 기술적 결정
+
+- **undefined 콜백 처리**:
+  - `callback && typeof callback === 'function'` 패턴 사용
+  - 이유: 안전한 함수 호출, 런타임 에러 방지
+
+- **pathCoordinates 체크**:
+  - useEffect 내부에서 조기 반환
+  - 이유: 애니메이션 실행 전 검증, 에러 방지
+
+- **state 폴백**:
+  - `TURTLE_SPRITES[state] || TURTLE_SPRITES.walking`
+  - 이유: 항상 유효한 이미지 소스 보장
+
+### ✅ 검증 결과
+
+#### 에러 핸들링 테스트
+```bash
+npm test -- ErrorHandling.test.tsx --runInBand
+```
+
+**결과**:
+- ✅ TimeInputPopup Error Handling: 6/6 통과
+- ✅ TurtleCharacter Animation Fallbacks: 8/8 통과
+- ✅ BackgroundImage Load Failures: 4/4 통과
+- ✅ StudyCanvas Error Boundaries: 2/2 통과
+- ✅ Non-Interactive Area Touch Handling: 6/6 통과
+- ✅ State Transition Error Recovery: 4/4 통과
+- ✅ Timer Error Recovery: 4/4 통과
+- ✅ 총 34/34 tests passed
+
+#### 전체 테스트 스위트
+```bash
+npm test -- --runInBand
+```
+
+**결과**:
+- ✅ 29 test suites passed
+- ✅ 607 tests passed
+- ✅ 0 tests failed
+- ✅ Time: 3.493s
+
+### 📝 구현 세부사항
+
+#### TimeInputPopup.tsx
+```typescript
+const handleSubmit = (): void => {
+  const validation = validateTimeInput(inputValue);
+
+  if (!validation.valid) {
+    // Display error message
+    setErrorMessage(getErrorMessage(validation.errorType));
+    return;
+  }
+
+  // Valid input - call onSubmit with duration if callback is defined
+  if (onSubmit && typeof onSubmit === 'function') {
+    onSubmit(validation.value!);
+  }
+  
+  // Reset state
+  setInputValue('');
+  setErrorMessage('');
+};
+
+const handleCancel = (): void => {
+  // Reset state
+  setInputValue('');
+  setErrorMessage('');
+  
+  // Call onCancel if callback is defined
+  if (onCancel && typeof onCancel === 'function') {
+    onCancel();
+  }
+};
+```
+
+#### TurtleCharacter.tsx
+```typescript
+useEffect(() => {
+  // Handle missing pathCoordinates gracefully
+  if (!pathCoordinates) {
+    return;
+  }
+
+  const position = calculatePosition(progress, pathCoordinates);
+
+  // Animate position smoothly
+  Animated.parallel([
+    Animated.timing(animatedX, {
+      toValue: position.x,
+      duration: ANIMATION_DURATION,
+      useNativeDriver: true,
+    }),
+    Animated.timing(animatedY, {
+      toValue: position.y,
+      duration: ANIMATION_DURATION,
+      useNativeDriver: true,
+    }),
+  ]).start();
+}, [progress, pathCoordinates, animatedX, animatedY]);
+
+// Render with fallback for invalid state
+<Image
+  testID="turtle-image"
+  source={TURTLE_SPRITES[state] || TURTLE_SPRITES.walking}
+  style={styles.turtleImage}
+  resizeMode="contain"
+/>
+```
+
+### 🔍 학습 내용
+
+1. **안전한 콜백 호출 패턴**
+   - `callback && typeof callback === 'function'` 체크
+   - undefined 콜백으로 인한 런타임 에러 방지
+   - TypeScript의 타입 체크만으로는 런타임 안전성 보장 불가
+
+2. **React 컴포넌트 에러 핸들링**
+   - 조기 반환으로 불필요한 계산 방지
+   - 폴백 값으로 항상 유효한 상태 유지
+   - useEffect 내부에서 조건부 실행
+
+3. **테스트 주도 에러 핸들링**
+   - 에러 케이스를 먼저 테스트로 작성 (RED)
+   - 에러 핸들링 구현 (GREEN)
+   - 모든 테스트 통과 확인
+
+4. **testID 일관성의 중요성**
+   - 컴포넌트 전체에서 일관된 testID 사용
+   - 테스트 실패 시 testID 불일치 확인 필요
+   - 변경 시 모든 관련 테스트 업데이트
+
+### 🎉 완료 상태
+- ✅ TimeInputPopup undefined 콜백 처리
+- ✅ TurtleCharacter missing pathCoordinates 처리
+- ✅ TurtleCharacter invalid state 폴백
+- ✅ BackgroundImage testID 일관성 확보
+- ✅ 비인터랙티브 영역 터치 무시 확인
+- ✅ 모든 에러 핸들링 테스트 통과 (34/34)
+- ✅ 전체 테스트 스위트 통과 (607/607)
+
+---
