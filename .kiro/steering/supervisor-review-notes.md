@@ -12,33 +12,33 @@ This note captures current review findings and the recommended next execution or
 
 ## Current Assessment
 
-- The branch is split between a green runtime/test baseline and a broken type baseline.
-- `npm run type-check` fails.
-- `npm test -- --runInBand` passes.
+- The branch has regressed in the integration layer.
+- `npm run type-check` did not surface a blocking error in the latest review.
+- `npm test -- --runInBand` fails.
 - Current test status:
-  - 29 suites passing
-  - 0 suites failing
-  - 607 tests passing
-  - 0 tests failing
-- The prior `TouchInteraction` regression appears resolved or removed from the active test baseline.
-- The current blockers are type-check only:
-  - unused local variables in `src/components/ErrorHandling.test.tsx`
-  - an unreachable comparison in `src/utils/StateTransitionManager.ts`
-- `tasks.md` now marks `15.2` and `15.4` complete, and leaves `15.5` unchecked.
-- The next risk is claiming GREEN task completion while `tsc --noEmit` is still red.
+  - 30 suites passing
+  - 1 suite failing
+  - 636 tests passing
+  - 20 tests failing
+- All current failures are concentrated in `src/__tests__/integration.test.tsx`.
+- The common symptom is that `StudySessionScreen` renders only the empty `study-session-screen` container during integration flows, which strongly suggests the session never gets created in the `AppProvider`/`HomeScreen`/`useStudySession` path.
+- This is not a broad UI-contract regression. It is a higher-level state/bootstrap regression in the active session flow.
+- The previous type-check blockers are no longer the main issue. The priority has shifted to restoring an actual running session in integration scenarios.
 
 ## Highest Priority Fixes
 
-### 1. Restore the full green baseline
+### 1. Restore the integration baseline
 
-- First fix the type-check blockers before adding more scope.
-- In `src/components/ErrorHandling.test.tsx`, remove or rewrite the newly introduced unused locals:
-  - `_timerStartFailed`
-  - `_timerOutOfSync`
-- In `src/utils/StateTransitionManager.ts`, remove the redundant `currentState === 'arrived'` branch inside the paused-state handling because `arrived` was already returned earlier.
-- Re-run:
-  - `npm run type-check`
-  - `npm test -- --runInBand`
+- Fix the session bootstrap path before adding more UI or error-handling scope.
+- Start with the components/hooks that decide whether a session exists:
+  - `src/hooks/useStudySession.ts`
+  - `src/screens/HomeScreen.tsx`
+  - `src/screens/StudySessionScreen.tsx`
+  - `src/context/AppContext.tsx`
+- In integration runs, `StudySessionScreen` is hitting the `if (!session)` early return, so trace why the session is missing after the Home screen flow should have started one.
+- Re-run focused integration tests first:
+  - `npm test -- src/__tests__/integration.test.tsx --runInBand`
+- Then re-run the full suite.
 
 ### 2. Keep TDD honest
 
@@ -54,13 +54,13 @@ This note captures current review findings and the recommended next execution or
   - dumping many new suites into the branch before stabilizing earlier ones
   - partial render-helper failures like `render method has not been called`
   - assertions against non-public implementation props on host nodes
-  - marking GREEN work complete when tests pass but `type-check` is still red
+  - claiming GREEN progress from isolated component tests while the integration path is still broken
 
 ### 3. Verify task bookkeeping against reality
 
 - If `tasks.md` marks items complete, ensure the implementation and tests truly back that claim.
 - Avoid claiming completion just because a component file exists; confirm behavior against the spec.
-- `15.2` and `15.4` may be behaviorally close, but the branch is not fully GREEN until type-check passes too.
+- Do not treat any new screen/session task as complete while the main integration flow still renders an empty session screen.
 - When moving to the next task, check that the current branch still aligns with:
   - `requirements.md`
   - `design.md`
@@ -84,10 +84,10 @@ This note captures current review findings and the recommended next execution or
 
 ## Recommended Next Order
 
-1. Fix the `ErrorHandling.test.tsx` unused-local type errors
-2. Fix the unreachable `arrived` comparison in `StateTransitionManager`
-3. Re-run full type-check
-4. Re-run the full test suite
+1. Restore session creation in the `AppProvider` -> `HomeScreen` -> `useStudySession` flow
+2. Make `StudySessionScreen` render the actual session subcomponents during integration tests
+3. Re-run `src/__tests__/integration.test.tsx`
+4. Re-run the full suite
 5. Only then continue with the next unfinished feature area
 
 ## Definition of “Good Progress”
