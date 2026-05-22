@@ -628,7 +628,7 @@ The implementation follows a bottom-up approach: core business logic first, then
     - Run tests - they should FAIL (no implementation yet)
     - _Requirements: 1.4, 2.4, 4.4, 4.5, 4.7, 4.8, 4.10, 5.2, 5.7, 5.8, 5.10, 7.1, 8.1, 9.1, 9.2, 9.5, 9.8_
   
-  - [-] 17.2 Wire App root with navigation and context (GREEN)
+  - [x] 17.2 Wire App root with navigation and context (GREEN)
     - Create App component with AppProvider
     - Set up navigation between HomeScreen, StudySessionScreen, CompletionScreen
     - Pass state and callbacks through context
@@ -636,7 +636,7 @@ The implementation follows a bottom-up approach: core business logic first, then
     - Run tests - they should PASS
     - _Requirements: 1.1, 6.5, 7.1_
   
-  - [ ] 17.3 Integrate timer with turtle state transitions (GREEN)
+  - [-] 17.3 Integrate timer with turtle state transitions (GREEN)
     - Connect timer ticks to turtle state updates
     - Trigger happy state after 1 second of eating state (display turtle_happy.jpeg with heart effect)
     - Trigger walking state after 3 seconds of happy state
@@ -647,7 +647,7 @@ The implementation follows a bottom-up approach: core business logic first, then
     - Run tests - they should PASS
     - _Requirements: 2.3, 4.4, 4.5, 4.8, 4.9, 4.10, 5.5, 5.6, 5.10, 9.3, 9.8_
   
-  - [ ] 17.4 Integrate care items with turtle state (GREEN)
+  - [-] 17.4 Integrate care items with turtle state (GREEN)
     - Connect care item button taps to turtle eating state changes
     - Trigger eating state immediately when care item button tapped (display turtle_eating.jpeg with head nodding + mouth movement for 1s)
     - Decrement item count on tap
@@ -658,7 +658,7 @@ The implementation follows a bottom-up approach: core business logic first, then
     - Run tests - they should PASS
     - _Requirements: 4.4, 4.5, 5.2, 5.4, 5.5, 5.6, 5.7, 5.8, 5.13, 9.10_
   
-  - [ ] 17.5 Integrate pause/resume with all timers (GREEN)
+  - [-] 17.5 Integrate pause/resume with all timers (GREEN)
     - Pause timer, eating timer, and happy timer on pause action
     - Store remainingEatingDuration or remainingHappyDuration when pausing during eating/happy states
     - Resume all timers from paused state on resume action

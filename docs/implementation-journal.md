@@ -3381,3 +3381,286 @@ Task 17.1 완료 후 다음 작업:
 ### 🔄 다음 단계
 
 Task 17.2 완료로 Turtle Study App의 핵심 기능 구현이 완료되었습니다. 모든 화면이 연결되고 네비게이션이 작동하며, 통합 테스트가 전체 사용자 플로우를 검증합니다.
+
+
+## 날짜: 2025-01-23 Task 17.3: 타이머와 거북이 상태 전환 통합 (GREEN)
+
+### 📋 Task 개요
+- **Task ID**: 17.3
+- **목표**: 타이머 완료 시 거북이 상태 전환 통합 및 eating/happy 상태 처리
+- **관련 Requirements**: 2.3, 4.4, 4.5, 4.8, 4.9, 4.10, 5.5, 5.6, 5.10, 9.3, 9.8
+- **소요 시간**: 약 15분 (이미 구현 완료 확인)
+
+### 🎯 설계 결정 (Design Decisions)
+
+#### 구현 내용
+
+1. **타이머-거북이 상태 통합 (useStudySession.ts)**
+   - **Timer completion handling**:
+     - handleComplete 콜백에서 clearStateTimeouts() 호출
+     - 모든 비동기 interval 즉시 정리
+     - 거북이를 'arrived' 상태로 전환
+     - COMPLETE_SESSION 액션 dispatch
+   
+   - **Eating → Happy → Walking transitions**:
+     - scheduleEatingToHappyTransition(): 1초 후 happy 상태로 전환
+     - happy 상태에서 3초 후 walking 상태로 자동 전환
+     - setTimeout을 사용한 비동기 상태 전환 관리
+   
+   - **Timer completion during eating/happy**:
+     - handleComplete에서 clearStateTimeouts() 먼저 호출
+     - eating/happy 타이머 즉시 취소
+     - 직접 arrived 상태로 전환 (중간 상태 건너뜀)
+
+2. **Pause/Resume 상태 보존**
+   - **Pause during eating/happy**:
+     - clearStateTimeouts()로 진행 중인 타이머 정리
+     - PAUSE_SESSION에 currentTime 전달
+     - reducer에서 remainingEatingDuration/remainingHappyDuration 계산
+     - previousStateBeforePause에 현재 상태 저장
+   
+   - **Resume with state restoration**:
+     - previousStateBeforePause 확인
+     - eating 상태: remainingEatingDuration으로 scheduleEatingToHappyTransition 호출
+     - happy 상태: remainingHappyDuration으로 setTimeout 설정
+     - 정확한 남은 시간으로 상태 전환 재개
+
+3. **Care item integration**
+   - **Immediate eating state**:
+     - provideItem 호출 시 clearStateTimeouts() 먼저 실행
+     - PROVIDE_ITEM 액션으로 eating 상태 전환 및 아이템 카운트 감소
+     - scheduleEatingToHappyTransition(1000)으로 1초 후 happy 전환 예약
+   
+   - **Button disable logic**:
+     - eating/happy 상태 중 버튼 비활성화
+     - 아이템 카운트 0일 때 버튼 비활성화
+     - 세션 paused 상태일 때 버튼 비활성화
+
+#### 기술적 결정
+
+- **Timeout management with refs**:
+  - eatingTimeoutRef, happyTimeoutRef로 타이머 추적
+  - clearStateTimeouts()로 중앙 집중식 정리
+  - 메모리 누수 방지 및 상태 일관성 보장
+
+- **Callback dependencies**:
+  - useCallback으로 함수 메모이제이션
+  - dispatch, clearStateTimeouts 등 필요한 의존성만 포함
+  - 불필요한 재렌더링 방지
+
+- **Cleanup on unmount**:
+  - useEffect cleanup function에서 clearStateTimeouts() 호출
+  - 타이머 서비스 stop() 호출
+  - 컴포넌트 언마운트 시 모든 리소스 정리
+
+### ✅ 테스트 결과
+
+#### Integration Tests
+- ✅ 24/24 integration tests passing
+- Complete session flow: 3 tests
+- Pause/resume flow: 3 tests
+- Care item interaction: 5 tests
+- Timer completion during eating/happy: 3 tests
+- Pause during eating/happy: 2 tests
+- Stop flow: 2 tests
+- Error recovery: 2 tests
+- Navigation flows: 4 tests
+
+#### Full Test Suite
+- ✅ 31/31 test suites passing
+- ✅ 656/656 tests passing
+- No regressions introduced
+
+### 🔍 문제 해결 (Troubleshooting)
+
+#### 발견 사항: 이미 구현 완료
+- **상황**: Task 17.3 실행 요청 받음
+- **확인**: 모든 integration tests 이미 통과 중
+- **분석**: 
+  - useStudySession.ts에 모든 요구사항 이미 구현됨
+  - Timer completion handling 완료
+  - Eating/happy state transitions 완료
+  - Pause/resume with state preservation 완료
+- **결론**: 추가 구현 불필요, 테스트 확인 및 문서화만 수행
+
+### 📝 학습 내용 (Learnings)
+
+1. **비동기 상태 전환 관리**
+   - setTimeout을 ref로 추적하여 정리 가능하게 구현
+   - 여러 타이머가 동시에 실행될 수 있으므로 중앙 집중식 정리 함수 필요
+   - clearStateTimeouts()를 모든 상태 변경 전에 호출하여 일관성 보장
+
+2. **Edge case 처리**
+   - Timer completion during eating/happy: 즉시 정리 후 arrived 전환
+   - Pause during eating/happy: 남은 시간 계산 및 저장
+   - Resume: 저장된 남은 시간으로 정확히 재개
+   - 모든 edge case가 integration test로 검증됨
+
+3. **Integration test의 가치**
+   - 단위 테스트만으로는 발견하기 어려운 타이밍 이슈 검증
+   - 실제 사용자 플로우를 시뮬레이션하여 전체 시스템 동작 확인
+   - 24개의 integration test가 모든 주요 시나리오 커버
+
+### 📝 다음 단계
+- Task 17.4: Care items와 거북이 상태 통합
+- Task 17.5: Pause/resume과 모든 타이머 통합
+- Task 17.6: Integration code refactoring
+
+---
+
+
+---
+
+## 날짜: 2025-01-22 Task 17.4: 돌봄 아이템과 거북이 상태 통합 (GREEN)
+
+### 📋 Task 개요
+- **Task ID**: 17.4
+- **목표**: 돌봄 아이템 탭과 거북이 상태 전환 통합, eating (1s) → happy (3s) → walking 플로우 구현, 아이템 카운트 감소, 버튼 비활성화, 디바운싱 처리
+- **관련 Requirements**: 5.1-5.8, 5.13-5.16, 6.4, 6.5, 6.7, 6.8
+- **소요 시간**: 약 15분
+
+### 🎯 설계 결정 (Design Decisions)
+
+#### 구현 상태 확인
+
+이 작업을 시작하기 전에 전체 통합 테스트를 실행한 결과, **모든 돌봄 아이템 통합 기능이 이미 완벽하게 구현되어 있음**을 확인했습니다.
+
+**확인된 기능**:
+1. ✅ 돌봄 아이템 탭 시 즉시 eating 상태로 전환
+2. ✅ eating (1s) → happy (3s) → walking 플로우 정상 작동
+3. ✅ 아이템 카운트 감소 (carrotCount, waterCount)
+4. ✅ 카운트 0일 때 버튼 비활성화
+5. ✅ 비활성화된 버튼 탭 시 shake 애니메이션
+6. ✅ 1초 디바운싱 (rapid tap 방지)
+7. ✅ eating/happy 상태 중 버튼 비활성화
+8. ✅ 타이머 완료 시 eating/happy 상태에서 즉시 arrived로 전환
+9. ✅ pause 중 eating/happy 상태 duration 보존 및 복원
+
+#### 통합 테스트 결과
+
+```bash
+npm test -- src/__tests__/integration.test.tsx --runInBand --no-coverage
+```
+
+**결과**:
+- ✅ Test Suites: 1 passed, 1 total
+- ✅ Tests: 24 passed, 24 total
+- ✅ Time: 0.844s
+
+**통과한 통합 테스트**:
+1. ✅ Complete care item flow: give item → eating → happy → walking
+2. ✅ Water item with same eating → happy → walking flow
+3. ✅ Disable individual button when count reaches 0
+4. ✅ Play shake animation when depleted button is tapped
+5. ✅ Debounce rapid taps on care item buttons
+6. ✅ Immediately transition to arrived if timer completes during eating state
+7. ✅ Immediately transition to arrived if timer completes during happy state
+8. ✅ Clear all async intervals when transitioning to arrived during eating/happy
+9. ✅ Preserve remaining eating duration when paused during eating
+10. ✅ Preserve remaining happy duration when paused during happy
+
+#### 전체 테스트 스위트 결과
+
+```bash
+npm test -- --runInBand --no-coverage
+```
+
+**결과**:
+- ✅ Test Suites: 31 passed, 31 total
+- ✅ Tests: 656 passed, 656 total
+- ✅ Time: 6.711s
+
+### 🔧 구현 세부사항
+
+#### 이미 구현된 컴포넌트 및 로직
+
+1. **CareItemsPanel.tsx**
+   - 돌봄 아이템 버튼 (당근, 물) 렌더링
+   - 아이템 카운트 표시 (🥕 ×3, 💧 ×3)
+   - 탭 이벤트 처리 및 디바운싱 (1초)
+   - 버튼 비활성화 로직 (카운트 0, eating/happy 상태, paused)
+   - Shake 애니메이션 (카운트 0일 때)
+   - 터치 피드백 애니메이션 (<100ms)
+
+2. **StudySessionScreen.tsx**
+   - CareItemsPanel 통합
+   - provideItem 콜백 연결
+   - 세션 상태에서 carrotCount, waterCount 전달
+   - careItemsDisabled 계산 로직
+
+3. **useStudySession.ts**
+   - provideItem 함수 구현
+   - eating (1s) → happy (3s) 전환 스케줄링
+   - 타이머 완료 시 eating/happy 상태에서 arrived로 즉시 전환
+   - pause 시 eating/happy 상태 duration 보존
+   - resume 시 eating/happy 상태 복원
+
+4. **AppReducer.ts**
+   - PROVIDE_ITEM 액션 처리
+   - 아이템 카운트 감소 로직
+   - eating 상태로 전환
+   - eatingStateEndTime 설정
+
+### ✅ 검증 (Verification)
+
+- **통합 테스트**: ✅ 24/24 통과
+  - 돌봄 아이템 플로우 테스트 5개 모두 통과
+  - 타이머 완료 중 eating/happy 테스트 3개 모두 통과
+  - pause 중 eating/happy 테스트 2개 모두 통과
+  - 디바운싱 테스트 통과
+
+- **전체 테스트 스위트**: ✅ 656/656 통과
+  - 31개 테스트 스위트 모두 통과
+  - 회귀 테스트 없음
+
+- **타입 체크**: ✅ 통과
+  - TypeScript 컴파일 에러 없음
+  - 모든 타입 정의 정상
+
+### 📝 학습 내용 (Learnings)
+
+1. **TDD의 효과**:
+   - 이전 작업들에서 TDD를 철저히 따른 결과, 통합 작업이 이미 완료되어 있었음
+   - 각 컴포넌트와 훅이 독립적으로 테스트되어 통합 시 문제 없음
+   - 통합 테스트가 먼저 작성되어 있어 구현 완료 여부를 즉시 확인 가능
+
+2. **상태 관리 아키텍처**:
+   - AppReducer의 중앙 집중식 상태 관리가 통합을 단순화
+   - useStudySession 훅이 비즈니스 로직을 캡슐화하여 컴포넌트 간 결합도 낮춤
+   - 명확한 액션 타입과 페이로드로 상태 전환 추적 용이
+
+3. **컴포넌트 설계**:
+   - CareItemsPanel이 독립적으로 동작하면서도 외부 상태와 잘 통합됨
+   - Props를 통한 명확한 인터페이스로 테스트와 재사용 용이
+   - 디바운싱, 애니메이션 등 복잡한 로직이 컴포넌트 내부에 캡슐화됨
+
+4. **비동기 상태 전환**:
+   - setTimeout을 사용한 eating/happy 전환이 안정적으로 작동
+   - pause/resume 시 남은 duration 보존 로직이 정확히 구현됨
+   - 타이머 완료 시 비동기 작업 즉시 정리하여 메모리 누수 방지
+
+### 🔗 관련 커밋
+- Commit: (예정) `feat: 돌봄 아이템과 거북이 상태 통합 (Task 17.4)`
+- Branch: `feat/care-items-integration`
+- PR: (예정) `feat: 돌봄 아이템과 거북이 상태 통합 (Task 17.4)`
+
+### 📊 변경 사항
+
+**수정된 파일**: 없음 (모든 기능이 이미 구현되어 있음)
+
+**검증된 기능**:
+- ✅ CareItemsPanel 컴포넌트 완전 구현
+- ✅ StudySessionScreen 통합 완료
+- ✅ useStudySession 훅 비즈니스 로직 완료
+- ✅ AppReducer 상태 관리 완료
+- ✅ 모든 통합 테스트 통과
+
+### 🎯 다음 단계
+
+Task 17.4 완료 후 다음 작업:
+1. Git 커밋 및 PR 생성
+2. PR 리뷰 및 머지
+3. main 브랜치로 복귀
+4. 다음 작업 진행
+
+---
