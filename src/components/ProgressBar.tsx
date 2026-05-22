@@ -5,14 +5,13 @@
  * Displays a horizontal progress bar with:
  * - Filled portion (mint color) representing progress
  * - Unfilled portion (light beige background)
- * - Mini turtle icon slider that moves rightward with progress
  * 
  * Requirements: 1.3, 1.4, 1.5, 1.6, 3.5
  */
 
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { COLORS, LAYOUT, TYPOGRAPHY } from '../constants/theme';
+import { COLORS, LAYOUT } from '../constants/theme';
 import { clampProgress } from '../utils/progressUtils';
 
 interface ProgressBarProps {
@@ -50,17 +49,6 @@ const ProgressBar: React.FC<ProgressBarProps> = ({ progress }) => {
           { width: `${clampedProgress}%` },
         ]}
       />
-      
-      {/* Mini turtle icon slider */}
-      <View
-        testID="progress-bar-turtle-slider"
-        style={[
-          styles.turtleSlider,
-          { left: `${clampedProgress}%` },
-        ]}
-      >
-        <Text style={styles.turtleIcon}>🐢</Text>
-      </View>
     </View>
   );
 };
@@ -68,31 +56,19 @@ const ProgressBar: React.FC<ProgressBarProps> = ({ progress }) => {
 const styles = StyleSheet.create({
   container: {
     height: LAYOUT.progressBarHeight,
-    backgroundColor: COLORS.beige,
+    backgroundColor: COLORS.lightBeige,
     borderRadius: LAYOUT.borderRadiusSmall,
     position: 'relative',
-    overflow: 'visible',
+    overflow: 'hidden',
     width: '100%',
   },
   filledPortion: {
     height: '100%',
-    backgroundColor: COLORS.mint,
+    backgroundColor: COLORS.oliveGreen,
     borderRadius: LAYOUT.borderRadiusSmall,
     position: 'absolute',
     left: 0,
     top: 0,
-  },
-  turtleSlider: {
-    position: 'absolute',
-    width: LAYOUT.turtleSliderSize,
-    height: LAYOUT.turtleSliderSize,
-    top: -LAYOUT.spacing.small,
-    marginLeft: -LAYOUT.turtleSliderSize / 2,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  turtleIcon: {
-    fontSize: TYPOGRAPHY.turtleIconSize,
   },
 });
 

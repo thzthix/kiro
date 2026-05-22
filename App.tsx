@@ -9,7 +9,7 @@
  */
 
 import React, { useCallback } from 'react';
-import { SafeAreaView, StyleSheet } from 'react-native';
+import { View, StyleSheet, Platform } from 'react-native';
 import { AppProvider, useAppContext } from './src/context/AppContext';
 import { HomeScreen } from './src/screens/HomeScreen';
 import { StudySessionScreen } from './src/screens/StudySessionScreen';
@@ -64,9 +64,9 @@ const AppContent: React.FC = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       {renderScreen()}
-    </SafeAreaView>
+    </View>
   );
 };
 
@@ -85,6 +85,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.beige,
+    width: '100%',
+    height: '100%',
+    ...(Platform.OS === 'web' && {
+      maxWidth: 480,
+      margin: '0 auto',
+    }),
   },
 });
 
