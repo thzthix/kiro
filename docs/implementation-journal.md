@@ -3381,3 +3381,129 @@ Task 17.1 완료 후 다음 작업:
 ### 🔄 다음 단계
 
 Task 17.2 완료로 Turtle Study App의 핵심 기능 구현이 완료되었습니다. 모든 화면이 연결되고 네비게이션이 작동하며, 통합 테스트가 전체 사용자 플로우를 검증합니다.
+
+
+## 날짜: 2025-01-23 Task 17.3: 타이머와 거북이 상태 전환 통합 (GREEN)
+
+### 📋 Task 개요
+- **Task ID**: 17.3
+- **목표**: 타이머 완료 시 거북이 상태 전환 통합 및 eating/happy 상태 처리
+- **관련 Requirements**: 2.3, 4.4, 4.5, 4.8, 4.9, 4.10, 5.5, 5.6, 5.10, 9.3, 9.8
+- **소요 시간**: 약 15분 (이미 구현 완료 확인)
+
+### 🎯 설계 결정 (Design Decisions)
+
+#### 구현 내용
+
+1. **타이머-거북이 상태 통합 (useStudySession.ts)**
+   - **Timer completion handling**:
+     - handleComplete 콜백에서 clearStateTimeouts() 호출
+     - 모든 비동기 interval 즉시 정리
+     - 거북이를 'arrived' 상태로 전환
+     - COMPLETE_SESSION 액션 dispatch
+   
+   - **Eating → Happy → Walking transitions**:
+     - scheduleEatingToHappyTransition(): 1초 후 happy 상태로 전환
+     - happy 상태에서 3초 후 walking 상태로 자동 전환
+     - setTimeout을 사용한 비동기 상태 전환 관리
+   
+   - **Timer completion during eating/happy**:
+     - handleComplete에서 clearStateTimeouts() 먼저 호출
+     - eating/happy 타이머 즉시 취소
+     - 직접 arrived 상태로 전환 (중간 상태 건너뜀)
+
+2. **Pause/Resume 상태 보존**
+   - **Pause during eating/happy**:
+     - clearStateTimeouts()로 진행 중인 타이머 정리
+     - PAUSE_SESSION에 currentTime 전달
+     - reducer에서 remainingEatingDuration/remainingHappyDuration 계산
+     - previousStateBeforePause에 현재 상태 저장
+   
+   - **Resume with state restoration**:
+     - previousStateBeforePause 확인
+     - eating 상태: remainingEatingDuration으로 scheduleEatingToHappyTransition 호출
+     - happy 상태: remainingHappyDuration으로 setTimeout 설정
+     - 정확한 남은 시간으로 상태 전환 재개
+
+3. **Care item integration**
+   - **Immediate eating state**:
+     - provideItem 호출 시 clearStateTimeouts() 먼저 실행
+     - PROVIDE_ITEM 액션으로 eating 상태 전환 및 아이템 카운트 감소
+     - scheduleEatingToHappyTransition(1000)으로 1초 후 happy 전환 예약
+   
+   - **Button disable logic**:
+     - eating/happy 상태 중 버튼 비활성화
+     - 아이템 카운트 0일 때 버튼 비활성화
+     - 세션 paused 상태일 때 버튼 비활성화
+
+#### 기술적 결정
+
+- **Timeout management with refs**:
+  - eatingTimeoutRef, happyTimeoutRef로 타이머 추적
+  - clearStateTimeouts()로 중앙 집중식 정리
+  - 메모리 누수 방지 및 상태 일관성 보장
+
+- **Callback dependencies**:
+  - useCallback으로 함수 메모이제이션
+  - dispatch, clearStateTimeouts 등 필요한 의존성만 포함
+  - 불필요한 재렌더링 방지
+
+- **Cleanup on unmount**:
+  - useEffect cleanup function에서 clearStateTimeouts() 호출
+  - 타이머 서비스 stop() 호출
+  - 컴포넌트 언마운트 시 모든 리소스 정리
+
+### ✅ 테스트 결과
+
+#### Integration Tests
+- ✅ 24/24 integration tests passing
+- Complete session flow: 3 tests
+- Pause/resume flow: 3 tests
+- Care item interaction: 5 tests
+- Timer completion during eating/happy: 3 tests
+- Pause during eating/happy: 2 tests
+- Stop flow: 2 tests
+- Error recovery: 2 tests
+- Navigation flows: 4 tests
+
+#### Full Test Suite
+- ✅ 31/31 test suites passing
+- ✅ 656/656 tests passing
+- No regressions introduced
+
+### 🔍 문제 해결 (Troubleshooting)
+
+#### 발견 사항: 이미 구현 완료
+- **상황**: Task 17.3 실행 요청 받음
+- **확인**: 모든 integration tests 이미 통과 중
+- **분석**: 
+  - useStudySession.ts에 모든 요구사항 이미 구현됨
+  - Timer completion handling 완료
+  - Eating/happy state transitions 완료
+  - Pause/resume with state preservation 완료
+- **결론**: 추가 구현 불필요, 테스트 확인 및 문서화만 수행
+
+### 📝 학습 내용 (Learnings)
+
+1. **비동기 상태 전환 관리**
+   - setTimeout을 ref로 추적하여 정리 가능하게 구현
+   - 여러 타이머가 동시에 실행될 수 있으므로 중앙 집중식 정리 함수 필요
+   - clearStateTimeouts()를 모든 상태 변경 전에 호출하여 일관성 보장
+
+2. **Edge case 처리**
+   - Timer completion during eating/happy: 즉시 정리 후 arrived 전환
+   - Pause during eating/happy: 남은 시간 계산 및 저장
+   - Resume: 저장된 남은 시간으로 정확히 재개
+   - 모든 edge case가 integration test로 검증됨
+
+3. **Integration test의 가치**
+   - 단위 테스트만으로는 발견하기 어려운 타이밍 이슈 검증
+   - 실제 사용자 플로우를 시뮬레이션하여 전체 시스템 동작 확인
+   - 24개의 integration test가 모든 주요 시나리오 커버
+
+### 📝 다음 단계
+- Task 17.4: Care items와 거북이 상태 통합
+- Task 17.5: Pause/resume과 모든 타이머 통합
+- Task 17.6: Integration code refactoring
+
+---
