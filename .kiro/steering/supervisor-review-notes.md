@@ -12,35 +12,47 @@ This note captures current review findings and the recommended next execution or
 
 ## Current Assessment
 
-- The branch has regressed in the integration layer.
-- `npm run type-check` did not surface a blocking error in the latest review.
-- `npm test -- --runInBand` fails.
+- The branch baseline is green again.
+- `npm run type-check` passes.
+- `npm test -- --runInBand` passes.
 - Current test status:
-  - 30 suites passing
-  - 1 suite failing
-  - 636 tests passing
-  - 20 tests failing
-- All current failures are concentrated in `src/__tests__/integration.test.tsx`.
-- The common symptom is that `StudySessionScreen` renders only the empty `study-session-screen` container during integration flows, which strongly suggests the session never gets created in the `AppProvider`/`HomeScreen`/`useStudySession` path.
-- This is not a broad UI-contract regression. It is a higher-level state/bootstrap regression in the active session flow.
-- The previous type-check blockers are no longer the main issue. The priority has shifted to restoring an actual running session in integration scenarios.
+  - 31 suites passing
+  - 0 suites failing
+  - 656 tests passing
+  - 0 tests failing
+- The recent integration and type-check regressions appear resolved.
+- The scope has expanded meaningfully toward web support:
+  - `webpack.config.js`
+  - `index.web.js`
+  - `public/`
+  - updates to `package.json`, `package-lock.json`, and `babel.config.js`
+  - `.github/` additions
+- The current risk is no longer red tests. It is making sure this web-platform expansion stays aligned with the product spec and does not quietly diverge from the React Native app behavior.
 
 ## Highest Priority Fixes
 
-### 1. Restore the integration baseline
+### 1. Protect the green baseline during web expansion
 
-- Fix the session bootstrap path before adding more UI or error-handling scope.
-- Start with the components/hooks that decide whether a session exists:
-  - `src/hooks/useStudySession.ts`
-  - `src/screens/HomeScreen.tsx`
-  - `src/screens/StudySessionScreen.tsx`
-  - `src/context/AppContext.tsx`
-- In integration runs, `StudySessionScreen` is hitting the `if (!session)` early return, so trace why the session is missing after the Home screen flow should have started one.
-- Re-run focused integration tests first:
-  - `npm test -- src/__tests__/integration.test.tsx --runInBand`
-- Then re-run the full suite.
+- Keep both the existing app behavior and the new web target green after every meaningful chunk.
+- Re-run at minimum:
+  - `npm run type-check`
+  - `npm test -- --runInBand`
+- If web-specific codepaths are added, prefer adding focused coverage rather than assuming the native test suite is sufficient.
 
-### 2. Keep TDD honest
+### 2. Verify web support against the existing spec
+
+- Confirm the web entry/build setup does not change core study-session behavior:
+  - session start flow
+  - pause/resume
+  - care item interactions
+  - timer completion to `arrived`
+  - non-interactive area no-op behavior
+- Preserve the same public UI/test contracts where possible:
+  - stable `testID`s
+  - same state transitions
+  - same visible structure for session-critical elements
+
+### 3. Keep TDD honest
 
 - New RED tests are acceptable only if they are:
   - syntactically valid
@@ -54,13 +66,13 @@ This note captures current review findings and the recommended next execution or
   - dumping many new suites into the branch before stabilizing earlier ones
   - partial render-helper failures like `render method has not been called`
   - assertions against non-public implementation props on host nodes
-  - claiming GREEN progress from isolated component tests while the integration path is still broken
+  - claiming platform support complete just because build scaffolding exists
 
-### 3. Verify task bookkeeping against reality
+### 4. Verify task bookkeeping against reality
 
 - If `tasks.md` marks items complete, ensure the implementation and tests truly back that claim.
 - Avoid claiming completion just because a component file exists; confirm behavior against the spec.
-- Do not treat any new screen/session task as complete while the main integration flow still renders an empty session screen.
+- Do not treat web support as complete just because webpack, deploy scripts, or a web entry file exist.
 - When moving to the next task, check that the current branch still aligns with:
   - `requirements.md`
   - `design.md`
@@ -84,10 +96,10 @@ This note captures current review findings and the recommended next execution or
 
 ## Recommended Next Order
 
-1. Restore session creation in the `AppProvider` -> `HomeScreen` -> `useStudySession` flow
-2. Make `StudySessionScreen` render the actual session subcomponents during integration tests
-3. Re-run `src/__tests__/integration.test.tsx`
-4. Re-run the full suite
+1. Preserve the green baseline while web support files are landing
+2. Verify the web-target additions do not alter spec-defined session behavior
+3. Add or review focused validation for any web-only branch where behavior could drift
+4. Re-run the full suite and type-check after each meaningful web/setup change
 5. Only then continue with the next unfinished feature area
 
 ## Definition of “Good Progress”

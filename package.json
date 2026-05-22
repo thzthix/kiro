@@ -11,7 +11,12 @@
     "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
     "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx}\"",
     "format:check": "prettier --check \"src/**/*.{ts,tsx,js,jsx}\"",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "web": "vite",
+    "build:web": "vite build",
+    "preview": "vite preview",
+    "predeploy": "npm run build:web",
+    "deploy": "gh-pages -d dist"
   },
   "repository": {
     "type": "git",
@@ -27,11 +32,15 @@
   "homepage": "https://github.com/thzthix/kiro#readme",
   "dependencies": {
     "react": "^19.2.6",
+    "react-dom": "^19.2.6",
     "react-native": "^0.85.3",
+    "react-native-web": "^0.21.2",
     "react-test-renderer": "^19.2.6"
   },
   "devDependencies": {
     "@babel/core": "^7.29.0",
+    "@babel/plugin-proposal-class-properties": "^7.18.6",
+    "@babel/plugin-proposal-object-rest-spread": "^7.20.7",
     "@babel/preset-env": "^7.29.5",
     "@babel/preset-react": "^7.28.5",
     "@babel/preset-typescript": "^7.28.5",
@@ -45,14 +54,17 @@
     "@types/react-test-renderer": "^19.1.0",
     "@typescript-eslint/eslint-plugin": "^8.59.4",
     "@typescript-eslint/parser": "^8.59.4",
+    "@vitejs/plugin-react": "^6.0.2",
     "babel-jest": "^30.4.1",
     "eslint": "^9.39.4",
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-native": "^5.0.0",
     "fast-check": "^4.8.0",
+    "gh-pages": "^6.3.0",
     "jest": "^30.4.2",
     "metro-react-native-babel-preset": "^0.77.0",
     "prettier": "^3.8.3",
-    "typescript": "^6.0.3"
+    "typescript": "^6.0.3",
+    "vite": "^8.0.14"
   }
 }
