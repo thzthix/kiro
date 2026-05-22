@@ -19,15 +19,51 @@
  */
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Animated } from 'react-native';
+import {
+  View,
+  Text,
+  Pressable,
+  StyleSheet,
+  Animated,
+  Image,
+  Platform,
+  ViewStyle,
+} from 'react-native';
+import carePanelBase from '../../assets/돌봐주기_베이스만.jpeg';
+import carePanelIcons from '../../assets/돌봐주기_아이콘만.jpeg';
+import timePanelNumber from '../../assets/images/time_pannel_number.jpeg';
 
 // Constants
 const DEBOUNCE_DURATION_MS = 1000;
 const SHAKE_ANIMATION_DURATION_MS = 200;
 const SHAKE_DISTANCE = 10;
+const SHOULD_USE_NATIVE_DRIVER = Platform.OS !== 'web';
+const PANEL_BASE_RATIO = 2110 / 745;
+const PANEL_ICON_SHEET_WIDTH = 1919;
+const PANEL_ICON_SHEET_HEIGHT = 820;
+const PANEL_ICON_HALF_WIDTH = PANEL_ICON_SHEET_WIDTH / 2;
+const PANEL_COUNT_SHEET_COLUMNS = 5;
+const PANEL_COUNT_SHEET_ROWS = 2;
+const PANEL_COUNT_SHEET_WIDTH = 1774;
+const PANEL_COUNT_SHEET_HEIGHT = 887;
+const PANEL_COUNT_DIGIT_WIDTH = PANEL_COUNT_SHEET_WIDTH / PANEL_COUNT_SHEET_COLUMNS;
+const PANEL_COUNT_DIGIT_HEIGHT = PANEL_COUNT_SHEET_HEIGHT / PANEL_COUNT_SHEET_ROWS;
 
 type ItemType = 'carrot' | 'water';
 type TurtleState = 'walking' | 'eating' | 'happy' | 'sleeping' | 'arrived';
+const ITEM_ORDER: ItemType[] = ['water', 'carrot'];
+const DIGIT_INDEX: Record<string, number> = {
+  '0': 0,
+  '1': 1,
+  '2': 2,
+  '3': 3,
+  '4': 4,
+  '5': 5,
+  '6': 6,
+  '7': 7,
+  '8': 8,
+  '9': 9,
+};
 
 interface CareItemsPanelProps {
   onItemTap: (itemType: ItemType) => void;
@@ -35,6 +71,7 @@ interface CareItemsPanelProps {
   carrotCount: number;
   waterCount: number;
   turtleState: TurtleState;
+  style?: ViewStyle;
 }
 
 /**
@@ -91,22 +128,22 @@ const useShakeAnimation = () => {
         Animated.timing(shakeAnim, {
           toValue: SHAKE_DISTANCE,
           duration: 50,
-          useNativeDriver: true,
+          useNativeDriver: SHOULD_USE_NATIVE_DRIVER,
         }),
         Animated.timing(shakeAnim, {
           toValue: -SHAKE_DISTANCE,
           duration: 50,
-          useNativeDriver: true,
+          useNativeDriver: SHOULD_USE_NATIVE_DRIVER,
         }),
         Animated.timing(shakeAnim, {
           toValue: SHAKE_DISTANCE,
           duration: 50,
-          useNativeDriver: true,
+          useNativeDriver: SHOULD_USE_NATIVE_DRIVER,
         }),
         Animated.timing(shakeAnim, {
           toValue: 0,
           duration: 50,
-          useNativeDriver: true,
+          useNativeDriver: SHOULD_USE_NATIVE_DRIVER,
         }),
       ]).start(() => {
         setIsShaking(false);
@@ -142,24 +179,24 @@ const useTouchFeedback = () => {
           Animated.timing(scaleAnim, {
             toValue: 0.9,
             duration: 100, // Visual feedback within 100ms
-            useNativeDriver: true,
+            useNativeDriver: SHOULD_USE_NATIVE_DRIVER,
           }),
           Animated.timing(scaleAnim, {
             toValue: 1,
             duration: 400, // Return to normal within 300-1000ms range
-            useNativeDriver: true,
+            useNativeDriver: SHOULD_USE_NATIVE_DRIVER,
           }),
         ]),
         Animated.sequence([
           Animated.timing(opacityAnim, {
             toValue: 0.7,
             duration: 100, // Visual feedback within 100ms
-            useNativeDriver: true,
+            useNativeDriver: SHOULD_USE_NATIVE_DRIVER,
           }),
           Animated.timing(opacityAnim, {
             toValue: 1,
             duration: 400, // Return to normal within 300-1000ms range
-            useNativeDriver: true,
+            useNativeDriver: SHOULD_USE_NATIVE_DRIVER,
           }),
         ]),
       ]).start();
@@ -182,7 +219,6 @@ const useTouchFeedback = () => {
  */
 interface CareItemButtonProps {
   itemType: ItemType;
-  icon: string;
   count: number;
   isDisabled: boolean;
   onPress: () => void;
@@ -193,9 +229,33 @@ interface CareItemButtonProps {
   opacityAnim: Animated.Value;
 }
 
+const CountDigit: React.FC<{ digit: string }> = ({ digit }) => {
+  const index = DIGIT_INDEX[digit] ?? 0;
+  const column = index % PANEL_COUNT_SHEET_COLUMNS;
+  const row = Math.floor(index / PANEL_COUNT_SHEET_COLUMNS);
+
+  return (
+    <View style={styles.countDigitViewport}>
+      <Image
+        source={
+          Platform.OS === 'web'
+            ? timePanelNumber
+            : require('../../assets/images/time_pannel_number.jpeg')
+        }
+        style={[
+          styles.countDigitSheet,
+          {
+            left: -column * styles.countDigitViewport.width,
+            top: -row * styles.countDigitViewport.height,
+          },
+        ]}
+      />
+    </View>
+  );
+};
+
 const CareItemButton: React.FC<CareItemButtonProps> = ({
   itemType,
-  icon,
   count,
   isDisabled,
   onPress,
@@ -218,28 +278,51 @@ const CareItemButton: React.FC<CareItemButtonProps> = ({
   };
 
   return (
-    <Animated.View style={{ transform: [{ translateX: shakeAnim }] }}>
+    <Animated.View
+      style={[
+        styles.itemHitArea,
+        { transform: [{ translateX: shakeAnim }] },
+      ]}
+    >
       <Animated.View
         style={{
           transform: [{ scale: scaleAnim }],
           opacity: opacityAnim,
         }}
       >
-        <TouchableOpacity
+        <Pressable
           style={[styles.button, isDisabled && styles.buttonDisabled]}
           onPress={handlePress}
           onPressIn={handlePressIn}
-          disabled={isDisabled}
           accessible={true}
           accessibilityLabel={`${itemType} button, ${count} remaining`}
           accessibilityState={{ disabled: isDisabled }}
           testID={`${itemType}-button`}
         >
-          <Text style={styles.buttonText}>
-            {icon} ×{count}
-          </Text>
-        </TouchableOpacity>
+          <View style={styles.buttonOverlay}>
+            <View style={styles.iconViewport}>
+              <Image
+                source={
+                  Platform.OS === 'web'
+                    ? carePanelIcons
+                    : require('../../assets/돌봐주기_아이콘만.jpeg')
+                }
+                style={[
+                  styles.iconSheet,
+                  {
+                    left: itemType === 'water' ? 0 : -styles.iconViewport.width,
+                    top: 0,
+                  },
+                ]}
+              />
+            </View>
+          </View>
+        </Pressable>
       </Animated.View>
+      <View style={styles.countWrap}>
+        <Text style={styles.countX}>×</Text>
+        <CountDigit digit={String(Math.max(0, Math.min(9, count)))} />
+      </View>
       {isShaking && <View testID={`${itemType}-button-shake`} />}
     </Animated.View>
   );
@@ -251,6 +334,7 @@ const CareItemsPanel: React.FC<CareItemsPanelProps> = ({
   carrotCount,
   waterCount,
   turtleState,
+  style,
 }) => {
   // Custom hooks for debouncing
   const carrotDebounce = useDebounce();
@@ -313,35 +397,30 @@ const CareItemsPanel: React.FC<CareItemsPanelProps> = ({
 
   return (
     <View 
-      style={styles.container} 
+      style={[styles.container, style]}
       testID="care-items-panel-container"
       // @ts-ignore - Adding disabled prop for testing
       disabled={disabled || isButtonsDisabledByState}
       carrotCount={carrotCount}
       waterCount={waterCount}
     >
-      {/* Title */}
-      <Text style={styles.title} testID="care-items-title">
+      <Image
+        source={
+          Platform.OS === 'web'
+            ? carePanelBase
+            : require('../../assets/돌봐주기_베이스만.jpeg')
+        }
+        style={styles.panelBase}
+        resizeMode="contain"
+      />
+
+      <Text style={styles.hiddenTitle} testID="care-items-title">
         돌봐주기
       </Text>
 
-      {/* Buttons Container */}
       <View style={styles.buttonsContainer} testID="care-items-buttons-container">
         <CareItemButton
-          itemType="carrot"
-          icon="🥕"
-          count={carrotCount}
-          isDisabled={isCarrotDisabled}
-          onPress={handleCarrotTap}
-          isShaking={carrotShake.isShaking}
-          shakeAnim={carrotShake.shakeAnim}
-          onTouchFeedback={carrotFeedback.animateTouchFeedback}
-          scaleAnim={carrotFeedback.scaleAnim}
-          opacityAnim={carrotFeedback.opacityAnim}
-        />
-        <CareItemButton
           itemType="water"
-          icon="💧"
           count={waterCount}
           isDisabled={isWaterDisabled}
           onPress={handleWaterTap}
@@ -351,6 +430,17 @@ const CareItemsPanel: React.FC<CareItemsPanelProps> = ({
           scaleAnim={waterFeedback.scaleAnim}
           opacityAnim={waterFeedback.opacityAnim}
         />
+        <CareItemButton
+          itemType="carrot"
+          count={carrotCount}
+          isDisabled={isCarrotDisabled}
+          onPress={handleCarrotTap}
+          isShaking={carrotShake.isShaking}
+          shakeAnim={carrotShake.shakeAnim}
+          onTouchFeedback={carrotFeedback.animateTouchFeedback}
+          scaleAnim={carrotFeedback.scaleAnim}
+          opacityAnim={carrotFeedback.opacityAnim}
+        />
       </View>
     </View>
   );
@@ -358,46 +448,89 @@ const CareItemsPanel: React.FC<CareItemsPanelProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    position: 'absolute',
-    bottom: 20,
-    left: 20,
-    backgroundColor: '#F5E6D3', // beige
-    borderRadius: 16,
-    padding: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    width: '100%',
+    maxWidth: 860,
+    aspectRatio: PANEL_BASE_RATIO,
+    position: 'relative',
   },
-  title: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#5A6F4C', // olive green
-    marginBottom: 12,
-    textAlign: 'center',
+  panelBase: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+  },
+  hiddenTitle: {
+    position: 'absolute',
+    opacity: 0,
   },
   buttonsContainer: {
+    position: 'absolute',
+    left: '32%',
+    right: '5.5%',
+    top: '10%',
+    bottom: '10%',
     flexDirection: 'row',
-    gap: 12,
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   button: {
-    backgroundColor: '#A8D5BA', // mint
-    borderRadius: 12,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    minWidth: 80,
+    width: 128,
+    height: 128,
+    borderRadius: 64,
+    backgroundColor: 'transparent',
+  },
+  buttonDisabled: {
+    opacity: 0.45,
+  },
+  itemHitArea: {
+    width: '46%',
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  buttonDisabled: {
-    opacity: 0.4,
-    backgroundColor: '#D3D3D3',
+  buttonOverlay: {
+    flex: 1,
+    borderRadius: 64,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  buttonText: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#333',
+  iconViewport: {
+    width: 126,
+    height: 104,
+    overflow: 'hidden',
+    position: 'relative',
+  },
+  iconSheet: {
+    position: 'absolute',
+    width: (PANEL_ICON_SHEET_WIDTH / PANEL_ICON_HALF_WIDTH) * 126,
+    height: (PANEL_ICON_SHEET_HEIGHT / 104) * 104,
+  },
+  countWrap: {
+    marginLeft: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  countX: {
+    fontSize: 38,
+    fontWeight: '700',
+    color: '#8B6B46',
+    marginRight: 2,
+  },
+  countDigitViewport: {
+    width: 30,
+    height: 42,
+    overflow: 'hidden',
+    position: 'relative',
+  },
+  countDigitSheet: {
+    position: 'absolute',
+    width:
+      PANEL_COUNT_DIGIT_WIDTH > 0
+        ? (PANEL_COUNT_SHEET_WIDTH / PANEL_COUNT_DIGIT_WIDTH) * 30
+        : 30,
+    height:
+      PANEL_COUNT_DIGIT_HEIGHT > 0
+        ? (PANEL_COUNT_SHEET_HEIGHT / PANEL_COUNT_DIGIT_HEIGHT) * 42
+        : 42,
   },
 });
 

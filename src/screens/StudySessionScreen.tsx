@@ -15,7 +15,7 @@
  */
 
 import React, { useState, useCallback, useMemo } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, Platform } from 'react-native';
 import { useStudySession } from '../hooks/useStudySession';
 import SessionHeader from '../components/SessionHeader';
 import StudyCanvas from '../components/StudyCanvas';
@@ -66,34 +66,44 @@ export const StudySessionScreen: React.FC = () => {
 
   return (
     <View testID="study-session-screen" style={styles.container}>
-      <SessionHeader
-        remainingSeconds={session.remainingTime}
-        progress={progress}
-      />
+      <View style={styles.stage}>
+        <View style={styles.headerWrap}>
+          <SessionHeader
+            remainingSeconds={session.remainingTime}
+            progress={progress}
+          />
+        </View>
 
-      <StudyCanvas
-        progress={progress}
-        turtleState={session.turtleState}
-        carrotCount={session.carrotCount}
-        waterCount={session.waterCount}
-      />
+        <View style={styles.canvasWrap}>
+          <StudyCanvas
+            progress={progress}
+            turtleState={session.turtleState}
+            carrotCount={session.carrotCount}
+            waterCount={session.waterCount}
+          />
+        </View>
 
-      <CareItemsPanel
-        onItemTap={provideItem}
-        disabled={careItemsDisabled}
-        carrotCount={session.carrotCount}
-        waterCount={session.waterCount}
-        turtleState={session.turtleState}
-      />
+        <View style={styles.bottomBar}>
+          <CareItemsPanel
+            onItemTap={provideItem}
+            disabled={careItemsDisabled}
+            carrotCount={session.carrotCount}
+            waterCount={session.waterCount}
+            turtleState={session.turtleState}
+            style={styles.carePanel}
+          />
 
-      {(session.status === 'running' || session.status === 'paused') && (
-        <SessionControls
-          status={session.status}
-          onPause={pauseSession}
-          onResume={resumeSession}
-          onStop={() => setShowStopConfirmation(true)}
-        />
-      )}
+          {(session.status === 'running' || session.status === 'paused') && (
+            <SessionControls
+              status={session.status}
+              onPause={pauseSession}
+              onResume={resumeSession}
+              onStop={() => setShowStopConfirmation(true)}
+              style={styles.controls}
+            />
+          )}
+        </View>
+      </View>
 
       <ConfirmationDialog
         visible={showStopConfirmation}
@@ -113,6 +123,58 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.beige,
+    width: '100%',
+    height: '100%',
+    ...(Platform.OS === 'web' && {
+      width: '100vw',
+      minHeight: '100vh',
+    }),
+  },
+  stage: {
+    width: '100%',
+    height: '100%',
     position: 'relative',
+    overflow: 'hidden',
+  },
+  canvasWrap: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+  bottomBar: {
+    position: 'absolute',
+    left: 40,
+    right: 40,
+    bottom: 40,
+    flexDirection: 'row',
+    gap: 20,
+    alignItems: 'flex-end',
+    justifyContent: 'space-between',
+    zIndex: 3,
+    ...(Platform.OS === 'web' && {
+      left: '3vw',
+      right: '3vw',
+      bottom: '3vh',
+    }),
+  },
+  headerWrap: {
+    position: 'absolute',
+    top: 40,
+    left: 0,
+    right: 0,
+    zIndex: 3,
+    alignItems: 'center',
+    ...(Platform.OS === 'web' && {
+      top: '3vh',
+    }),
+  },
+  carePanel: {
+    flex: 1,
+    maxWidth: 500,
+  },
+  controls: {
+    width: 'auto',
   },
 });

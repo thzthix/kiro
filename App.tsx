@@ -14,7 +14,6 @@ import { AppProvider, useAppContext } from './src/context/AppContext';
 import { HomeScreen } from './src/screens/HomeScreen';
 import { StudySessionScreen } from './src/screens/StudySessionScreen';
 import { CompletionScreen } from './src/screens/CompletionScreen';
-import { useStudySession } from './src/hooks/useStudySession';
 import { COLORS } from './src/constants/theme';
 
 /**
@@ -23,15 +22,16 @@ import { COLORS } from './src/constants/theme';
  */
 const AppContent: React.FC = () => {
   const { state, dispatch } = useAppContext();
-  const { startSession, stopSession } = useStudySession();
 
   /**
    * Handle session start from HomeScreen
    */
   const handleStartSession = useCallback((durationMinutes: number) => {
-    const durationSeconds = durationMinutes * 60;
-    startSession(durationSeconds);
-  }, [startSession]);
+    dispatch({
+      type: 'START_SESSION',
+      payload: { duration: durationMinutes },
+    });
+  }, [dispatch]);
 
   /**
    * Handle navigation to home screen
@@ -88,8 +88,8 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     ...(Platform.OS === 'web' && {
-      maxWidth: 480,
-      margin: '0 auto',
+      width: '100vw',
+      minHeight: '100vh',
     }),
   },
 });

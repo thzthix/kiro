@@ -14,6 +14,7 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
+  Platform,
 } from 'react-native';
 import { validateTimeInput } from '../utils/InputValidator';
 
@@ -85,6 +86,63 @@ const TimeInputPopup: React.FC<TimeInputPopupProps> = ({
     return null;
   }
 
+  const popupContent = (
+    <View style={styles.overlay} testID="time-input-popup" {...{ visible }}>
+      <View style={styles.popup}>
+        <Text style={styles.title}>얼마나 집중하시겠어요?</Text>
+
+        <View style={styles.inputContainer}>
+          <TextInput
+            style={styles.input}
+            testID="time-input-field"
+            value={inputValue}
+            onChangeText={handleInputChange}
+            keyboardType="numeric"
+            placeholder="30"
+            placeholderTextColor="#999"
+            maxLength={3}
+            accessible={true}
+            accessibilityLabel="시간 입력"
+          />
+          <Text style={styles.unit}>분</Text>
+        </View>
+
+        {errorMessage ? (
+          <Text style={styles.errorText}>{errorMessage}</Text>
+        ) : null}
+
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity
+            style={[styles.button, styles.cancelButton]}
+            onPress={handleCancel}
+            testID="cancel-button"
+            accessible={true}
+            accessibilityLabel="취소"
+            accessibilityRole="button"
+          >
+            <Text style={styles.cancelButtonText}>취소</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.button, styles.submitButton]}
+            onPress={handleSubmit}
+            testID="submit-button"
+            accessible={true}
+            accessibilityLabel="시작하기"
+            accessibilityRole="button"
+            accessibilityState={{ disabled: false }}
+          >
+            <Text style={styles.submitButtonText}>시작하기</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </View>
+  );
+
+  if (Platform.OS === 'web') {
+    return popupContent;
+  }
+
   return (
     <Modal
       visible={visible}
@@ -92,66 +150,23 @@ const TimeInputPopup: React.FC<TimeInputPopupProps> = ({
       animationType="fade"
       onRequestClose={handleCancel}
     >
-      <View style={styles.overlay} testID="time-input-popup" {...{ visible }}>
-        <View style={styles.popup}>
-          <Text style={styles.title}>얼마나 집중하시겠어요?</Text>
-
-          <View style={styles.inputContainer}>
-            <TextInput
-              style={styles.input}
-              testID="time-input-field"
-              value={inputValue}
-              onChangeText={handleInputChange}
-              keyboardType="numeric"
-              placeholder="30"
-              placeholderTextColor="#999"
-              maxLength={3}
-              accessible={true}
-              accessibilityLabel="시간 입력"
-            />
-            <Text style={styles.unit}>분</Text>
-          </View>
-
-          {errorMessage ? (
-            <Text style={styles.errorText}>{errorMessage}</Text>
-          ) : null}
-
-          <View style={styles.buttonContainer}>
-            <TouchableOpacity
-              style={[styles.button, styles.cancelButton]}
-              onPress={handleCancel}
-              testID="cancel-button"
-              accessible={true}
-              accessibilityLabel="취소"
-              accessibilityRole="button"
-            >
-              <Text style={styles.cancelButtonText}>취소</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.button, styles.submitButton]}
-              onPress={handleSubmit}
-              testID="submit-button"
-              accessible={true}
-              accessibilityLabel="시작하기"
-              accessibilityRole="button"
-              accessibilityState={{ disabled: false }}
-            >
-              <Text style={styles.submitButtonText}>시작하기</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </View>
+      {popupContent}
     </Modal>
   );
 };
 
 const styles = StyleSheet.create({
   overlay: {
+    position: Platform.OS === 'web' ? 'absolute' : 'relative',
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'center',
     alignItems: 'center',
+    zIndex: 20,
   },
   popup: {
     backgroundColor: '#FFF',

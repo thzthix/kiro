@@ -122,6 +122,7 @@ export function useStudySession() {
 
   /**
    * Auto-start timer when session exists but timer hasn't been started
+   * Only start if status is 'running' and timer doesn't exist yet
    */
   useEffect(() => {
     if (session && session.status === 'running' && !timerHandleRef.current) {
@@ -131,24 +132,23 @@ export function useStudySession() {
         handleComplete
       );
     }
-  }, [session, handleTick, handleComplete]);
+    
+    // Don't restart timer if it already exists or if session is paused
+    if (session && session.status === 'paused' && timerHandleRef.current) {
+      // Timer should already be paused, do nothing
+    }
+  }, [session?.status, handleTick, handleComplete]); // Only depend on status, not entire session
 
   /**
    * Start a new study session with the specified duration
    */
   const startSession = useCallback((durationSeconds: number) => {
     const durationMinutes = durationSeconds / 60;
-    
+
     dispatch({
       type: 'START_SESSION',
       payload: { duration: durationMinutes },
     });
-
-    timerHandleRef.current = timerServiceRef.current.start(
-      durationSeconds,
-      handleTick,
-      handleComplete
-    );
   }, [dispatch, handleTick, handleComplete]);
 
   /**

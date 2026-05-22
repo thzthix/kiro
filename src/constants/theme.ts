@@ -13,6 +13,7 @@
  */
 export const COLORS = {
   beige: '#F5F1E8',
+  lightBeige: '#FAF8F3',
   lightYellow: '#FFFACD',
   mint: '#A8D5BA',
   oliveGreen: '#8B9556',
@@ -75,16 +76,20 @@ export const LAYOUT = {
   },
 } as const;
 
+export const CANVAS_REFERENCE = {
+  width: 1681,
+  height: 935,
+} as const;
+
 /**
  * Default path coordinates for turtle journey
  * Used by StudyCanvas and related components
  */
 export const DEFAULT_PATH_COORDINATES: import('../types').PathCoordinates = {
-  start: { x: 50, y: 300 },
-  goal: { x: 350, y: 300 },
+  start: { x: 255, y: 540 },
+  goal: { x: 1535, y: 500 },
   waypoints: [
-    { x: 125, y: 290 },
-    { x: 200, y: 310 },
-    { x: 275, y: 295 },
+    { x: 560, y: 430 },
+    { x: 980, y: 575 },
   ],
 };
