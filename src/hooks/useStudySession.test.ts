@@ -156,5 +156,4 @@ describe('useStudySession Hook - Unit Tests (RED Phase)', () => {
       expect(result.current.session?.previousStateBeforePause).toBe('walking');
     });
   });
-
-  // ============================================================================
+});

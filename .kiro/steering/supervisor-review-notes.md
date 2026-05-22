@@ -12,34 +12,35 @@ This note captures current review findings and the recommended next execution or
 
 ## Current Assessment
 
-- The reducer layer is in better shape and `AppReducer` tests are green.
-- The branch is not yet in a PR-ready state because global type-check and full test runs still fail.
-- The next priority is not adding more surface area blindly; it is restoring codebase consistency while continuing the TDD flow.
+- Global `npm run type-check` now passes, which is a meaningful improvement in branch consistency.
+- Full test status is now much better: 11 test suites pass and only 2 remain red.
+- The branch is still not PR-ready because the remaining failures are not yet acceptable RED-state failures.
+- The next priority is to convert the remaining failures into either green tests or intentional RED tests with valid syntax and realistic fixtures.
 
 ## Highest Priority Fixes
 
-### 1. Restore type consistency in existing logic files
+### 1. Fix the remaining test blockers
 
-- Fix `src/context/AppReducer.ts`
-  - `previousStateBeforePause` must only store `walking | eating | happy | null`
-  - Do not allow `sleeping` or `arrived` to flow into that field
-- Fix `src/utils/ProgressCalculator.ts` and related types
-  - Align `PathCoordinates` usage with the actual canonical type definition
-  - Resolve the mismatch between `goal/waypoints` and `end/controlPoints`
-- Fix `src/utils/StateTransitionManager.ts`
-  - Replace invalid `CareItem` type usage with the correct canonical type
-  - Remove or use currently unused parameters cleanly
+- Fix `src/utils/ProgressCalculator.test.ts`
+  - The current `mockPath` fixture is inconsistent with the canonical `PathCoordinates` shape used by the implementation.
+  - Right now `calculatePosition` expects the canonical fields, but the test data still produces `undefined` waypoints/control points at runtime.
+  - Resolve this by making the test fixture and implementation agree on one canonical path structure.
+  - This is causing 3 currently failing tests in the full suite.
+- Fix `src/hooks/useStudySession.test.ts`
+  - The suite is still blocked by a parse error around line 161.
+  - RED tests must be syntactically valid and runnable; they may fail behaviorally, but not at parse time.
+  - This is one entire suite failure and is currently the biggest TDD hygiene issue.
 
-### 2. Unblock broken tests before adding more implementation
+### 2. Be strict about TDD state quality
 
-- Fix the syntax error in `src/hooks/useStudySession.test.ts`
-- Ensure newly added test files are at least parsable and consistent with the current TDD phase
-- If a file is still intentionally RED, make sure it fails for behavioral reasons, not because of syntax/import/config issues
+- Ensure newly added test files are parsable and consistent with the current TDD phase.
+- If a file is intentionally RED, it must fail for behavioral reasons only.
+- Remove fixture drift where tests still reflect an older interface shape.
 
 ### 3. Continue UI work in disciplined TDD order
 
-- `src/components/SessionHeader.test.tsx` exists, but the component file is missing
-- `src/components/TimeInputPopup.test.tsx` is ahead of the current implementation
+- `SessionHeader` and `TimeInputPopup` files now exist, which is progress.
+- Keep checking that task bookkeeping matches reality; `tasks.md` currently shows forward progress, but the branch should not claim completion if the full suite is still red.
 - For UI tasks, keep the flow:
   1. RED tests that parse and target realistic selectors
   2. GREEN implementation to satisfy those tests
@@ -63,10 +64,10 @@ This note captures current review findings and the recommended next execution or
 
 ## Recommended Next Order
 
-1. Make `npm run type-check` pass for the existing logic layer
-2. Repair `useStudySession.test.ts` so the suite can execute
-3. Decide whether `TimeInputPopup` is still RED or should move to GREEN
-4. Implement `SessionHeader` only after the current branch is back to a stable baseline
+1. Repair `src/hooks/useStudySession.test.ts` so the suite can execute
+2. Fix `src/utils/ProgressCalculator.test.ts` fixture/runtime mismatch
+3. Re-run the full test suite and only then update task status claims
+4. Continue `useStudySession` / UI work only after the baseline is stable again
 
 ## Definition of “Good Progress”
 
@@ -74,4 +75,5 @@ Before claiming the next task complete, prefer to verify:
 
 - targeted tests for the changed unit pass
 - full `npm run type-check` passes
+- full `npm test -- --runInBand` is either green or only intentionally RED in valid, runnable suites
 - the failure state of any RED tests is intentional and meaningful
