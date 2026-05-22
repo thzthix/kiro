@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { View, Image, Animated, StyleSheet } from 'react-native';
 import { PathCoordinates, TurtleState } from '../types';
 import { calculatePosition } from '../utils/ProgressCalculator';
+import { handleAnimationError, handleImageLoadError } from '../utils/ErrorHandler';
 
 interface TurtleCharacterProps {
   progress: number; // 0-100
@@ -66,15 +67,20 @@ const TurtleCharacter: React.FC<TurtleCharacterProps> = ({
         }),
       ]).start();
     } catch (error) {
-      console.error('Animation error:', error);
       // Fallback: set position directly without animation
-      try {
-        const position = calculatePosition(validProgress, validPathCoordinates);
-        animatedX.setValue(position.x);
-        animatedY.setValue(position.y);
-      } catch (fallbackError) {
-        console.error('Fallback position calculation error:', fallbackError);
-      }
+      handleAnimationError(
+        error,
+        () => {
+          const position = calculatePosition(validProgress, validPathCoordinates);
+          animatedX.setValue(position.x);
+          animatedY.setValue(position.y);
+        },
+        {
+          component: 'TurtleCharacter',
+          operation: 'position-update',
+          metadata: { progress: validProgress },
+        }
+      );
     }
   }, [validProgress, validPathCoordinates, animatedX, animatedY]);
 
@@ -95,7 +101,10 @@ const TurtleCharacter: React.FC<TurtleCharacterProps> = ({
         style={styles.turtleImage}
         resizeMode="contain"
         onError={(error) => {
-          console.error('Turtle sprite load error:', error);
+          handleImageLoadError(error, `turtle-sprite-${validState}`, {
+            component: 'TurtleCharacter',
+            metadata: { state: validState },
+          });
         }}
       />
 
@@ -106,7 +115,10 @@ const TurtleCharacter: React.FC<TurtleCharacterProps> = ({
             source={{ uri: HEART_SVG_URI }}
             style={styles.heartIcon}
             onError={(error) => {
-              console.error('Heart icon load error:', error);
+              handleImageLoadError(error, 'heart-icon', {
+                component: 'TurtleCharacter',
+                operation: 'heart-effect',
+              });
             }}
           />
         </View>

@@ -1,4 +1,5 @@
 import { TurtleState, CareItemType } from '../types';
+import { handleInvalidState } from './ErrorHandler';
 
 // State duration constants (in milliseconds)
 const EATING_DURATION_MS = 1000; // 1 second
@@ -171,8 +172,14 @@ export class StateTransitionManager {
   ): TurtleState {
     // Handle undefined or invalid current state
     if (!currentState) {
-      console.warn('Invalid currentState provided to getNextState, defaulting to walking');
-      return 'walking';
+      return handleInvalidState(
+        'Invalid currentState provided to getNextState, defaulting to walking',
+        'walking' as TurtleState,
+        {
+          component: 'StateTransitionManager',
+          operation: 'getNextState',
+        }
+      );
     }
 
     // If timer completed and reached goal, always return arrived
@@ -192,8 +199,15 @@ export class StateTransitionManager {
 
     // Cannot place item while sleeping
     if (currentState === 'sleeping' && itemPlaced) {
-      console.warn('Cannot place item while sleeping, maintaining sleeping state');
-      return 'sleeping';
+      return handleInvalidState(
+        'Cannot place item while sleeping, maintaining sleeping state',
+        'sleeping' as TurtleState,
+        {
+          component: 'StateTransitionManager',
+          operation: 'getNextState',
+          metadata: { currentState, itemPlaced },
+        }
+      );
     }
 
     // Check if should transition from eating

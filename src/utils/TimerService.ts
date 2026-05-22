@@ -4,6 +4,8 @@
  * **Validates: Requirements 2.2, 2.3, 2.4, 2.5, 2.6, 2.7**
  */
 
+import { handleTimerError } from './ErrorHandler';
+
 // Timer constants
 const TICK_INTERVAL_MS = 1000; // 1 second
 const MS_PER_SECOND = 1000;
@@ -84,18 +86,18 @@ export class TimerService {
    */
   pause(handle: TimerHandle): void {
     if (!handle || !handle.id) {
-      console.warn('Invalid timer handle provided to pause()');
+      handleTimerError('pause', 'unknown', 'Invalid timer handle provided');
       return;
     }
 
     const state = this.timers.get(handle.id);
     if (!state) {
-      console.warn(`Timer ${handle.id} not found for pause operation`);
+      handleTimerError('pause', handle.id, 'Timer not found');
       return;
     }
     
     if (!state.intervalId) {
-      console.warn(`Timer ${handle.id} is already paused`);
+      handleTimerError('pause', handle.id, 'Timer is already paused');
       return;
     }
 
@@ -111,23 +113,23 @@ export class TimerService {
    */
   resume(handle: TimerHandle): void {
     if (!handle || !handle.id) {
-      console.warn('Invalid timer handle provided to resume()');
+      handleTimerError('resume', 'unknown', 'Invalid timer handle provided');
       return;
     }
 
     const state = this.timers.get(handle.id);
     if (!state) {
-      console.warn(`Timer ${handle.id} not found for resume operation`);
+      handleTimerError('resume', handle.id, 'Timer not found');
       return;
     }
     
     if (state.intervalId) {
-      console.warn(`Timer ${handle.id} is already running`);
+      handleTimerError('resume', handle.id, 'Timer is already running');
       return;
     }
     
     if (state.remainingAtPause === null) {
-      console.warn(`Timer ${handle.id} was not paused, cannot resume`);
+      handleTimerError('resume', handle.id, 'Timer was not paused, cannot resume');
       return;
     }
 
@@ -143,13 +145,13 @@ export class TimerService {
    */
   stop(handle: TimerHandle): void {
     if (!handle || !handle.id) {
-      console.warn('Invalid timer handle provided to stop()');
+      handleTimerError('stop', 'unknown', 'Invalid timer handle provided');
       return;
     }
 
     const state = this.timers.get(handle.id);
     if (!state) {
-      console.warn(`Timer ${handle.id} not found for stop operation`);
+      handleTimerError('stop', handle.id, 'Timer not found');
       return;
     }
 
@@ -169,13 +171,13 @@ export class TimerService {
    */
   getRemainingTime(handle: TimerHandle): number {
     if (!handle || !handle.id) {
-      console.warn('Invalid timer handle provided to getRemainingTime()');
+      handleTimerError('getRemainingTime', 'unknown', 'Invalid timer handle provided');
       return 0;
     }
 
     const state = this.timers.get(handle.id);
     if (!state) {
-      console.warn(`Timer ${handle.id} not found for getRemainingTime operation`);
+      handleTimerError('getRemainingTime', handle.id, 'Timer not found');
       return 0;
     }
 
