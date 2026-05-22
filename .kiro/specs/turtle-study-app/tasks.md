@@ -605,7 +605,7 @@ The implementation follows a bottom-up approach: core business logic first, then
     - Run tests - they should PASS
     - _Requirements: 8.1, 9.1_
   
-  - [-] 15.6 Refactor error handling (REFACTOR)
+  - [x] 15.6 Refactor error handling (REFACTOR)
     - Clean up code while keeping tests green
     - Ensure no duplication, clear naming
     - Extract error handling utilities if needed
@@ -616,7 +616,7 @@ The implementation follows a bottom-up approach: core business logic first, then
 
 - [ ] 17. Integration and wiring (TDD: Red-Green-Refactor)
   
-  - [-] 17.1 Write integration tests (RED)
+  - [x] 17.1 Write integration tests (RED)
     - Write failing test for complete session flow from start to completion with arrived state (turtle_arrived.png static, NO bouncing)
     - Write failing test for pause/resume flow with timer and turtle state (walking/eating/happy → sleeping → restored with preserved duration)
     - Write failing test for care item flow with eating (1s with turtle_eating.jpeg) → happy (3s with turtle_happy.jpeg) state transitions and count management
