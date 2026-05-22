@@ -266,7 +266,7 @@ Task 1 완료 후 다음 작업:
 
 ---
 
-## 2025-01-XX Task 8.5: 디스플레이 컴포넌트 리팩토링
+## 2026-05-22 Task 8.5: 디스플레이 컴포넌트 리팩토링
 
 ### 📋 Task 개요
 - **Task ID**: 8.5
@@ -443,7 +443,7 @@ export const LAYOUT = {
 
 ---
 
-## 2025-01-XX Task 10: Checkpoint - 모든 테스트 통과 확인
+## 2026-05-22 Task 10: Checkpoint - 모든 테스트 통과 확인
 
 ### 📋 Task 개요
 - **Task ID**: 10
