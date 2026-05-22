@@ -146,3 +146,134 @@ export function calculateRemainingStateDuration(
   const remaining = stateEndTime - currentTime;
   return Math.max(0, remaining);
 }
+
+/**
+ * StateTransitionManager class for error handling tests.
+ * Provides instance methods that wrap the functional API with error handling.
+ * 
+ * Note: This class is primarily for error handling tests. Production code should
+ * use the functional API (getNextState, shouldTransitionFromEating, etc.)
+ */
+export class StateTransitionManager {
+  /**
+   * Get next turtle state based on current conditions.
+   * Handles invalid states gracefully without throwing.
+   */
+  getNextState(
+    currentState: TurtleState | undefined,
+    currentTime: number,
+    eatingStateEndTime: number | null,
+    happyStateEndTime: number | null,
+    isPaused: boolean,
+    itemPlaced: boolean,
+    hasReachedGoal: boolean,
+    timerCompleted: boolean
+  ): TurtleState {
+    // Handle undefined or invalid current state
+    if (!currentState) {
+      console.warn('Invalid currentState provided to getNextState, defaulting to walking');
+      return 'walking';
+    }
+
+    // If timer completed and reached goal, always return arrived
+    if (timerCompleted && hasReachedGoal) {
+      return 'arrived';
+    }
+
+    // If already arrived, stay arrived
+    if (currentState === 'arrived') {
+      return 'arrived';
+    }
+
+    // If paused, should be sleeping (unless already arrived)
+    if (isPaused) {
+      return currentState === 'arrived' ? 'arrived' : 'sleeping';
+    }
+
+    // Cannot place item while sleeping
+    if (currentState === 'sleeping' && itemPlaced) {
+      console.warn('Cannot place item while sleeping, maintaining sleeping state');
+      return 'sleeping';
+    }
+
+    // Check if should transition from eating
+    if (currentState === 'eating' && eatingStateEndTime !== null) {
+      if (this.shouldTransitionFromEating(eatingStateEndTime, currentTime)) {
+        return 'happy';
+      }
+      return 'eating';
+    }
+
+    // Check if should transition from happy
+    if (currentState === 'happy' && happyStateEndTime !== null) {
+      if (this.shouldTransitionFromHappy(happyStateEndTime, currentTime)) {
+        return 'walking';
+      }
+      return 'happy';
+    }
+
+    // If item placed while walking, transition to eating
+    if (currentState === 'walking' && itemPlaced) {
+      return 'eating';
+    }
+
+    // Default: maintain current state
+    return currentState;
+  }
+
+  /**
+   * Check if should transition from eating state.
+   * Handles null eatingStateEndTime gracefully.
+   */
+  shouldTransitionFromEating(
+    eatingStateEndTime: number | null,
+    currentTime: number
+  ): boolean {
+    if (eatingStateEndTime === null) {
+      return false;
+    }
+    return shouldTransitionFromEating(eatingStateEndTime, currentTime);
+  }
+
+  /**
+   * Check if should transition from happy state.
+   * Handles null happyStateEndTime gracefully.
+   */
+  shouldTransitionFromHappy(
+    happyStateEndTime: number | null,
+    currentTime: number
+  ): boolean {
+    if (happyStateEndTime === null) {
+      return false;
+    }
+    return shouldTransitionFromHappy(happyStateEndTime, currentTime);
+  }
+
+  /**
+   * Check if should immediately transition to arrived.
+   */
+  shouldImmediatelyTransitionToArrived(
+    timerCompleted: boolean,
+    currentState: TurtleState
+  ): boolean {
+    if (!timerCompleted) {
+      return false;
+    }
+    return shouldImmediatelyTransitionToArrived(currentState, 0);
+  }
+
+  /**
+   * Calculate remaining state duration.
+   * Handles negative durations gracefully by returning 0.
+   */
+  calculateRemainingStateDuration(
+    stateEndTime: number | null,
+    currentTime: number
+  ): number | null {
+    if (stateEndTime === null) {
+      return null;
+    }
+    const remaining = stateEndTime - currentTime;
+    return Math.max(0, remaining);
+  }
+}

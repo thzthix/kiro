@@ -34,28 +34,53 @@ const TurtleCharacter: React.FC<TurtleCharacterProps> = ({
   const animatedX = useRef(new Animated.Value(0)).current;
   const animatedY = useRef(new Animated.Value(0)).current;
 
+  // Validate and clamp progress to 0-100 range
+  const validProgress = Math.max(0, Math.min(100, progress || 0));
+
+  // Validate state - fallback to 'walking' if invalid
+  const validState = TURTLE_SPRITES[state] ? state : 'walking';
+
+  // Validate pathCoordinates - use default if missing
+  const validPathCoordinates = pathCoordinates || {
+    start: { x: 50, y: 300 },
+    goal: { x: 350, y: 300 },
+    waypoints: [],
+  };
+
   // Update turtle position based on progress along the path
   useEffect(() => {
-    const position = calculatePosition(progress, pathCoordinates);
+    try {
+      const position = calculatePosition(validProgress, validPathCoordinates);
 
-    // Animate position smoothly for fluid movement
-    Animated.parallel([
-      Animated.timing(animatedX, {
-        toValue: position.x,
-        duration: ANIMATION_DURATION,
-        useNativeDriver: true,
-      }),
-      Animated.timing(animatedY, {
-        toValue: position.y,
-        duration: ANIMATION_DURATION,
-        useNativeDriver: true,
-      }),
-    ]).start();
-  }, [progress, pathCoordinates, animatedX, animatedY]);
+      // Animate position smoothly for fluid movement
+      Animated.parallel([
+        Animated.timing(animatedX, {
+          toValue: position.x,
+          duration: ANIMATION_DURATION,
+          useNativeDriver: true,
+        }),
+        Animated.timing(animatedY, {
+          toValue: position.y,
+          duration: ANIMATION_DURATION,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    } catch (error) {
+      console.error('Animation error:', error);
+      // Fallback: set position directly without animation
+      try {
+        const position = calculatePosition(validProgress, validPathCoordinates);
+        animatedX.setValue(position.x);
+        animatedY.setValue(position.y);
+      } catch (fallbackError) {
+        console.error('Fallback position calculation error:', fallbackError);
+      }
+    }
+  }, [validProgress, validPathCoordinates, animatedX, animatedY]);
 
   return (
     <Animated.View
-      testID={`turtle-character-${state}`}
+      testID={`turtle-character-${validState}`}
       style={[
         styles.container,
         {
@@ -66,15 +91,24 @@ const TurtleCharacter: React.FC<TurtleCharacterProps> = ({
       {/* Turtle sprite - always faces rightward toward GOAL */}
       <Image
         testID="turtle-image"
-        source={TURTLE_SPRITES[state]}
+        source={TURTLE_SPRITES[validState]}
         style={styles.turtleImage}
         resizeMode="contain"
+        onError={(error) => {
+          console.error('Turtle sprite load error:', error);
+        }}
       />
 
       {/* Heart effect displayed above turtle during happy state */}
-      {state === 'happy' && (
+      {validState === 'happy' && (
         <View testID="heart-effect" style={styles.heartEffect}>
-          <Image source={{ uri: HEART_SVG_URI }} style={styles.heartIcon} />
+          <Image
+            source={{ uri: HEART_SVG_URI }}
+            style={styles.heartIcon}
+            onError={(error) => {
+              console.error('Heart icon load error:', error);
+            }}
+          />
         </View>
       )}
     </Animated.View>

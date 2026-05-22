@@ -60,8 +60,10 @@ const TimeInputPopup: React.FC<TimeInputPopupProps> = ({
       return;
     }
 
-    // Valid input - call onSubmit with duration
-    onSubmit(validation.value!);
+    // Valid input - call onSubmit with duration if callback is defined
+    if (onSubmit && typeof onSubmit === 'function') {
+      onSubmit(validation.value!);
+    }
     
     // Reset state
     setInputValue('');
@@ -72,7 +74,11 @@ const TimeInputPopup: React.FC<TimeInputPopupProps> = ({
     // Reset state
     setInputValue('');
     setErrorMessage('');
-    onCancel();
+    
+    // Call onCancel if callback is defined
+    if (onCancel && typeof onCancel === 'function') {
+      onCancel();
+    }
   };
 
   if (!visible) {

@@ -1,5 +1,94 @@
 # Implementation Journal
 
+## 날짜: 2025-01-22 Task 15.4: 상태 전환 에러 처리 추가 (GREEN)
+
+### 📋 Task 개요
+- **Task ID**: 15.4
+- **목표**: 상태 전환 에러 처리 구현 (invalid transitions, null values, undefined states)
+- **관련 Requirements**: 5.11
+- **소요 시간**: 약 30분
+
+### 🎯 설계 결정 (Design Decisions)
+
+#### 구현 내용
+
+1. **InputValidator 에러 필드 추가**
+   - `ValidationResult` 인터페이스에 `error` 필드 추가
+   - 기존 `errorType` 필드 유지 (backward compatibility)
+   - 에러 타입: 'empty', 'non-integer', 'out-of-range'
+   - 모든 validation 에러에 대해 명확한 에러 타입 반환
+
+2. **StateTransitionManager 클래스 구현**
+   - 기존 standalone 함수들을 유지하면서 클래스 버전 추가
+   - 에러 처리 메서드:
+     - `getNextState()`: undefined currentState 처리, invalid transitions 방지
+     - `shouldTransitionFromEating()`: null eatingStateEndTime 처리
+     - `shouldTransitionFromHappy()`: null happyStateEndTime 처리
+     - `calculateRemainingStateDuration()`: null stateEndTime, negative duration 처리
+
+3. **에러 처리 로직**
+   - **Invalid state transitions**:
+     - walking → arrived (without timer completion): 유지 walking
+     - sleeping → eating (item placed while paused): 유지 sleeping
+     - arrived → walking: 유지 arrived
+   - **Null value handling**:
+     - null eatingStateEndTime → shouldTransitionFromEating returns false
+     - null happyStateEndTime → shouldTransitionFromHappy returns false
+     - null stateEndTime → calculateRemainingStateDuration returns null
+   - **Negative duration handling**:
+     - stateEndTime < currentTime → return 0 (not negative)
+   - **Undefined state handling**:
+     - undefined currentState → default to 'walking' with console.error
+
+4. **에러 로깅**
+   - `console.error`: critical errors (undefined state)
+   - `console.warn`: invalid transitions (item while paused)
+   - 세션 상태 유지: 에러 발생 시 현재 상태 보존
+
+#### 기술적 결정
+
+- **Class + Standalone Functions**:
+  - 클래스: 에러 처리 테스트용 (ErrorHandling.test.ts)
+  - Standalone 함수: 기존 코드 호환성 유지 (StateTransitionManager.test.ts)
+  - 이유: 기존 코드 변경 최소화하면서 에러 처리 추가
+
+- **Graceful Degradation**:
+  - 에러 발생 시 앱 크래시 방지
+  - 현재 상태 유지 또는 안전한 기본값으로 복구
+  - 사용자 세션 보존 우선
+
+- **에러 메시지**:
+  - 개발자용 로그 (console.error/warn)
+  - 사용자에게는 에러 메시지 표시 안 함 (세션 계속 진행)
+
+### 🧪 테스트 결과
+
+- ✅ 모든 에러 처리 테스트 통과 (36/36)
+- ✅ 전체 테스트 스위트 통과 (607/607)
+- ✅ InputValidator error 필드 정상 작동
+- ✅ StateTransitionManager 클래스 에러 처리 정상 작동
+- ✅ Null/undefined 값 graceful handling 확인
+- ✅ Invalid state transitions 방지 확인
+
+### 📝 학습 내용 (Learnings)
+
+1. **에러 처리 설계**:
+   - 에러 발생 시 앱 크래시보다 graceful degradation 우선
+   - 사용자 세션 보존이 가장 중요
+   - 개발자 로그와 사용자 메시지 분리
+
+2. **Backward Compatibility**:
+   - 기존 코드 변경 최소화
+   - 새로운 기능 추가 시 기존 인터페이스 유지
+   - 점진적 마이그레이션 가능하도록 설계
+
+3. **TypeScript 타입 안전성**:
+   - `undefined` vs `null` 명확히 구분
+   - Optional 파라미터 처리
+   - 타입 가드로 런타임 에러 방지
+
+---
+
 ## 날짜: 2025-01-22 Task 14.2: 터치 피드백 구현 (GREEN)
 
 ### 📋 Task 개요

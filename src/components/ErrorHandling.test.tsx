@@ -245,7 +245,7 @@ describe('Component Error Handling - Unit Tests (RED)', () => {
       const { getByTestId } = render(<BackgroundImage />);
 
       // Should render background container even if image fails
-      expect(getByTestId('background-container')).toBeTruthy();
+      expect(getByTestId('background-image')).toBeTruthy();
     });
 
     it('should handle missing image source gracefully', () => {
@@ -257,7 +257,7 @@ describe('Component Error Handling - Unit Tests (RED)', () => {
     it('should use beige fallback color when image fails', () => {
       const { getByTestId } = render(<BackgroundImage />);
 
-      const container = getByTestId('background-container');
+      const container = getByTestId('background-image');
       // Should have fallback background color
       expect(container).toBeTruthy();
     });
@@ -290,8 +290,8 @@ describe('Component Error Handling - Unit Tests (RED)', () => {
         progress: 50,
       };
 
-      // Simulate child component error
-      const childError = true;
+      // Simulate child component error (variable used for test context)
+      const _childError = true;
 
       // Session state should remain unchanged
       expect(sessionState.remainingTime).toBe(1800);
@@ -328,7 +328,7 @@ describe('Component Error Handling - Unit Tests (RED)', () => {
 
     it('should preserve timer value when non-interactive area is touched', () => {
       const timerValue = 1800;
-      const nonInteractiveTouchOccurred = true;
+      const _nonInteractiveTouchOccurred = true; // Used for test context
 
       // Timer value should remain unchanged
       expect(timerValue).toBe(1800);
@@ -336,7 +336,7 @@ describe('Component Error Handling - Unit Tests (RED)', () => {
 
     it('should preserve turtle position when non-interactive area is touched', () => {
       const turtlePosition = 50;
-      const nonInteractiveTouchOccurred = true;
+      const _nonInteractiveTouchOccurred = true; // Used for test context
 
       // Turtle position should remain unchanged
       expect(turtlePosition).toBe(50);
@@ -344,7 +344,7 @@ describe('Component Error Handling - Unit Tests (RED)', () => {
 
     it('should preserve session status when non-interactive area is touched', () => {
       const sessionStatus = 'running';
-      const nonInteractiveTouchOccurred = true;
+      const _nonInteractiveTouchOccurred = true; // Used for test context
 
       // Session status should remain unchanged
       expect(sessionStatus).toBe('running');
@@ -354,7 +354,7 @@ describe('Component Error Handling - Unit Tests (RED)', () => {
   describe('State Transition Error Recovery', () => {
     it('should maintain current state when invalid transition is attempted', () => {
       const currentState = 'walking';
-      const invalidTransitionAttempted = true;
+      const _invalidTransitionAttempted = true; // Used for test context
 
       // Should maintain current state
       expect(currentState).toBe('walking');
@@ -376,14 +376,14 @@ describe('Component Error Handling - Unit Tests (RED)', () => {
 
     it('should continue session when state transition error occurs', () => {
       const sessionStatus = 'running';
-      const stateTransitionError = true;
+      const _stateTransitionError = true; // Used for test context
 
       // Session should continue running
       expect(sessionStatus).toBe('running');
     });
 
     it('should validate state transitions before execution', () => {
-      const validationRequired = true;
+      const _validationRequired = true; // Used for test context
       const shouldValidateBeforeTransition = true;
 
       expect(shouldValidateBeforeTransition).toBe(true);
@@ -392,21 +392,21 @@ describe('Component Error Handling - Unit Tests (RED)', () => {
 
   describe('Timer Error Recovery', () => {
     it('should display error message when timer fails to start', () => {
-      const timerStartFailed = true;
+      const _timerStartFailed = true; // Used for test context
       const errorMessage = '타이머를 시작할 수 없습니다';
 
       expect(errorMessage).toBe('타이머를 시작할 수 없습니다');
     });
 
     it('should return to home screen when timer fails to start', () => {
-      const timerStartFailed = true;
+      const _timerStartFailed = true; // Used for test context
       const shouldReturnToHome = true;
 
       expect(shouldReturnToHome).toBe(true);
     });
 
     it('should recalculate time when timer becomes out of sync', () => {
-      const timerOutOfSync = true;
+      const _timerOutOfSync = true; // Used for test context
       const shouldRecalculate = true;
 
       expect(shouldRecalculate).toBe(true);
